@@ -34,10 +34,10 @@ trait Distributive[F[_]] extends Functor[F] { self =>
   def cosequence[G[_]: Functor, A](ga: G[F[A]]): F[G[A]] = distribute(ga)(identity)
 
   // Distributive composes
-  def compose[G[_]](implicit G0: Distributive[G]): Distributive[λ[α => F[G[α]]]] =
+  def compose[G[_]](using G0: Distributive[G]): Distributive[λ[α => F[G[α]]]] =
     new ComposedDistributive[F, G] {
-      implicit def F = self
-      implicit def G = G0
+      given F: Distributive[F] = self
+      given G: Distributive[G] = G0
     }
 }
 
@@ -46,11 +46,11 @@ object Distributive {
   /**
    * Summon an instance of [[Distributive]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: Distributive[F]): Distributive[F] = instance
+  @inline def apply[F[_]](using instance: Distributive[F]): Distributive[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllDistributiveOps[F[_], A](target: F[A])(implicit tc: Distributive[F]): AllOps[F, A] {
+    implicit def toAllDistributiveOps[F[_], A](target: F[A])(using tc: Distributive[F]): AllOps[F, A] {
       type TypeClassType = Distributive[F]
     } =
       new AllOps[F, A] {
@@ -68,7 +68,7 @@ object Distributive {
     type TypeClassType <: Distributive[F]
   }
   trait ToDistributiveOps extends Serializable {
-    implicit def toDistributiveOps[F[_], A](target: F[A])(implicit tc: Distributive[F]): Ops[F, A] {
+    implicit def toDistributiveOps[F[_], A](target: F[A])(using tc: Distributive[F]): Ops[F, A] {
       type TypeClassType = Distributive[F]
     } =
       new Ops[F, A] {

@@ -55,7 +55,7 @@ trait TraverseFilter[F[_]] extends FunctorFilter[F] {
    * res0: List[String] = List(one, three)
    * }}}
    */
-  def traverseFilter[G[_], A, B](fa: F[A])(f: A => G[Option[B]])(implicit G: Applicative[G]): G[F[B]]
+  def traverseFilter[G[_], A, B](fa: F[A])(f: A => G[Option[B]])(using G: Applicative[G]): G[F[B]]
 
   /**
    * A combined [[traverse]] and [[collect]].
@@ -68,7 +68,7 @@ trait TraverseFilter[F[_]] extends FunctorFilter[F] {
    * scala> result.value
    * res0: List[Option[String]] = List(Some(two), None)
    */
-  def traverseCollect[G[_], A, B](fa: F[A])(f: PartialFunction[A, G[B]])(implicit G: Applicative[G]): G[F[B]] = {
+  def traverseCollect[G[_], A, B](fa: F[A])(f: PartialFunction[A, G[B]])(using G: Applicative[G]): G[F[B]] = {
     val optF = f.lift
     traverseFilter(fa)(a => Traverse[Option].sequence(optF(a)))
   }
@@ -82,7 +82,7 @@ trait TraverseFilter[F[_]] extends FunctorFilter[F] {
    * }}}
    */
 
-  def sequenceFilter[G[_], A](fgoa: F[G[Option[A]]])(implicit G: Applicative[G]): G[F[A]] =
+  def sequenceFilter[G[_], A](fgoa: F[G[Option[A]]])(using G: Applicative[G]): G[F[A]] =
     traverseFilter(fgoa)(identity)
 
   /**
@@ -104,7 +104,7 @@ trait TraverseFilter[F[_]] extends FunctorFilter[F] {
    * res1: List[List[Int]] = List(List(1, 2, 3), List(1, 2), List(1, 3), List(1), List(2, 3), List(2), List(3), List())
    * }}}
    */
-  def filterA[G[_], A](fa: F[A])(f: A => G[Boolean])(implicit G: Applicative[G]): G[F[A]] =
+  def filterA[G[_], A](fa: F[A])(f: A => G[Boolean])(using G: Applicative[G]): G[F[A]] =
     traverseFilter(fa)(a => G.map(f(a))(if (_) Some(a) else None))
 
   /**
@@ -112,7 +112,7 @@ trait TraverseFilter[F[_]] extends FunctorFilter[F] {
    */
   def traverseEither[G[_], A, B, E](
     fa: F[A]
-  )(f: A => G[Either[E, B]])(g: (A, E) => G[Unit])(implicit G: Monad[G]): G[F[B]] =
+  )(f: A => G[Either[E, B]])(g: (A, E) => G[Unit])(using G: Monad[G]): G[F[B]] =
     traverseFilter(fa)(a =>
       G.flatMap(f(a)) {
         case Left(e)  => G.as(g(a, e), Option.empty[B])
@@ -126,8 +126,8 @@ trait TraverseFilter[F[_]] extends FunctorFilter[F] {
   /**
    * Removes duplicate elements from a list, keeping only the first occurrence.
    */
-  def ordDistinct[A](fa: F[A])(implicit O: Order[A]): F[A] = {
-    implicit val ord: Ordering[A] = O.toOrdering
+  def ordDistinct[A](fa: F[A])(using O: Order[A]): F[A] = {
+    given ord: Ordering[A] = O.toOrdering
 
     traverseFilter[State[TreeSet[A], *], A, A](fa)(a =>
       State(alreadyIn => if (alreadyIn(a)) (alreadyIn, None) else (alreadyIn + a, Some(a)))
@@ -141,7 +141,7 @@ trait TraverseFilter[F[_]] extends FunctorFilter[F] {
    * Removes duplicate elements from a list, keeping only the first occurrence.
    * This is usually faster than ordDistinct, especially for things that have a slow comparison (like String).
    */
-  def hashDistinct[A](fa: F[A])(implicit H: Hash[A]): F[A] =
+  def hashDistinct[A](fa: F[A])(using H: Hash[A]): F[A] =
     traverseFilter(fa) { a =>
       State { (distinct: IntMap[List[A]]) =>
         val ahash = H.hash(a)
@@ -162,11 +162,11 @@ object TraverseFilter {
   /**
    * Summon an instance of [[TraverseFilter]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: TraverseFilter[F]): TraverseFilter[F] = instance
+  @inline def apply[F[_]](using instance: TraverseFilter[F]): TraverseFilter[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllTraverseFilterOps[F[_], A](target: F[A])(implicit tc: TraverseFilter[F]): AllOps[F, A] {
+    implicit def toAllTraverseFilterOps[F[_], A](target: F[A])(using tc: TraverseFilter[F]): AllOps[F, A] {
       type TypeClassType = TraverseFilter[F]
     } =
       new AllOps[F, A] {
@@ -179,20 +179,20 @@ object TraverseFilter {
     type TypeClassType <: TraverseFilter[F]
     def self: F[A]
     val typeClassInstance: TypeClassType
-    def traverseFilter[G[_], B](f: A => G[Option[B]])(implicit G: Applicative[G]): G[F[B]] =
-      typeClassInstance.traverseFilter[G, A, B](self)(f)(G)
-    def filterA[G[_]](f: A => G[Boolean])(implicit G: Applicative[G]): G[F[A]] =
-      typeClassInstance.filterA[G, A](self)(f)(G)
-    def traverseEither[G[_], B, C](f: A => G[Either[C, B]])(g: (A, C) => G[Unit])(implicit G: Monad[G]): G[F[B]] =
-      typeClassInstance.traverseEither[G, A, B, C](self)(f)(g)(G)
-    def ordDistinct(implicit O: Order[A]): F[A] = typeClassInstance.ordDistinct(self)
-    def hashDistinct(implicit H: Hash[A]): F[A] = typeClassInstance.hashDistinct(self)
+    def traverseFilter[G[_], B](f: A => G[Option[B]])(using G: Applicative[G]): G[F[B]] =
+      typeClassInstance.traverseFilter[G, A, B](self)(f)(using G)
+    def filterA[G[_]](f: A => G[Boolean])(using G: Applicative[G]): G[F[A]] =
+      typeClassInstance.filterA[G, A](self)(f)(using G)
+    def traverseEither[G[_], B, C](f: A => G[Either[C, B]])(g: (A, C) => G[Unit])(using G: Monad[G]): G[F[B]] =
+      typeClassInstance.traverseEither[G, A, B, C](self)(f)(g)(using G)
+    def ordDistinct(using O: Order[A]): F[A] = typeClassInstance.ordDistinct(self)
+    def hashDistinct(using H: Hash[A]): F[A] = typeClassInstance.hashDistinct(self)
   }
   trait AllOps[F[_], A] extends Ops[F, A] with FunctorFilter.AllOps[F, A] {
     type TypeClassType <: TraverseFilter[F]
   }
   trait ToTraverseFilterOps extends Serializable {
-    implicit def toTraverseFilterOps[F[_], A](target: F[A])(implicit tc: TraverseFilter[F]): Ops[F, A] {
+    implicit def toTraverseFilterOps[F[_], A](target: F[A])(using tc: TraverseFilter[F]): Ops[F, A] {
       type TypeClassType = TraverseFilter[F]
     } =
       new Ops[F, A] {
@@ -206,7 +206,7 @@ object TraverseFilter {
 
   private[cats] def traverseFilterDirectly[G[_], A, B](
     fa: IterableOnce[A]
-  )(f: A => G[Option[B]])(implicit G: StackSafeMonad[G]): G[Chain[B]] = {
+  )(f: A => G[Option[B]])(using G: StackSafeMonad[G]): G[Chain[B]] = {
     fa.iterator.foldLeft(G.pure(Chain.empty[B])) { case (bldrG, a) =>
       G.map2(bldrG, f(a)) {
         case (acc, Some(b)) => acc :+ b

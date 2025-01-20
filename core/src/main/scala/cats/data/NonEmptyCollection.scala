@@ -46,19 +46,19 @@ private[cats] trait NonEmptyCollection[+A, U[+_], NE[+_]] extends Any {
   def forall(p: A => Boolean): Boolean
 
   def foldLeft[B](b: B)(f: (B, A) => B): B
-  def reduce[AA >: A](implicit S: Semigroup[AA]): AA
+  def reduce[AA >: A](using S: Semigroup[AA]): AA
 
   def zipWith[B, C](b: NE[B])(f: (A, B) => C): NE[C]
   def zipWithIndex: NE[(A, Int)]
 
-  def distinct[AA >: A](implicit O: Order[AA]): NE[AA]
-  def distinctBy[B](f: A => B)(implicit O: Order[B]): NE[A]
-  def sortBy[B](f: A => B)(implicit B: Order[B]): NE[A]
-  def sorted[AA >: A](implicit AA: Order[AA]): NE[AA]
-  def groupByNem[B](f: A => B)(implicit B: Order[B]): NonEmptyMap[B, NE[A]]
+  def distinct[AA >: A](using O: Order[AA]): NE[AA]
+  def distinctBy[B](f: A => B)(using O: Order[B]): NE[A]
+  def sortBy[B](f: A => B)(using B: Order[B]): NE[A]
+  def sorted[AA >: A](using AA: Order[AA]): NE[AA]
+  def groupByNem[B](f: A => B)(using B: Order[B]): NonEmptyMap[B, NE[A]]
   def grouped(size: Int): Iterator[NE[A]]
-  def toNem[T, V](implicit ev: A <:< (T, V), order: Order[T]): NonEmptyMap[T, V]
-  def toNes[B >: A](implicit order: Order[B]): NonEmptySet[B]
+  def toNem[T, V](using ev: A <:< (T, V), order: Order[T]): NonEmptyMap[T, V]
+  def toNes[B >: A](using order: Order[B]): NonEmptySet[B]
 
-  def show[AA >: A](implicit AA: Show[AA]): String
+  def show[AA >: A](using AA: Show[AA]): String
 }

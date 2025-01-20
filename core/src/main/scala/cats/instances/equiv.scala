@@ -25,7 +25,7 @@ package instances
 import scala.annotation.tailrec
 
 trait EquivInstances {
-  implicit val catsContravariantMonoidalForEquiv: ContravariantMonoidal[Equiv] =
+  given catsContravariantMonoidalForEquiv: ContravariantMonoidal[Equiv] =
     new ContravariantMonoidal[Equiv] {
 
       /**
@@ -55,7 +55,7 @@ trait EquivInstances {
         }
     }
 
-  implicit def catsDeferForEquiv: Defer[Equiv] = EquivInstances.catsDeferForEquivCache
+  given catsDeferForEquiv: Defer[Equiv] = EquivInstances.catsDeferForEquivCache
 }
 object EquivInstances {
   private val catsDeferForEquivCache: Defer[Equiv] =

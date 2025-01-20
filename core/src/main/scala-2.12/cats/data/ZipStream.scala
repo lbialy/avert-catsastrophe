@@ -28,7 +28,7 @@ object ZipStream {
 
   def apply[A](value: Stream[A]): ZipStream[A] = new ZipStream(value)
 
-  implicit val catsDataAlternativeForZipStream: Alternative[ZipStream] with CommutativeApplicative[ZipStream] =
+  given catsDataAlternativeForZipStream: (Alternative[ZipStream] & CommutativeApplicative[ZipStream]) =
     new Alternative[ZipStream] with CommutativeApplicative[ZipStream] {
       def pure[A](x: A): ZipStream[A] = new ZipStream(Stream.continually(x))
 
@@ -47,6 +47,6 @@ object ZipStream {
         ZipStream(cats.instances.stream.catsStdInstancesForStream.combineK(x.value, y.value))
     }
 
-  implicit def catsDataEqForZipStream[A: Eq]: Eq[ZipStream[A]] =
+  given catsDataEqForZipStream[A: Eq]: Eq[ZipStream[A]] =
     Eq.by((_: ZipStream[A]).value)(cats.kernel.instances.stream.catsKernelStdEqForStream[A])
 }

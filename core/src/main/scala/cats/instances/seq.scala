@@ -32,7 +32,7 @@ import scala.collection.immutable.Seq
 
 @suppressUnusedImportWarningForScalaVersionSpecific
 trait SeqInstances extends cats.kernel.instances.SeqInstances {
-  implicit val catsStdInstancesForSeq: Traverse[Seq] & Monad[Seq] & Alternative[Seq] & CoflatMap[Seq] & Align[Seq] =
+  given catsStdInstancesForSeq: (Traverse[Seq] & Monad[Seq] & Alternative[Seq] & CoflatMap[Seq] & Align[Seq]) =
     new Traverse[Seq] with Monad[Seq] with Alternative[Seq] with CoflatMap[Seq] with Align[Seq] {
 
       def empty[A]: Seq[A] = Seq.empty[A]
@@ -87,7 +87,7 @@ trait SeqInstances extends cats.kernel.instances.SeqInstances {
       def foldRight[A, B](fa: Seq[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
         Foldable.iterateRight(fa, lb)(f)
 
-      override def foldMap[A, B](fa: Seq[A])(f: A => B)(implicit B: Monoid[B]): B =
+      override def foldMap[A, B](fa: Seq[A])(f: A => B)(using B: Monoid[B]): B =
         B.combineAll(fa.iterator.map(f))
 
       def tailRecM[A, B](a: A)(fn: A => Seq[Either[A, B]]): Seq[B] = {
@@ -119,23 +119,23 @@ trait SeqInstances extends cats.kernel.instances.SeqInstances {
       override def get[A](fa: Seq[A])(idx: Long): Option[A] =
         if (idx < Int.MaxValue && fa.size > idx && idx >= 0) Some(fa(idx.toInt)) else None
 
-      override def foldMapK[G[_], A, B](fa: Seq[A])(f: A => G[B])(implicit G: MonoidK[G]): G[B] = {
+      override def foldMapK[G[_], A, B](fa: Seq[A])(f: A => G[B])(using G: MonoidK[G]): G[B] = {
         def loop(i: Int): Eval[G[B]] =
           if (i < fa.length) G.combineKEval(f(fa(i)), Eval.defer(loop(i + 1))) else Eval.now(G.empty)
         loop(0).value
       }
 
-      final override def traverse[G[_], A, B](fa: Seq[A])(f: A => G[B])(implicit G: Applicative[G]): G[Seq[B]] =
+      final override def traverse[G[_], A, B](fa: Seq[A])(f: A => G[B])(using G: Applicative[G]): G[Seq[B]] =
         G match {
           case x: StackSafeMonad[G] =>
-            x.map(Traverse.traverseDirectly(fa)(f)(x))(_.toList)
+            x.map(Traverse.traverseDirectly(fa)(f)(using x))(_.toList)
           case _ =>
             G.map(Chain.traverseViaChain(fa.toIndexedSeq)(f))(_.toList)
         }
 
-      override def traverseVoid[G[_], A, B](fa: Seq[A])(f: A => G[B])(implicit G: Applicative[G]): G[Unit] =
+      override def traverseVoid[G[_], A, B](fa: Seq[A])(f: A => G[B])(using G: Applicative[G]): G[Unit] =
         G match {
-          case x: StackSafeMonad[G] => Traverse.traverseVoidDirectly(fa)(f)(x)
+          case x: StackSafeMonad[G] => Traverse.traverseVoidDirectly(fa)(f)(using x)
           case _ =>
             foldRight(fa, Eval.now(G.unit)) { (a, acc) =>
               G.map2Eval(f(a), acc) { (_, _) =>
@@ -155,7 +155,7 @@ trait SeqInstances extends cats.kernel.instances.SeqInstances {
 
       override def isEmpty[A](fa: Seq[A]): Boolean = fa.isEmpty
 
-      override def foldM[G[_], A, B](fa: Seq[A], z: B)(f: (B, A) => G[B])(implicit G: Monad[G]): G[B] = {
+      override def foldM[G[_], A, B](fa: Seq[A], z: B)(f: (B, A) => G[B])(using G: Monad[G]): G[B] = {
         val length = fa.length
         G.tailRecM((z, 0)) { case (b, i) =>
           if (i < length) G.map(f(b, fa(i)))(b => Left((b, i + 1)))
@@ -163,7 +163,7 @@ trait SeqInstances extends cats.kernel.instances.SeqInstances {
         }
       }
 
-      override def fold[A](fa: Seq[A])(implicit A: Monoid[A]): A = A.combineAll(fa)
+      override def fold[A](fa: Seq[A])(using A: Monoid[A]): A = A.combineAll(fa)
 
       override def toList[A](fa: Seq[A]): List[A] = fa.toList
 
@@ -193,7 +193,7 @@ trait SeqInstances extends cats.kernel.instances.SeqInstances {
         fa.collectFirst(Function.unlift(f))
     }
 
-  implicit val catsStdTraverseFilterForSeq: TraverseFilter[Seq] = new TraverseFilter[Seq] {
+  given catsStdTraverseFilterForSeq: TraverseFilter[Seq] = new TraverseFilter[Seq] {
     val traverse: Traverse[Seq] = cats.instances.seq.catsStdInstancesForSeq
 
     override def mapFilter[A, B](fa: Seq[A])(f: (A) => Option[B]): Seq[B] =
@@ -207,14 +207,14 @@ trait SeqInstances extends cats.kernel.instances.SeqInstances {
 
     override def flattenOption[A](fa: Seq[Option[A]]): Seq[A] = fa.flatten
 
-    def traverseFilter[G[_], A, B](fa: Seq[A])(f: (A) => G[Option[B]])(implicit G: Applicative[G]): G[Seq[B]] =
+    def traverseFilter[G[_], A, B](fa: Seq[A])(f: (A) => G[Option[B]])(using G: Applicative[G]): G[Seq[B]] =
       G match {
-        case x: StackSafeMonad[G] => x.map(TraverseFilter.traverseFilterDirectly(fa)(f)(x))(_.toVector)
+        case x: StackSafeMonad[G] => x.map(TraverseFilter.traverseFilterDirectly(fa)(f)(using x))(_.toVector)
         case _ =>
           G.map(Chain.traverseFilterViaChain(fa.toIndexedSeq)(f))(_.toVector)
       }
 
-    override def filterA[G[_], A](fa: Seq[A])(f: (A) => G[Boolean])(implicit G: Applicative[G]): G[Seq[A]] =
+    override def filterA[G[_], A](fa: Seq[A])(f: (A) => G[Boolean])(using G: Applicative[G]): G[Seq[A]] =
       traverse
         .foldRight(fa, Eval.now(G.pure(Seq.empty[A])))((x, xse) =>
           G.map2Eval(f(x), xse)((b, Seq) => if (b) x +: Seq else Seq)
@@ -222,10 +222,10 @@ trait SeqInstances extends cats.kernel.instances.SeqInstances {
         .value
   }
 
-  implicit def catsStdShowForSeq[A: Show]: Show[Seq[A]] =
+  given catsStdShowForSeq[A: Show]: Show[Seq[A]] =
     _.map(Show[A].show).toString
 
-  implicit def catsStdNonEmptyParallelForSeqZipSeq: NonEmptyParallel.Aux[Seq, ZipSeq] =
+  given catsStdNonEmptyParallelForSeqZipSeq: NonEmptyParallel.Aux[Seq, ZipSeq] =
     new NonEmptyParallel[Seq] {
       type F[x] = ZipSeq[x]
 

@@ -31,7 +31,7 @@ object ZipList {
 
   def apply[A](value: List[A]): ZipList[A] = new ZipList(value)
 
-  implicit val catsDataCommutativeApplyForZipList: CommutativeApply[ZipList] = new CommutativeApply[ZipList] {
+  given catsDataCommutativeApplyForZipList: CommutativeApply[ZipList] = new CommutativeApply[ZipList] {
 
     override def map[A, B](fa: ZipList[A])(f: (A) => B): ZipList[B] =
       ZipList(fa.value.map(f))
@@ -44,5 +44,5 @@ object ZipList {
 
   }
 
-  implicit def catsDataEqForZipList[A: Eq]: Eq[ZipList[A]] = Eq.by(_.value)
+  given catsDataEqForZipList[A: Eq]: Eq[ZipList[A]] = Eq.by(_.value)
 }

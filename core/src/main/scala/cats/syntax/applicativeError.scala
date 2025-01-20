@@ -32,7 +32,7 @@ trait ApplicativeErrorSyntax {
 
   implicit final def catsSyntaxApplicativeError[F[_], E, A](
     fa: F[A]
-  )(implicit F: ApplicativeError[F, E]): ApplicativeErrorOps[F, E, A] =
+  )(using F: ApplicativeError[F, E]): ApplicativeErrorOps[F, E, A] =
     new ApplicativeErrorOps[F, E, A](fa)
 
   implicit final def catsSyntaxApplicativeErrorFUnit[F[_], E](
@@ -63,43 +63,43 @@ final private[syntax] class ApplicativeErrorExtensionOps[F[_], E](F: Applicative
 }
 
 final class ApplicativeErrorIdOps[E](private val e: E) extends AnyVal {
-  def raiseError[F[_], A](implicit F: ApplicativeError[F, ? >: E]): F[A] =
+  def raiseError[F[_], A](using F: ApplicativeError[F, ? >: E]): F[A] =
     F.raiseError(e)
 }
 
 final class ApplicativeErrorOps[F[_], E, A](private val fa: F[A]) extends AnyVal {
-  def handleError(f: E => A)(implicit F: ApplicativeError[F, E]): F[A] =
+  def handleError(f: E => A)(using F: ApplicativeError[F, E]): F[A] =
     F.handleError(fa)(f)
 
-  def handleErrorWith(f: E => F[A])(implicit F: ApplicativeError[F, E]): F[A] =
+  def handleErrorWith(f: E => F[A])(using F: ApplicativeError[F, E]): F[A] =
     F.handleErrorWith(fa)(f)
 
-  def attempt(implicit F: ApplicativeError[F, E]): F[Either[E, A]] =
+  def attempt(using F: ApplicativeError[F, E]): F[Either[E, A]] =
     F.attempt(fa)
 
-  def attemptNarrow[EE <: Throwable](implicit
+  def attemptNarrow[EE <: Throwable](using
     F: ApplicativeError[F, E],
     tag: ClassTag[EE],
     ev: EE <:< E
   ): F[Either[EE, A]] =
     F.attemptNarrow[EE, A](fa)
 
-  def attemptT(implicit F: ApplicativeError[F, E]): EitherT[F, E, A] =
+  def attemptT(using F: ApplicativeError[F, E]): EitherT[F, E, A] =
     F.attemptT(fa)
 
-  def recover(pf: PartialFunction[E, A])(implicit F: ApplicativeError[F, E]): F[A] =
+  def recover(pf: PartialFunction[E, A])(using F: ApplicativeError[F, E]): F[A] =
     F.recover(fa)(pf)
 
-  def recoverWith(pf: PartialFunction[E, F[A]])(implicit F: ApplicativeError[F, E]): F[A] =
+  def recoverWith(pf: PartialFunction[E, F[A]])(using F: ApplicativeError[F, E]): F[A] =
     F.recoverWith(fa)(pf)
 
-  def redeem[B](recover: E => B, f: A => B)(implicit F: ApplicativeError[F, E]): F[B] =
+  def redeem[B](recover: E => B, f: A => B)(using F: ApplicativeError[F, E]): F[B] =
     F.redeem[A, B](fa)(recover, f)
 
-  def onError(pf: PartialFunction[E, F[Unit]])(implicit F: ApplicativeError[F, E]): F[A] =
+  def onError(pf: PartialFunction[E, F[Unit]])(using F: ApplicativeError[F, E]): F[A] =
     F.onError(fa)(pf)
 
-  def orElse(other: => F[A])(implicit F: ApplicativeError[F, E]): F[A] =
+  def orElse(other: => F[A])(using F: ApplicativeError[F, E]): F[A] =
     F.handleErrorWith(fa)(_ => other)
 
   /**
@@ -125,7 +125,7 @@ final class ApplicativeErrorOps[F[_], E, A](private val fa: F[A]) extends AnyVal
    * This is the same as `MonadErrorOps#adaptError`. It cannot have the same name because
    * this would result in ambiguous implicits.
    */
-  def adaptErr(pf: PartialFunction[E, E])(implicit F: ApplicativeError[F, E]): F[A] = F.adaptError(fa)(pf)
+  def adaptErr(pf: PartialFunction[E, E])(using F: ApplicativeError[F, E]): F[A] = F.adaptError(fa)(pf)
 
   /**
    * Handle all errors on this F[A] by raising an error using the given value.
@@ -145,11 +145,11 @@ final class ApplicativeErrorOps[F[_], E, A](private val fa: F[A]) extends AnyVal
    * res2: Either[String,Int] = Right(42)
    * }}}
    */
-  def orRaise(other: => E)(implicit F: ApplicativeError[F, E]): F[A] =
+  def orRaise(other: => E)(using F: ApplicativeError[F, E]): F[A] =
     adaptErr { case _ => other }
 }
 
 final class ApplicativeErrorFUnitOps[F[_], E](private val fu: F[Unit]) extends AnyVal {
-  def voidError(implicit F: ApplicativeError[F, E]): F[Unit] =
+  def voidError(using F: ApplicativeError[F, E]): F[Unit] =
     F.voidError(fu)
 }

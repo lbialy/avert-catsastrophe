@@ -62,7 +62,7 @@ sealed abstract class As[-A, +B] extends Serializable {
    */
   @inline final def toPredef: A <:< B = {
     type F[-Z] = <:<[Z, B]
-    substitute[F](implicitly[B <:< B])
+    substitute[F](summon[B <:< B])
   }
 }
 
@@ -72,7 +72,7 @@ sealed abstract class AsInstances {
   /*
    * Subtyping forms a category
    */
-  implicit val liskov: Category[As] = new Category[As] {
+  given liskov: Category[As] = new Category[As] {
     def id[A]: A As A = refl[A]
 
     def compose[A, B, C](bc: B As C, ab: A As B): A As C = bc.compose(ab)
@@ -122,7 +122,7 @@ object As extends AsInstances with AsSupport {
    * of an abundance of caution
    */
   def fromPredef[A, B](eq: A <:< B): A As B =
-    asFromPredef(eq)
+    asFromPredef(using eq)
 
   /**
    * We can lift subtyping into any covariant type constructor

@@ -34,7 +34,7 @@ sealed abstract class ContT[M[_], A, +B] extends Serializable {
   final def run: (B => M[A]) => M[A] = runAndThen
   protected def runAndThen: AndThen[B => M[A], M[A]]
 
-  final def map[C](fn: B => C)(implicit M: Defer[M]): ContT[M, A, C] = {
+  final def map[C](fn: B => C)(using M: Defer[M]): ContT[M, A, C] = {
     // allocate/pattern match once
     val fnAndThen = AndThen(fn)
     ContT { fn2 =>
@@ -57,7 +57,7 @@ sealed abstract class ContT[M[_], A, +B] extends Serializable {
     // lazy to avoid forcing run
     ContT.later(AndThen(fn).andThen(runAndThen))
 
-  final def flatMap[C](fn: B => ContT[M, A, C])(implicit M: Defer[M]): ContT[M, A, C] = {
+  final def flatMap[C](fn: B => ContT[M, A, C])(using M: Defer[M]): ContT[M, A, C] = {
     // allocate/pattern match once
     val fnAndThen = AndThen(fn)
     ContT[M, A, C] { fn2 =>
@@ -69,7 +69,7 @@ sealed abstract class ContT[M[_], A, +B] extends Serializable {
     }
   }
 
-  final def eval(implicit M: Applicative[M], D: Defer[M], ev: B <:< A): M[A] = D.defer(run(b => M.pure(ev(b))))
+  final def eval(using M: Applicative[M], D: Defer[M], ev: B <:< A): M[A] = D.defer(run(b => M.pure(ev(b))))
 }
 
 object ContT {
@@ -110,7 +110,7 @@ object ContT {
    * res1: Either[String, Int] = Left(a)
    * }}}
    */
-  def liftF[M[_], A, B](mb: M[B])(implicit M: FlatMap[M]): ContT[M, A, B] =
+  def liftF[M[_], A, B](mb: M[B])(using M: FlatMap[M]): ContT[M, A, B] =
     apply(M.flatMap(mb)(_))
 
   /**
@@ -125,7 +125,7 @@ object ContT {
    * res0: Either[String, Int] = Right(1)
    * }}}
    */
-  def liftK[M[_], B](implicit M: FlatMap[M]): M ~> ContT[M, B, *] =
+  def liftK[M[_], B](using M: FlatMap[M]): M ~> ContT[M, B, *] =
     new (M ~> ContT[M, B, *]) {
       def apply[A](ma: M[A]): ContT[M, B, A] = ContT.liftF(ma)
     }
@@ -148,7 +148,7 @@ object ContT {
    *
    * }}}
    */
-  def callCC[M[_], A, B, C](f: (B => ContT[M, A, C]) => ContT[M, A, B])(implicit M: Defer[M]): ContT[M, A, B] =
+  def callCC[M[_], A, B, C](f: (B => ContT[M, A, C]) => ContT[M, A, B])(using M: Defer[M]): ContT[M, A, B] =
     apply { cb =>
       val cont = f { a =>
         apply(_ => cb(a))
@@ -263,7 +263,7 @@ object ContT {
   def shiftT[M[_]: Applicative: Defer, A, B](f: (B => M[A]) => ContT[M, A, A]): ContT[M, A, B] =
     apply(cb => f(cb).eval)
 
-  def tailRecM[M[_], A, B, C](a: A)(fn: A => ContT[M, C, Either[A, B]])(implicit M: Defer[M]): ContT[M, C, B] =
+  def tailRecM[M[_], A, B, C](a: A)(fn: A => ContT[M, C, Either[A, B]])(using M: Defer[M]): ContT[M, C, B] =
     ContT[M, C, B] { (cb: (B => M[C])) =>
       def go(a: A): M[C] =
         fn(a).run {
@@ -274,13 +274,13 @@ object ContT {
       go(a)
     }
 
-  implicit def catsDataContTDefer[M[_], B]: Defer[ContT[M, B, *]] =
+  given catsDataContTDefer[M[_], B]: Defer[ContT[M, B, *]] =
     new Defer[ContT[M, B, *]] {
       def defer[A](c: => ContT[M, B, A]): ContT[M, B, A] =
         DeferCont(() => c)
     }
 
-  implicit def catsDataContTMonad[M[_]: Defer, A]: Monad[ContT[M, A, *]] =
+  given catsDataContTMonad[M[_]: Defer, A]: Monad[ContT[M, A, *]] =
     new Monad[ContT[M, A, *]] {
       def pure[B](b: B): ContT[M, A, B] =
         ContT.pure(b)

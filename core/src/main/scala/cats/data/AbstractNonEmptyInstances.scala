@@ -22,7 +22,7 @@
 package cats
 package data
 
-abstract private[data] class AbstractNonEmptyInstances[F[_], NonEmptyF[_]](implicit
+abstract private[data] class AbstractNonEmptyInstances[F[_], NonEmptyF[_]](using
   MF: Monad[F],
   CF: CoflatMap[F],
   TF: Traverse[F],
@@ -69,10 +69,10 @@ abstract private[data] class AbstractNonEmptyInstances[F[_], NonEmptyF[_]](impli
   def foldRight[A, B](fa: NonEmptyF[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
     traverseInstance.foldRight(fa, lb)(f)
 
-  override def foldMap[A, B](fa: NonEmptyF[A])(f: A => B)(implicit B: Monoid[B]): B =
+  override def foldMap[A, B](fa: NonEmptyF[A])(f: A => B)(using B: Monoid[B]): B =
     traverseInstance.foldMap(fa)(f)
 
-  override def traverse[G[_], A, B](fa: NonEmptyF[A])(f: A => G[B])(implicit G: Applicative[G]): G[NonEmptyF[B]] =
+  override def traverse[G[_], A, B](fa: NonEmptyF[A])(f: A => G[B])(using G: Applicative[G]): G[NonEmptyF[B]] =
     traverseInstance.traverse(fa)(f)
 
   override def mapWithIndex[A, B](fa: NonEmptyF[A])(f: (A, Int) => B): NonEmptyF[B] =
@@ -88,10 +88,10 @@ abstract private[data] class AbstractNonEmptyInstances[F[_], NonEmptyF[_]](impli
 
   override def isEmpty[A](fa: NonEmptyF[A]): Boolean = false
 
-  override def foldM[G[_], A, B](fa: NonEmptyF[A], z: B)(f: (B, A) => G[B])(implicit G: Monad[G]): G[B] =
+  override def foldM[G[_], A, B](fa: NonEmptyF[A], z: B)(f: (B, A) => G[B])(using G: Monad[G]): G[B] =
     traverseInstance.foldM(fa, z)(f)
 
-  override def fold[A](fa: NonEmptyF[A])(implicit A: Monoid[A]): A = traverseInstance.fold(fa)
+  override def fold[A](fa: NonEmptyF[A])(using A: Monoid[A]): A = traverseInstance.fold(fa)
 
   override def toList[A](fa: NonEmptyF[A]): List[A] = traverseInstance.toList(fa)
 

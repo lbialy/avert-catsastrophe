@@ -24,12 +24,12 @@ package cats.syntax
 import cats.{Alternative, Monad}
 
 final class MonadOps[F[_], A](private val fa: F[A]) extends AnyVal {
-  def whileM[G[_]](p: F[Boolean])(implicit M: Monad[F], G: Alternative[G]): F[G[A]] = M.whileM(p)(fa)
-  def whileM_(p: F[Boolean])(implicit M: Monad[F]): F[Unit] = M.whileM_(p)(fa)
-  def untilM[G[_]](p: F[Boolean])(implicit M: Monad[F], G: Alternative[G]): F[G[A]] = M.untilM(fa)(p)
-  def untilM_(p: F[Boolean])(implicit M: Monad[F]): F[Unit] = M.untilM_(fa)(p)
-  def iterateWhile(p: A => Boolean)(implicit M: Monad[F]): F[A] = M.iterateWhile(fa)(p)
-  def iterateUntil(p: A => Boolean)(implicit M: Monad[F]): F[A] = M.iterateUntil(fa)(p)
-  def flatMapOrKeep[A1 >: A](pfa: PartialFunction[A, F[A1]])(implicit M: Monad[F]): F[A1] =
+  def whileM[G[_]](p: F[Boolean])(using M: Monad[F], G: Alternative[G]): F[G[A]] = M.whileM(p)(fa)
+  def whileM_(p: F[Boolean])(using M: Monad[F]): F[Unit] = M.whileM_(p)(fa)
+  def untilM[G[_]](p: F[Boolean])(using M: Monad[F], G: Alternative[G]): F[G[A]] = M.untilM(fa)(p)
+  def untilM_(p: F[Boolean])(using M: Monad[F]): F[Unit] = M.untilM_(fa)(p)
+  def iterateWhile(p: A => Boolean)(using M: Monad[F]): F[A] = M.iterateWhile(fa)(p)
+  def iterateUntil(p: A => Boolean)(using M: Monad[F]): F[A] = M.iterateUntil(fa)(p)
+  def flatMapOrKeep[A1 >: A](pfa: PartialFunction[A, F[A1]])(using M: Monad[F]): F[A1] =
     M.flatMapOrKeep[A, A1](fa)(pfa)
 }

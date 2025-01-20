@@ -30,8 +30,8 @@ import scala.annotation.tailrec
 import scala.collection.immutable.VectorBuilder
 
 trait VectorInstances extends cats.kernel.instances.VectorInstances {
-  implicit val catsStdInstancesForVector
-    : Traverse[Vector] & Monad[Vector] & Alternative[Vector] & CoflatMap[Vector] & Align[Vector] =
+  given catsStdInstancesForVector
+    : (Traverse[Vector] & Monad[Vector] & Alternative[Vector] & CoflatMap[Vector] & Align[Vector]) =
     new Traverse[Vector] with Monad[Vector] with Alternative[Vector] with CoflatMap[Vector] with Align[Vector] {
 
       def empty[A]: Vector[A] = Vector.empty[A]
@@ -86,7 +86,7 @@ trait VectorInstances extends cats.kernel.instances.VectorInstances {
         Eval.defer(loop(0))
       }
 
-      override def foldMap[A, B](fa: Vector[A])(f: A => B)(implicit B: Monoid[B]): B =
+      override def foldMap[A, B](fa: Vector[A])(f: A => B)(using B: Monoid[B]): B =
         B.combineAll(fa.iterator.map(f))
 
       def tailRecM[A, B](a: A)(fn: A => Vector[Either[A, B]]): Vector[B] = {
@@ -118,15 +118,15 @@ trait VectorInstances extends cats.kernel.instances.VectorInstances {
       override def get[A](fa: Vector[A])(idx: Long): Option[A] =
         if (idx < Int.MaxValue && fa.size > idx && idx >= 0) Some(fa(idx.toInt)) else None
 
-      override def foldMapK[G[_], A, B](fa: Vector[A])(f: A => G[B])(implicit G: MonoidK[G]): G[B] = {
+      override def foldMapK[G[_], A, B](fa: Vector[A])(f: A => G[B])(using G: MonoidK[G]): G[B] = {
         def loop(i: Int): Eval[G[B]] =
           if (i < fa.length) G.combineKEval(f(fa(i)), Eval.defer(loop(i + 1))) else Eval.now(G.empty)
         loop(0).value
       }
 
-      final override def traverse[G[_], A, B](fa: Vector[A])(f: A => G[B])(implicit G: Applicative[G]): G[Vector[B]] =
+      final override def traverse[G[_], A, B](fa: Vector[A])(f: A => G[B])(using G: Applicative[G]): G[Vector[B]] =
         G match {
-          case x: StackSafeMonad[G] => x.map(Traverse.traverseDirectly(fa)(f)(x))(_.toVector)
+          case x: StackSafeMonad[G] => x.map(Traverse.traverseDirectly(fa)(f)(using x))(_.toVector)
           case _                    => G.map(Chain.traverseViaChain(fa)(f))(_.toVector)
         }
 
@@ -140,9 +140,9 @@ trait VectorInstances extends cats.kernel.instances.VectorInstances {
       /**
        * This avoids making a very deep stack by building a tree instead
        */
-      override def traverseVoid[G[_], A, B](fa: Vector[A])(f: A => G[B])(implicit G: Applicative[G]): G[Unit] = {
+      override def traverseVoid[G[_], A, B](fa: Vector[A])(f: A => G[B])(using G: Applicative[G]): G[Unit] = {
         G match {
-          case x: StackSafeMonad[G] => Traverse.traverseVoidDirectly(fa)(f)(x)
+          case x: StackSafeMonad[G] => Traverse.traverseVoidDirectly(fa)(f)(using x)
           case _                    =>
             // the cost of this is O(size)
             // c(n) = 1 + 2 * c(n/2)
@@ -180,13 +180,13 @@ trait VectorInstances extends cats.kernel.instances.VectorInstances {
       }
 
       override def mapAccumulate[S, A, B](init: S, fa: Vector[A])(f: (S, A) => (S, B)): (S, Vector[B]) =
-        StaticMethods.mapAccumulateFromStrictFunctor(init, fa, f)(this)
+        StaticMethods.mapAccumulateFromStrictFunctor(init, fa, f)(using this)
 
       override def mapWithIndex[A, B](fa: Vector[A])(f: (A, Int) => B): Vector[B] =
-        StaticMethods.mapWithIndexFromStrictFunctor(fa, f)(this)
+        StaticMethods.mapWithIndexFromStrictFunctor(fa, f)(using this)
 
       override def mapWithLongIndex[A, B](fa: Vector[A])(f: (A, Long) => B): Vector[B] =
-        StaticMethods.mapWithLongIndexFromStrictFunctor(fa, f)(this)
+        StaticMethods.mapWithLongIndexFromStrictFunctor(fa, f)(using this)
 
       override def zipWithIndex[A](fa: Vector[A]): Vector[(A, Int)] =
         fa.zipWithIndex
@@ -197,7 +197,7 @@ trait VectorInstances extends cats.kernel.instances.VectorInstances {
       override def isEmpty[A](fa: Vector[A]): Boolean =
         fa.isEmpty
 
-      override def foldM[G[_], A, B](fa: Vector[A], z: B)(f: (B, A) => G[B])(implicit G: Monad[G]): G[B] = {
+      override def foldM[G[_], A, B](fa: Vector[A], z: B)(f: (B, A) => G[B])(using G: Monad[G]): G[B] = {
         val length = fa.length
         G.tailRecM((z, 0)) { case (b, i) =>
           if (i < length) G.map(f(b, fa(i)))(b => Left((b, i + 1)))
@@ -205,7 +205,7 @@ trait VectorInstances extends cats.kernel.instances.VectorInstances {
         }
       }
 
-      override def fold[A](fa: Vector[A])(implicit A: Monoid[A]): A = A.combineAll(fa)
+      override def fold[A](fa: Vector[A])(using A: Monoid[A]): A = A.combineAll(fa)
 
       override def toList[A](fa: Vector[A]): List[A] = fa.toList
 
@@ -235,10 +235,10 @@ trait VectorInstances extends cats.kernel.instances.VectorInstances {
         fa.collectFirst(Function.unlift(f))
     }
 
-  implicit def catsStdShowForVector[A: Show]: Show[Vector[A]] =
+  given catsStdShowForVector[A: Show]: Show[Vector[A]] =
     _.iterator.map(Show[A].show).mkString("Vector(", ", ", ")")
 
-  implicit def catsStdNonEmptyParallelForVectorZipVector: NonEmptyParallel.Aux[Vector, ZipVector] =
+  given catsStdNonEmptyParallelForVectorZipVector: NonEmptyParallel.Aux[Vector, ZipVector] =
     new NonEmptyParallel[Vector] {
       type F[x] = ZipVector[x]
 
@@ -255,7 +255,7 @@ trait VectorInstances extends cats.kernel.instances.VectorInstances {
 
 @suppressUnusedImportWarningForScalaVersionSpecific
 private[instances] trait VectorInstancesBinCompat0 {
-  implicit val catsStdTraverseFilterForVector: TraverseFilter[Vector] = new TraverseFilter[Vector] {
+  given catsStdTraverseFilterForVector: TraverseFilter[Vector] = new TraverseFilter[Vector] {
     val traverse: Traverse[Vector] = cats.instances.vector.catsStdInstancesForVector
 
     override def mapFilter[A, B](fa: Vector[A])(f: (A) => Option[B]): Vector[B] =
@@ -269,14 +269,14 @@ private[instances] trait VectorInstancesBinCompat0 {
 
     override def flattenOption[A](fa: Vector[Option[A]]): Vector[A] = fa.flatten
 
-    def traverseFilter[G[_], A, B](fa: Vector[A])(f: (A) => G[Option[B]])(implicit G: Applicative[G]): G[Vector[B]] =
+    def traverseFilter[G[_], A, B](fa: Vector[A])(f: (A) => G[Option[B]])(using G: Applicative[G]): G[Vector[B]] =
       G match {
-        case x: StackSafeMonad[G] => x.map(TraverseFilter.traverseFilterDirectly(fa)(f)(x))(_.toVector)
+        case x: StackSafeMonad[G] => x.map(TraverseFilter.traverseFilterDirectly(fa)(f)(using x))(_.toVector)
         case _ =>
           G.map(Chain.traverseFilterViaChain(fa)(f))(_.toVector)
       }
 
-    override def filterA[G[_], A](fa: Vector[A])(f: (A) => G[Boolean])(implicit G: Applicative[G]): G[Vector[A]] =
+    override def filterA[G[_], A](fa: Vector[A])(f: (A) => G[Boolean])(using G: Applicative[G]): G[Vector[A]] =
       traverse
         .foldRight(fa, Eval.now(G.pure(Vector.empty[A])))((x, xse) =>
           G.map2Eval(f(x), xse)((b, vector) => if (b) x +: vector else vector)

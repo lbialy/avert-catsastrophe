@@ -26,7 +26,7 @@ import cats.kernel.CommutativeMonoid
 
 trait SetInstances extends cats.kernel.instances.SetInstances {
 
-  implicit val catsStdInstancesForSet: UnorderedTraverse[Set] & MonoidK[Set] =
+  given catsStdInstancesForSet: (UnorderedTraverse[Set] & MonoidK[Set]) =
     new UnorderedTraverse[Set] with MonoidK[Set] {
 
       def unorderedTraverse[G[_]: CommutativeApplicative, A, B](sa: Set[A])(f: A => G[B]): G[Set[B]] =
@@ -43,10 +43,10 @@ trait SetInstances extends cats.kernel.instances.SetInstances {
 
       def combineK[A](x: Set[A], y: Set[A]): Set[A] = x | y
 
-      def unorderedFoldMap[A, B](fa: Set[A])(f: A => B)(implicit B: CommutativeMonoid[B]): B =
+      def unorderedFoldMap[A, B](fa: Set[A])(f: A => B)(using B: CommutativeMonoid[B]): B =
         fa.foldLeft(B.empty)((b, a) => B.combine(f(a), b))
 
-      override def unorderedFold[A](fa: Set[A])(implicit A: CommutativeMonoid[A]): A = A.combineAll(fa)
+      override def unorderedFold[A](fa: Set[A])(using A: CommutativeMonoid[A]): A = A.combineAll(fa)
 
       override def forall[A](fa: Set[A])(p: A => Boolean): Boolean =
         fa.forall(p)
@@ -58,6 +58,6 @@ trait SetInstances extends cats.kernel.instances.SetInstances {
 
     }
 
-  implicit def catsStdShowForSet[A: Show]: Show[Set[A]] =
+  given catsStdShowForSet[A: Show]: Show[Set[A]] =
     _.iterator.map(Show[A].show).mkString("Set(", ", ", ")")
 }

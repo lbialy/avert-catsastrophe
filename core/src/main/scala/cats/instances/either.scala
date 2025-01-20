@@ -31,11 +31,11 @@ import scala.annotation.tailrec
 import cats.data.Ior
 
 trait EitherInstances extends cats.kernel.instances.EitherInstances {
-  implicit val catsStdBitraverseForEither: Bitraverse[Either] =
+  given catsStdBitraverseForEither: Bitraverse[Either] =
     new Bitraverse[Either] {
       def bitraverse[G[_], A, B, C, D](
         fab: Either[A, B]
-      )(f: A => G[C], g: B => G[D])(implicit G: Applicative[G]): G[Either[C, D]] =
+      )(f: A => G[C], g: B => G[D])(using G: Applicative[G]): G[Either[C, D]] =
         fab match {
           case Left(a)  => G.map(f(a))(Left(_))
           case Right(b) => G.map(g(b))(Right(_))
@@ -56,8 +56,8 @@ trait EitherInstances extends cats.kernel.instances.EitherInstances {
         }
     }
 
-  implicit def catsStdInstancesForEither[A]
-    : MonadError[Either[A, *], A] & Traverse[Either[A, *]] & Align[Either[A, *]] =
+  given catsStdInstancesForEither[A]
+    : (MonadError[Either[A, *], A] & Traverse[Either[A, *]] & Align[Either[A, *]]) =
     new MonadError[Either[A, *], A] with Traverse[Either[A, *]] with Align[Either[A, *]] {
       override def unit: Either[A, Unit] = Either.unit
 
@@ -95,7 +95,7 @@ trait EitherInstances extends cats.kernel.instances.EitherInstances {
           case Right(b)    => fc.map(_.map(f(b, _)))
         }
 
-      def traverse[F[_], B, C](fa: Either[A, B])(f: B => F[C])(implicit F: Applicative[F]): F[Either[A, C]] =
+      def traverse[F[_], B, C](fa: Either[A, B])(f: B => F[C])(using F: Applicative[F]): F[Either[A, C]] =
         fa match {
           case left @ Left(_) => F.pure(left.rightCast[C])
           case Right(b)       => F.map(f(b))(Right(_))
@@ -168,7 +168,7 @@ trait EitherInstances extends cats.kernel.instances.EitherInstances {
       override def get[B](fab: Either[A, B])(idx: Long): Option[B] =
         if (idx == 0L) fab.fold(_ => None, Some(_)) else None
 
-      override def foldMap[B, C](fab: Either[A, B])(f: B => C)(implicit C: Monoid[C]): C =
+      override def foldMap[B, C](fab: Either[A, B])(f: B => C)(using C: Monoid[C]): C =
         fab.fold(_ => C.empty, f)
 
       override def find[B](fab: Either[A, B])(f: B => Boolean): Option[B] =
@@ -216,7 +216,7 @@ trait EitherInstances extends cats.kernel.instances.EitherInstances {
 
     }
 
-  implicit def catsStdSemigroupKForEither[L]: SemigroupK[Either[L, *]] =
+  given catsStdSemigroupKForEither[L]: SemigroupK[Either[L, *]] =
     new SemigroupK[Either[L, *]] {
       def combineK[A](x: Either[L, A], y: Either[L, A]): Either[L, A] =
         x match {
@@ -231,12 +231,12 @@ trait EitherInstances extends cats.kernel.instances.EitherInstances {
         }
     }
 
-  implicit def catsStdShowForEither[A, B](implicit A: Show[A], B: Show[B]): Show[Either[A, B]] = {
+  given catsStdShowForEither[A, B](using A: Show[A], B: Show[B]): Show[Either[A, B]] = {
     case Left(a)  => "Left(" + A.show(a) + ")"
     case Right(b) => "Right(" + B.show(b) + ")"
   }
 
-  implicit def catsParallelForEitherAndValidated[E: Semigroup]: Parallel.Aux[Either[E, *], Validated[E, *]] =
+  given catsParallelForEitherAndValidated[E: Semigroup]: Parallel.Aux[Either[E, *], Validated[E, *]] =
     new Parallel[Either[E, *]] {
       type F[x] = Validated[E, x]
 

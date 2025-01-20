@@ -53,13 +53,13 @@ trait UnorderedFoldable[F[_]] extends Serializable {
    */
   def unorderedFoldMapA[G[_], A, B](fa: F[A])(
     f: A => G[B]
-  )(implicit G: CommutativeApplicative[G], B: CommutativeMonoid[B]): G[B] =
+  )(using G: CommutativeApplicative[G], B: CommutativeMonoid[B]): G[B] =
     unorderedFoldMap(fa)(f)(CommutativeApplicative.commutativeMonoidFor)
 
   /**
    * Tests if `fa` contains `v` using the `Eq` instance for `A`
    */
-  def contains_[A](fa: F[A], v: A)(implicit ev: Eq[A]): Boolean =
+  def contains_[A](fa: F[A], v: A)(using ev: Eq[A]): Boolean =
     exists(fa)(a => ev.eqv(a, v))
 
   /**
@@ -120,7 +120,7 @@ trait UnorderedFoldable[F[_]] extends Serializable {
 }
 
 private[cats] trait UnorderedFoldableLowPriority {
-  implicit def catsTraverseForSeq: Traverse[Seq] = cats.instances.seq.catsStdInstancesForSeq
+  given catsTraverseForSeq: Traverse[Seq] = cats.instances.seq.catsStdInstancesForSeq
 }
 
 object UnorderedFoldable
@@ -148,21 +148,21 @@ object UnorderedFoldable
       }
   }
 
-  implicit def catsNonEmptyTraverseForId: NonEmptyTraverse[Id] = catsInstancesForId
-  implicit def catsTraverseForOption: Traverse[Option] = cats.instances.option.catsStdInstancesForOption
-  implicit def catsTraverseForList: Traverse[List] = cats.instances.list.catsStdInstancesForList
-  implicit def catsTraverseForVector: Traverse[Vector] = cats.instances.vector.catsStdInstancesForVector
-  implicit def catsTraverseForQueue: Traverse[Queue] = cats.instances.queue.catsStdInstancesForQueue
-  implicit def catsUnorderedTraverseForSet: UnorderedTraverse[Set] = cats.instances.set.catsStdInstancesForSet
-  implicit def catsFoldableForSortedSet: Foldable[SortedSet] = cats.instances.sortedSet.catsStdInstancesForSortedSet
-  implicit def catsTraverseForSortedMap[K]: Traverse[SortedMap[K, *]] =
+  given catsNonEmptyTraverseForId: NonEmptyTraverse[Id] = catsInstancesForId
+  given catsTraverseForOption: Traverse[Option] = cats.instances.option.catsStdInstancesForOption
+  given catsTraverseForList: Traverse[List] = cats.instances.list.catsStdInstancesForList
+  given catsTraverseForVector: Traverse[Vector] = cats.instances.vector.catsStdInstancesForVector
+  given catsTraverseForQueue: Traverse[Queue] = cats.instances.queue.catsStdInstancesForQueue
+  given catsUnorderedTraverseForSet: UnorderedTraverse[Set] = cats.instances.set.catsStdInstancesForSet
+  given catsFoldableForSortedSet: Foldable[SortedSet] = cats.instances.sortedSet.catsStdInstancesForSortedSet
+  given catsTraverseForSortedMap[K]: Traverse[SortedMap[K, *]] =
     cats.instances.sortedMap.catsStdInstancesForSortedMap[K]
 
-  implicit def catsUnorderedTraverseForMap[K]: UnorderedTraverse[Map[K, *]] =
+  given catsUnorderedTraverseForMap[K]: UnorderedTraverse[Map[K, *]] =
     cats.instances.map.catsStdInstancesForMap[K]
 
-  implicit def catsTraverseForEither[A]: Traverse[Either[A, *]] = cats.instances.either.catsStdInstancesForEither[A]
-  implicit def catsTraverseForTry: Traverse[Try] = cats.instances.try_.catsStdInstancesForTry
+  given catsTraverseForEither[A]: Traverse[Either[A, *]] = cats.instances.either.catsStdInstancesForEither[A]
+  given catsTraverseForTry: Traverse[Try] = cats.instances.try_.catsStdInstancesForTry
 
   @deprecated("Use catsStdInstancesForTuple2 in cats.instances.NTupleMonadInstances", "2.4.0")
   def catsInstancesForTuple[A]: Traverse[(A, *)] & Reducible[(A, *)] =
@@ -171,11 +171,11 @@ object UnorderedFoldable
   /**
    * Summon an instance of [[UnorderedFoldable]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: UnorderedFoldable[F]): UnorderedFoldable[F] = instance
+  @inline def apply[F[_]](using instance: UnorderedFoldable[F]): UnorderedFoldable[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllUnorderedFoldableOps[F[_], A](target: F[A])(implicit tc: UnorderedFoldable[F]): AllOps[F, A] {
+    implicit def toAllUnorderedFoldableOps[F[_], A](target: F[A])(using tc: UnorderedFoldable[F]): AllOps[F, A] {
       type TypeClassType = UnorderedFoldable[F]
     } =
       new AllOps[F, A] {
@@ -188,12 +188,12 @@ object UnorderedFoldable
     type TypeClassType <: UnorderedFoldable[F]
     def self: F[A]
     val typeClassInstance: TypeClassType
-    def unorderedFoldMap[B](f: A => B)(implicit ev$1: CommutativeMonoid[B]): B =
+    def unorderedFoldMap[B](f: A => B)(using ev$1: CommutativeMonoid[B]): B =
       typeClassInstance.unorderedFoldMap[A, B](self)(f)
-    def unorderedFold(implicit ev$1: CommutativeMonoid[A]): A = typeClassInstance.unorderedFold[A](self)
+    def unorderedFold(using ev$1: CommutativeMonoid[A]): A = typeClassInstance.unorderedFold[A](self)
     def unorderedFoldMapA[G[_], B](
       f: A => G[B]
-    )(implicit ev$1: CommutativeApplicative[G], ev$2: CommutativeMonoid[B]): G[B] =
+    )(using ev$1: CommutativeApplicative[G], ev$2: CommutativeMonoid[B]): G[B] =
       typeClassInstance.unorderedFoldMapA[G, A, B](self)(f)
     def isEmpty: Boolean = typeClassInstance.isEmpty[A](self)
     def nonEmpty: Boolean = typeClassInstance.nonEmpty[A](self)
@@ -203,7 +203,7 @@ object UnorderedFoldable
   }
   trait AllOps[F[_], A] extends Ops[F, A]
   trait ToUnorderedFoldableOps extends Serializable {
-    implicit def toUnorderedFoldableOps[F[_], A](target: F[A])(implicit tc: UnorderedFoldable[F]): Ops[F, A] {
+    implicit def toUnorderedFoldableOps[F[_], A](target: F[A])(using tc: UnorderedFoldable[F]): Ops[F, A] {
       type TypeClassType = UnorderedFoldable[F]
     } =
       new Ops[F, A] {

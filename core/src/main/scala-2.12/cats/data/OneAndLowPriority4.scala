@@ -26,7 +26,7 @@ import scala.annotation.tailrec
 import scala.collection.mutable.Builder
 
 abstract private[data] class OneAndLowPriority4 {
-  implicit val catsDataComonadForNonEmptyStream: Comonad[OneAnd[Stream, *]] =
+  given catsDataComonadForNonEmptyStream: Comonad[OneAnd[Stream, *]] =
     new Comonad[OneAnd[Stream, *]] {
       def coflatMap[A, B](fa: OneAnd[Stream, A])(f: OneAnd[Stream, A] => B): OneAnd[Stream, B] = {
         @tailrec def consume(as: Stream[A], buf: Builder[B, Stream[B]]): Stream[B] =
@@ -42,6 +42,6 @@ abstract private[data] class OneAndLowPriority4 {
         fa.head
 
       def map[A, B](fa: OneAnd[Stream, A])(f: A => B): OneAnd[Stream, B] =
-        fa.map(f)(cats.instances.stream.catsStdInstancesForStream)
+        fa.map(f)(using cats.instances.stream.catsStdInstancesForStream)
     }
 }

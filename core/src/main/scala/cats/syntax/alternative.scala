@@ -38,13 +38,13 @@ final class UniteOps[F[_], G[_], A](protected val fga: F[G[A]]) extends AnyVal w
 
   @deprecated("use a FlatMap-constrained version instead", "2.6.2")
   protected def unite(F: Monad[F], A: Alternative[F], G: Foldable[G]): F[A] =
-    A.unite(fga)(F, G)
+    A.unite(fga)(using F, G)
 }
 
 sealed private[syntax] trait UniteOpsBinCompat0[F[_], G[_], A] extends Any { self: UniteOps[F, G, A] =>
 
   /**
-   * See [[[Alternative.unite[G[_],A](fga:F[G[A]])(implicitFM:cats\.FlatMap[F]*]]]
+   * See [[[Alternative.unite[G[_],A](fga:F[G[A]])(usingFM:cats\.FlatMap[F]*]]]
    *
    * Example:
    * {{{
@@ -54,7 +54,7 @@ sealed private[syntax] trait UniteOpsBinCompat0[F[_], G[_], A] extends Any { sel
    * res0: List[Int] = List(1, 2, 3, 4)
    * }}}
    */
-  def unite(implicit F: FlatMap[F], A: Alternative[F], G: Foldable[G]): F[A] =
+  def unite(using F: FlatMap[F], A: Alternative[F], G: Foldable[G]): F[A] =
     A.unite[G, A](fga)
 }
 
@@ -64,7 +64,7 @@ final class SeparateOps[F[_], G[_, _], A, B](protected val fgab: F[G[A, B]])
 
   @deprecated("use a FlatMap-constrained version instead", "2.6.2")
   protected def separate(F: Monad[F], A: Alternative[F], G: Bifoldable[G]): (F[A], F[B]) =
-    A.separate[G, A, B](fgab)(F, G)
+    A.separate[G, A, B](fgab)(using F, G)
 
   /**
    * See [[Alternative.separateFoldable]]
@@ -77,14 +77,14 @@ final class SeparateOps[F[_], G[_, _], A, B](protected val fgab: F[G[A, B]])
    * res0: (List[String], List[Int]) = (List(error),List(1))
    * }}}
    */
-  def separateFoldable(implicit F: Foldable[F], A: Alternative[F], G: Bifoldable[G]): (F[A], F[B]) =
+  def separateFoldable(using F: Foldable[F], A: Alternative[F], G: Bifoldable[G]): (F[A], F[B]) =
     A.separateFoldable[G, A, B](fgab)
 }
 
 sealed private[syntax] trait SeparateOpsBinCompat0[F[_], G[_, _], A, B] extends Any { self: SeparateOps[F, G, A, B] =>
 
   /**
-   * See [[[Alternative.separate[G[_,_],A,B](fgab:F[G[A,B]])(implicitFM:cats\.FlatMap[F]* Alternative.separate]]]
+   * See [[[Alternative.separate[G[_,_],A,B](fgab:F[G[A,B]])(usingFM:cats\.FlatMap[F]* Alternative.separate]]]
    *
    * Example:
    * {{{
@@ -94,7 +94,7 @@ sealed private[syntax] trait SeparateOpsBinCompat0[F[_], G[_, _], A, B] extends 
    * res0: (List[String], List[Int]) = (List(error),List(1))
    * }}}
    */
-  def separate(implicit F: FlatMap[F], A: Alternative[F], G: Bifoldable[G]): (F[A], F[B]) =
+  def separate(using F: FlatMap[F], A: Alternative[F], G: Bifoldable[G]): (F[A], F[B]) =
     A.separate[G, A, B](fgab)
 }
 
@@ -113,5 +113,5 @@ final class GuardOps(private val condition: Boolean) extends AnyVal {
    * res1: Option[String] = None
    * }}}
    */
-  def guard[F[_]](implicit F: Alternative[F]): F[Unit] = F.guard(condition)
+  def guard[F[_]](using F: Alternative[F]): F[Unit] = F.guard(condition)
 }

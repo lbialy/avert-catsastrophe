@@ -28,6 +28,6 @@ private[evidence] trait AsSupport {
    * But lack of this method does not make the cast unsafe
    * it just makes it not provable without the cast.
    */
-  @inline implicit def asFromPredef[A, B](implicit ev: A <:< B): A As B =
+  @inline implicit def asFromPredef[A, B](using ev: A <:< B): A As B =
     As.refl[A].asInstanceOf[A As B]
 }

@@ -50,17 +50,17 @@ object InvariantMonoidal {
   /**
    * Gives a `Monoid` instance if A itself has a `Monoid` instance.
    */
-  def monoid[F[_], A](implicit F: InvariantMonoidal[F], A: Monoid[A]): Monoid[F[A]] =
+  def monoid[F[_], A](using F: InvariantMonoidal[F], A: Monoid[A]): Monoid[F[A]] =
     new InvariantMonoidalMonoid[F, A](F, A)
 
   /**
    * Summon an instance of [[InvariantMonoidal]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: InvariantMonoidal[F]): InvariantMonoidal[F] = instance
+  @inline def apply[F[_]](using instance: InvariantMonoidal[F]): InvariantMonoidal[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllInvariantMonoidalOps[F[_], A](target: F[A])(implicit tc: InvariantMonoidal[F]): AllOps[F, A] {
+    implicit def toAllInvariantMonoidalOps[F[_], A](target: F[A])(using tc: InvariantMonoidal[F]): AllOps[F, A] {
       type TypeClassType = InvariantMonoidal[F]
     } =
       new AllOps[F, A] {
@@ -78,7 +78,7 @@ object InvariantMonoidal {
     type TypeClassType <: InvariantMonoidal[F]
   }
   trait ToInvariantMonoidalOps extends Serializable {
-    implicit def toInvariantMonoidalOps[F[_], A](target: F[A])(implicit tc: InvariantMonoidal[F]): Ops[F, A] {
+    implicit def toInvariantMonoidalOps[F[_], A](target: F[A])(using tc: InvariantMonoidal[F]): Ops[F, A] {
       type TypeClassType = InvariantMonoidal[F]
     } =
       new Ops[F, A] {

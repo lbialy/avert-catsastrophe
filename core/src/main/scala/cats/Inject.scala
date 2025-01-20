@@ -47,21 +47,21 @@ abstract class Inject[A, B] {
 }
 
 sealed abstract private[cats] class InjectInstances {
-  implicit def catsReflexiveInjectInstance[A]: Inject[A, A] =
+  given catsReflexiveInjectInstance[A]: Inject[A, A] =
     new Inject[A, A] {
       val inj = identity(_: A)
 
       val prj: A => Option[A] = Some(_: A)
     }
 
-  implicit def catsLeftInjectInstance[A, B]: Inject[A, Either[A, B]] =
+  given catsLeftInjectInstance[A, B]: Inject[A, Either[A, B]] =
     new Inject[A, Either[A, B]] {
       val inj: A => Either[A, B] = Left(_: A)
 
       val prj = (_: Either[A, B]).left.toOption
     }
 
-  implicit def catsRightInjectInstance[A, B, C](implicit I: Inject[A, B]): Inject[A, Either[C, B]] =
+  given catsRightInjectInstance[A, B, C](using I: Inject[A, B]): Inject[A, Either[C, B]] =
     new Inject[A, Either[C, B]] {
       val inj: A => Either[C, B] = (a: A) => Right(I.inj(a))
 
@@ -71,5 +71,5 @@ sealed abstract private[cats] class InjectInstances {
 }
 
 object Inject extends InjectInstances {
-  def apply[A, B](implicit I: Inject[A, B]): Inject[A, B] = I
+  def apply[A, B](using I: Inject[A, B]): Inject[A, B] = I
 }

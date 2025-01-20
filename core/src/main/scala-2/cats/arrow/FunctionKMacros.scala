@@ -53,13 +53,13 @@ private[arrow] object FunctionKMacros {
 
   def lift[F[_], G[_]](c: blackbox.Context)(
     f: c.Expr[(F[α] => G[α]) forSome { type α }]
-  )(implicit evF: c.WeakTypeTag[F[Any]], evG: c.WeakTypeTag[G[Any]]): c.Expr[FunctionK[F, G]] =
+  )(using evF: c.WeakTypeTag[F[Any]], evG: c.WeakTypeTag[G[Any]]): c.Expr[FunctionK[F, G]] =
     c.Expr[FunctionK[F, G]](new Lifter[c.type](c).lift[F, G](f.tree))
 
   private class Lifter[C <: blackbox.Context](val c: C) {
     import c.universe._
 
-    def lift[F[_], G[_]](tree: Tree)(implicit evF: c.WeakTypeTag[F[Any]], evG: c.WeakTypeTag[G[Any]]): Tree = {
+    def lift[F[_], G[_]](tree: Tree)(using evF: c.WeakTypeTag[F[Any]], evG: c.WeakTypeTag[G[Any]]): Tree = {
       def liftFunction(function: Tree): Tree =
         function match {
           case q"($param) => $trans[..$typeArgs]($arg)" if param.symbol == arg.symbol =>

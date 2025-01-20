@@ -40,19 +40,19 @@ object InvariantSemigroupal extends SemigroupalArityFunctions {
   /**
    * Gives a `Semigroup` instance if A itself has a `Semigroup` instance.
    */
-  def semigroup[F[_], A](implicit F: InvariantSemigroupal[F], A: Semigroup[A]): Semigroup[F[A]] =
+  def semigroup[F[_], A](using F: InvariantSemigroupal[F], A: Semigroup[A]): Semigroup[F[A]] =
     new InvariantSemigroupalSemigroup[F, A](F, A)
 
   /**
    * Summon an instance of [[InvariantSemigroupal]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: InvariantSemigroupal[F]): InvariantSemigroupal[F] = instance
+  @inline def apply[F[_]](using instance: InvariantSemigroupal[F]): InvariantSemigroupal[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
     implicit def toAllInvariantSemigroupalOps[F[_], A](
       target: F[A]
-    )(implicit tc: InvariantSemigroupal[F]): AllOps[F, A] {
+    )(using tc: InvariantSemigroupal[F]): AllOps[F, A] {
       type TypeClassType = InvariantSemigroupal[F]
     } =
       new AllOps[F, A] {
@@ -70,7 +70,7 @@ object InvariantSemigroupal extends SemigroupalArityFunctions {
     type TypeClassType <: InvariantSemigroupal[F]
   }
   trait ToInvariantSemigroupalOps extends Serializable {
-    implicit def toInvariantSemigroupalOps[F[_], A](target: F[A])(implicit tc: InvariantSemigroupal[F]): Ops[F, A] {
+    implicit def toInvariantSemigroupalOps[F[_], A](target: F[A])(using tc: InvariantSemigroupal[F]): Ops[F, A] {
       type TypeClassType = InvariantSemigroupal[F]
     } =
       new Ops[F, A] {

@@ -33,20 +33,20 @@ import cats.{Applicative, Comonad, Functor, Monoid, Representable}
  *
  * This is the (co)monad-transformer version of `RepresentableStore`
  */
-final case class RepresentableStoreT[W[_], F[_], S, A](runF: W[F[A]], index: S)(implicit F: Representable.Aux[F, S]) {
+final case class RepresentableStoreT[W[_], F[_], S, A](runF: W[F[A]], index: S)(using F: Representable.Aux[F, S]) {
 
-  def run(implicit W: Functor[W]): W[A] = W.map(runF)(fa => F.index(fa)(index))
+  def run(using W: Functor[W]): W[A] = W.map(runF)(fa => F.index(fa)(index))
 
   /**
    * Peek at what the focus would be for a given focus s.
    */
-  def peek(s: S)(implicit W: Comonad[W]): A = W.extract(W.map(runF)(fa => F.index(fa)(s)))
+  def peek(s: S)(using W: Comonad[W]): A = W.extract(W.map(runF)(fa => F.index(fa)(s)))
 
   /**
    * Peek at what the focus would be if the current focus where transformed
    * with the given function.
    */
-  def peeks(f: S => S)(implicit W: Comonad[W]): A = peek(f(index))
+  def peeks(f: S => S)(using W: Comonad[W]): A = peek(f(index))
 
   /**
    * Set the current focus.
@@ -61,14 +61,14 @@ final case class RepresentableStoreT[W[_], F[_], S, A](runF: W[F[A]], index: S)(
   /**
    * Extract the focus at the current index.
    */
-  def extract(implicit W: Comonad[W]): A = peek(index)
+  def extract(using W: Comonad[W]): A = peek(index)
 
   /**
    * `coflatMap` is the dual of `flatMap` on `FlatMap`. It applies
    * a value in a context to a function that takes a value
    * in a context and returns a normal value.
    */
-  def coflatMap[B](f: RepresentableStoreT[W, F, S, A] => B)(implicit W: Comonad[W]): RepresentableStoreT[W, F, S, B] =
+  def coflatMap[B](f: RepresentableStoreT[W, F, S, A] => B)(using W: Comonad[W]): RepresentableStoreT[W, F, S, B] =
     RepresentableStoreT(
       W.map(W.coflatten(runF))((x: W[F[A]]) => F.tabulate(s => f(RepresentableStoreT(x, s)))),
       index
@@ -78,7 +78,7 @@ final case class RepresentableStoreT[W[_], F[_], S, A](runF: W[F[A]], index: S)(
    * `coflatten` is the dual of `flatten` on `FlatMap`. Whereas flatten removes
    * a layer of `F`, coflatten adds a layer of `F`
    */
-  def coflatten(implicit W: Comonad[W]): RepresentableStoreT[W, F, S, RepresentableStoreT[W, F, S, A]] =
+  def coflatten(using W: Comonad[W]): RepresentableStoreT[W, F, S, RepresentableStoreT[W, F, S, A]] =
     RepresentableStoreT(
       W.map(W.coflatten(runF))((x: W[F[A]]) => F.tabulate(s => RepresentableStoreT(x, s))),
       index
@@ -87,7 +87,7 @@ final case class RepresentableStoreT[W[_], F[_], S, A](runF: W[F[A]], index: S)(
   /**
    * Functor `map` for StoreT
    */
-  def map[B](f: A => B)(implicit W: Functor[W]): RepresentableStoreT[W, F, S, B] = RepresentableStoreT(
+  def map[B](f: A => B)(using W: Functor[W]): RepresentableStoreT[W, F, S, B] = RepresentableStoreT(
     W.map(runF)((fa: F[A]) => F.F.map(fa)(f)),
     index
   )
@@ -95,7 +95,7 @@ final case class RepresentableStoreT[W[_], F[_], S, A](runF: W[F[A]], index: S)(
   /**
    * Given a functorial computation on the index `S` peek at the value in that functor.
    */
-  def experiment[G[_]](f: S => G[S])(implicit W: Comonad[W], G: Functor[G]): G[A] =
+  def experiment[G[_]](f: S => G[S])(using W: Comonad[W], G: Functor[G]): G[A] =
     G.map(f(index))(peek(_))
 
 }
@@ -104,10 +104,10 @@ object RepresentableStoreT extends RepresentableStoreTInstances1 {
 
   def pure[W[_], F[_], S, A](
     x: A
-  )(implicit W: Applicative[W], F: Representable.Aux[F, S], S: Monoid[S]): RepresentableStoreT[W, F, S, A] =
+  )(using W: Applicative[W], F: Representable.Aux[F, S], S: Monoid[S]): RepresentableStoreT[W, F, S, A] =
     RepresentableStoreT(W.pure(F.tabulate((_: S) => x)), S.empty)
 
-  implicit def comonadForStoreT[W[_]: Comonad, F[_], S]: Comonad[RepresentableStoreT[W, F, S, *]] =
+  given comonadForStoreT[W[_]: Comonad, F[_], S]: Comonad[RepresentableStoreT[W, F, S, *]] =
     new Comonad[RepresentableStoreT[W, F, S, *]] {
 
       override def map[A, B](fa: RepresentableStoreT[W, F, S, A])(f: A => B): RepresentableStoreT[W, F, S, B] =
@@ -125,7 +125,7 @@ object RepresentableStoreT extends RepresentableStoreTInstances1 {
 
 trait RepresentableStoreTInstances1 extends RepresentableStoreTInstances2 {
 
-  implicit def applicativeForStoreT[W[_], F[_], S](implicit
+  given applicativeForStoreT[W[_], F[_], S](using
     W: Applicative[W],
     F: Representable.Aux[F, S],
     S: Monoid[S]
@@ -148,7 +148,7 @@ trait RepresentableStoreTInstances1 extends RepresentableStoreTInstances2 {
 
 trait RepresentableStoreTInstances2 {
 
-  implicit def functorForStoreT[W[_]: Functor, F[_], S]: Functor[RepresentableStoreT[W, F, S, *]] =
+  given functorForStoreT[W[_]: Functor, F[_], S]: Functor[RepresentableStoreT[W, F, S, *]] =
     new Functor[RepresentableStoreT[W, F, S, *]] {
 
       override def map[A, B](fa: RepresentableStoreT[W, F, S, A])(f: A => B): RepresentableStoreT[W, F, S, B] =

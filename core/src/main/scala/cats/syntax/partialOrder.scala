@@ -27,7 +27,7 @@ trait PartialOrderSyntax extends EqSyntax {
     new PartialOrderOps[A](a)
 }
 
-final class PartialOrderOps[A](lhs: A)(implicit A: PartialOrder[A]) {
+final class PartialOrderOps[A](lhs: A)(using A: PartialOrder[A]) {
   def >(rhs: A): Boolean = A.gt(lhs, rhs)
   def >=(rhs: A): Boolean = A.gteqv(lhs, rhs)
   def <(rhs: A): Boolean = A.lt(lhs, rhs)

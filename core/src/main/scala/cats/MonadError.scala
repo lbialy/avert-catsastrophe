@@ -130,5 +130,5 @@ trait MonadError[F[_], E] extends ApplicativeError[F, E] with Monad[F] {
 }
 
 object MonadError {
-  def apply[F[_], E](implicit F: MonadError[F, E]): MonadError[F, E] = F
+  def apply[F[_], E](using F: MonadError[F, E]): MonadError[F, E] = F
 }

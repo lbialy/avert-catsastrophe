@@ -166,7 +166,7 @@ class NonEmptySetSuite extends CatsSuite {
 
   test("reduce consistent with reduceK") {
     forAll { (nes: NonEmptySet[Option[Int]]) =>
-      assert(nes.reduce(SemigroupK[Option].algebra[Int]) === (nes.reduceK))
+      assert(nes.reduce(using SemigroupK[Option].algebra[Int]) === (nes.reduceK))
     }
   }
 

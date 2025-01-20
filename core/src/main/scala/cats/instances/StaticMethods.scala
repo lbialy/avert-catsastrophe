@@ -34,7 +34,7 @@ private[cats] object StaticMethods {
     bldr
   }
 
-  def mapAccumulateFromStrictFunctor[S, F[_], A, B](init: S, fa: F[A], f: (S, A) => (S, B))(implicit
+  def mapAccumulateFromStrictFunctor[S, F[_], A, B](init: S, fa: F[A], f: (S, A) => (S, B))(using
     ev: Functor[F]
   ): (S, F[B]) = {
     var state = init
@@ -48,7 +48,7 @@ private[cats] object StaticMethods {
     (state, fb)
   }
 
-  def mapWithIndexFromStrictFunctor[F[_], A, B](fa: F[A], f: (A, Int) => B)(implicit ev: Functor[F]): F[B] = {
+  def mapWithIndexFromStrictFunctor[F[_], A, B](fa: F[A], f: (A, Int) => B)(using ev: Functor[F]): F[B] = {
     var idx = 0
 
     ev.map(fa) { a =>
@@ -60,7 +60,7 @@ private[cats] object StaticMethods {
     }
   }
 
-  def mapWithLongIndexFromStrictFunctor[F[_], A, B](fa: F[A], f: (A, Long) => B)(implicit ev: Functor[F]): F[B] = {
+  def mapWithLongIndexFromStrictFunctor[F[_], A, B](fa: F[A], f: (A, Long) => B)(using ev: Functor[F]): F[B] = {
     var idx: Long = 0L
 
     ev.map(fa) { a =>

@@ -126,7 +126,7 @@ trait SemigroupK[F[_]] extends Serializable { self =>
    * res0: NonEmptyList[Either[String,Int]] = NonEmptyList(Left(abc), Right(2))
    * }}}
    */
-  def sum[A, B](fa: F[A], fb: F[B])(implicit F: Functor[F]): F[Either[A, B]] =
+  def sum[A, B](fa: F[A], fb: F[B])(using F: Functor[F]): F[Either[A, B]] =
     combineK(F.map(fa)(Left(_)), F.map(fb)(Right(_)))
 
   /**
@@ -196,28 +196,28 @@ object SemigroupK extends ScalaVersionSpecificMonoidKInstances with SemigroupKIn
       def functor: Functor[F] = Functor[F]
     }
 
-  implicit def catsMonoidKForOption: MonoidK[Option] = cats.instances.option.catsStdInstancesForOption
-  implicit def catsMonoidKForList: MonoidK[List] = cats.instances.list.catsStdInstancesForList
-  implicit def catsMonoidKForVector: MonoidK[Vector] = cats.instances.vector.catsStdInstancesForVector
-  implicit def catsMonoidKForSet: MonoidK[Set] = cats.instances.set.catsStdInstancesForSet
-  implicit def catsMonoidKForMap[K]: MonoidK[Map[K, *]] = cats.instances.map.catsStdMonoidKForMap[K]
-  implicit def catsSemigroupKForEither[A]: SemigroupK[Either[A, *]] =
+  given catsMonoidKForOption: MonoidK[Option] = cats.instances.option.catsStdInstancesForOption
+  given catsMonoidKForList: MonoidK[List] = cats.instances.list.catsStdInstancesForList
+  given catsMonoidKForVector: MonoidK[Vector] = cats.instances.vector.catsStdInstancesForVector
+  given catsMonoidKForSet: MonoidK[Set] = cats.instances.set.catsStdInstancesForSet
+  given catsMonoidKForMap[K]: MonoidK[Map[K, *]] = cats.instances.map.catsStdMonoidKForMap[K]
+  given catsSemigroupKForEither[A]: SemigroupK[Either[A, *]] =
     cats.instances.either.catsStdSemigroupKForEither[A]
-  implicit def catsSemigroupKForSortedSet: SemigroupK[SortedSet] = cats.instances.sortedSet.catsStdInstancesForSortedSet
-  implicit def catsSemigroupKForSortedMap[K]: SemigroupK[SortedMap[K, *]] =
+  given catsSemigroupKForSortedSet: SemigroupK[SortedSet] = cats.instances.sortedSet.catsStdInstancesForSortedSet
+  given catsSemigroupKForSortedMap[K]: SemigroupK[SortedMap[K, *]] =
     cats.instances.sortedMap.catsStdSemigroupKForSortedMap[K]
-  implicit def catsMonoidKForSortedMap[K: Order]: MonoidK[SortedMap[K, *]] =
+  given catsMonoidKForSortedMap[K: Order]: MonoidK[SortedMap[K, *]] =
     cats.instances.sortedMap.catsStdMonoidKForSortedMap[K]
-  implicit def catsMonoidKForEndo: MonoidK[Endo] = cats.instances.function.catsStdMonoidKForFunction1
+  given catsMonoidKForEndo: MonoidK[Endo] = cats.instances.function.catsStdMonoidKForFunction1
 
   /**
    * Summon an instance of [[SemigroupK]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: SemigroupK[F]): SemigroupK[F] = instance
+  @inline def apply[F[_]](using instance: SemigroupK[F]): SemigroupK[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllSemigroupKOps[F[_], A](target: F[A])(implicit tc: SemigroupK[F]): AllOps[F, A] {
+    implicit def toAllSemigroupKOps[F[_], A](target: F[A])(using tc: SemigroupK[F]): AllOps[F, A] {
       type TypeClassType = SemigroupK[F]
     } =
       new AllOps[F, A] {
@@ -233,11 +233,11 @@ object SemigroupK extends ScalaVersionSpecificMonoidKInstances with SemigroupKIn
     def combineK(y: F[A]): F[A] = typeClassInstance.combineK[A](self, y)
     def <+>(y: F[A]): F[A] = typeClassInstance.combineK[A](self, y)
     def combineKEval(y: Eval[F[A]]): Eval[F[A]] = typeClassInstance.combineKEval[A](self, y)
-    def sum[B](fb: F[B])(implicit F: Functor[F]): F[Either[A, B]] = typeClassInstance.sum[A, B](self, fb)(F)
+    def sum[B](fb: F[B])(using F: Functor[F]): F[Either[A, B]] = typeClassInstance.sum[A, B](self, fb)(using F)
   }
   trait AllOps[F[_], A] extends Ops[F, A]
   trait ToSemigroupKOps extends Serializable {
-    implicit def toSemigroupKOps[F[_], A](target: F[A])(implicit tc: SemigroupK[F]): Ops[F, A] {
+    implicit def toSemigroupKOps[F[_], A](target: F[A])(using tc: SemigroupK[F]): Ops[F, A] {
       type TypeClassType = SemigroupK[F]
     } =
       new Ops[F, A] {
@@ -253,6 +253,6 @@ object SemigroupK extends ScalaVersionSpecificMonoidKInstances with SemigroupKIn
 
 trait SemigroupKInstances0 {
 
-  implicit def catsMonoidKForSeq: MonoidK[Seq] = cats.instances.seq.catsStdInstancesForSeq
+  given catsMonoidKForSeq: MonoidK[Seq] = cats.instances.seq.catsStdInstancesForSeq
 
 }

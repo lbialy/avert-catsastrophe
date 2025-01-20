@@ -33,7 +33,7 @@ import scala.util.Try
 
 trait QueueInstances extends cats.kernel.instances.QueueInstances {
 
-  implicit val catsStdInstancesForQueue: Traverse[Queue] & Alternative[Queue] & Monad[Queue] & CoflatMap[Queue] =
+  given catsStdInstancesForQueue: (Traverse[Queue] & Alternative[Queue] & Monad[Queue] & CoflatMap[Queue]) =
     new Traverse[Queue] with Alternative[Queue] with Monad[Queue] with CoflatMap[Queue] {
       def empty[A]: Queue[A] = Queue.empty
 
@@ -114,15 +114,15 @@ trait QueueInstances extends cats.kernel.instances.QueueInstances {
         Eval.defer(loop(fa))
       }
 
-      override def foldMap[A, B](fa: Queue[A])(f: A => B)(implicit B: Monoid[B]): B =
+      override def foldMap[A, B](fa: Queue[A])(f: A => B)(using B: Monoid[B]): B =
         B.combineAll(fa.iterator.map(f))
 
-      def traverse[G[_], A, B](fa: Queue[A])(f: A => G[B])(implicit G: Applicative[G]): G[Queue[B]] =
+      def traverse[G[_], A, B](fa: Queue[A])(f: A => G[B])(using G: Applicative[G]): G[Queue[B]] =
         if (fa.isEmpty) G.pure(Queue.empty[B])
         else
           G match {
             case x: StackSafeMonad[G] =>
-              G.map(Traverse.traverseDirectly(fa)(f)(x))(c => fromIterableOnce(c.iterator))
+              G.map(Traverse.traverseDirectly(fa)(f)(using x))(c => fromIterableOnce(c.iterator))
             case _ =>
               G.map(Chain.traverseViaChain {
                 val as = collection.mutable.ArrayBuffer[A]()
@@ -133,9 +133,9 @@ trait QueueInstances extends cats.kernel.instances.QueueInstances {
               }
           }
 
-      override def traverseVoid[G[_], A, B](fa: Queue[A])(f: A => G[B])(implicit G: Applicative[G]): G[Unit] =
+      override def traverseVoid[G[_], A, B](fa: Queue[A])(f: A => G[B])(using G: Applicative[G]): G[Unit] =
         G match {
-          case x: StackSafeMonad[G] => Traverse.traverseVoidDirectly(fa)(f)(x)
+          case x: StackSafeMonad[G] => Traverse.traverseVoidDirectly(fa)(f)(using x)
           case _ =>
             foldRight(fa, Eval.now(G.unit)) { (a, acc) =>
               G.map2Eval(f(a), acc) { (_, _) =>
@@ -145,13 +145,13 @@ trait QueueInstances extends cats.kernel.instances.QueueInstances {
         }
 
       override def mapAccumulate[S, A, B](init: S, fa: Queue[A])(f: (S, A) => (S, B)): (S, Queue[B]) =
-        StaticMethods.mapAccumulateFromStrictFunctor(init, fa, f)(this)
+        StaticMethods.mapAccumulateFromStrictFunctor(init, fa, f)(using this)
 
       override def mapWithLongIndex[A, B](fa: Queue[A])(f: (A, Long) => B): Queue[B] =
-        StaticMethods.mapWithLongIndexFromStrictFunctor(fa, f)(this)
+        StaticMethods.mapWithLongIndexFromStrictFunctor(fa, f)(using this)
 
       override def mapWithIndex[A, B](fa: Queue[A])(f: (A, Int) => B): Queue[B] =
-        StaticMethods.mapWithIndexFromStrictFunctor(fa, f)(this)
+        StaticMethods.mapWithIndexFromStrictFunctor(fa, f)(using this)
 
       override def zipWithIndex[A](fa: Queue[A]): Queue[(A, Int)] =
         fa.zipWithIndex
@@ -168,7 +168,7 @@ trait QueueInstances extends cats.kernel.instances.QueueInstances {
 
       override def isEmpty[A](fa: Queue[A]): Boolean = fa.isEmpty
 
-      override def foldM[G[_], A, B](fa: Queue[A], z: B)(f: (B, A) => G[B])(implicit G: Monad[G]): G[B] = {
+      override def foldM[G[_], A, B](fa: Queue[A], z: B)(f: (B, A) => G[B])(using G: Monad[G]): G[B] = {
         def step(in: (Queue[A], B)): G[Either[(Queue[A], B), B]] = {
           val (xs, b) = in
           if (xs.isEmpty) G.pure(Right(b))
@@ -183,7 +183,7 @@ trait QueueInstances extends cats.kernel.instances.QueueInstances {
         G.tailRecM((fa, z))(step)
       }
 
-      override def fold[A](fa: Queue[A])(implicit A: Monoid[A]): A = A.combineAll(fa)
+      override def fold[A](fa: Queue[A])(using A: Monoid[A]): A = A.combineAll(fa)
 
       override def toList[A](fa: Queue[A]): List[A] = fa.toList
 
@@ -213,10 +213,10 @@ trait QueueInstances extends cats.kernel.instances.QueueInstances {
         fa.collectFirst(Function.unlift(f))
     }
 
-  implicit def catsStdShowForQueue[A: Show]: Show[Queue[A]] =
+  given catsStdShowForQueue[A: Show]: Show[Queue[A]] =
     _.iterator.map(Show[A].show).mkString("Queue(", ", ", ")")
 
-  implicit def catsStdTraverseFilterForQueue: TraverseFilter[Queue] = QueueInstances.catsStdTraverseFilterForQueue
+  given catsStdTraverseFilterForQueue: TraverseFilter[Queue] = QueueInstances.catsStdTraverseFilterForQueue
 }
 
 @suppressUnusedImportWarningForScalaVersionSpecific
@@ -235,12 +235,12 @@ private object QueueInstances {
 
     override def flattenOption[A](fa: Queue[Option[A]]): Queue[A] = fa.flatten
 
-    def traverseFilter[G[_], A, B](fa: Queue[A])(f: (A) => G[Option[B]])(implicit G: Applicative[G]): G[Queue[B]] =
+    def traverseFilter[G[_], A, B](fa: Queue[A])(f: (A) => G[Option[B]])(using G: Applicative[G]): G[Queue[B]] =
       if (fa.isEmpty) G.pure(Queue.empty[B])
       else
         G match {
           case x: StackSafeMonad[G] =>
-            x.map(TraverseFilter.traverseFilterDirectly(fa)(f)(x))(c => traverse.fromIterableOnce(c.iterator))
+            x.map(TraverseFilter.traverseFilterDirectly(fa)(f)(using x))(c => traverse.fromIterableOnce(c.iterator))
           case _ =>
             G.map(Chain.traverseFilterViaChain {
               val as = collection.mutable.ArrayBuffer[A]()
@@ -251,7 +251,7 @@ private object QueueInstances {
             }
         }
 
-    override def filterA[G[_], A](fa: Queue[A])(f: (A) => G[Boolean])(implicit G: Applicative[G]): G[Queue[A]] =
+    override def filterA[G[_], A](fa: Queue[A])(f: (A) => G[Boolean])(using G: Applicative[G]): G[Queue[A]] =
       traverse
         .foldRight(fa, Eval.now(G.pure(Queue.empty[A])))((x, xse) =>
           G.map2Eval(f(x), xse)((b, queue) => if (b) x +: queue else queue)

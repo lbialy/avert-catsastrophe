@@ -66,11 +66,11 @@ object ArrowChoice {
   /**
    * Summon an instance of [[ArrowChoice]] for `F`.
    */
-  @inline def apply[F[_, _]](implicit instance: ArrowChoice[F]): ArrowChoice[F] = instance
+  @inline def apply[F[_, _]](using instance: ArrowChoice[F]): ArrowChoice[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllArrowChoiceOps[F[_, _], A, B](target: F[A, B])(implicit tc: ArrowChoice[F]): AllOps[F, A, B] {
+    implicit def toAllArrowChoiceOps[F[_, _], A, B](target: F[A, B])(using tc: ArrowChoice[F]): AllOps[F, A, B] {
       type TypeClassType = ArrowChoice[F]
     } =
       new AllOps[F, A, B] {
@@ -92,7 +92,7 @@ object ArrowChoice {
     type TypeClassType <: ArrowChoice[F]
   }
   trait ToArrowChoiceOps extends Serializable {
-    implicit def toArrowChoiceOps[F[_, _], A, B](target: F[A, B])(implicit tc: ArrowChoice[F]): Ops[F, A, B] {
+    implicit def toArrowChoiceOps[F[_, _], A, B](target: F[A, B])(using tc: ArrowChoice[F]): Ops[F, A, B] {
       type TypeClassType = ArrowChoice[F]
     } =
       new Ops[F, A, B] {

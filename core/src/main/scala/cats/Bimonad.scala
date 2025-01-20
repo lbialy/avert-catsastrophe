@@ -28,11 +28,11 @@ object Bimonad {
   /**
    * Summon an instance of [[Bimonad]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: Bimonad[F]): Bimonad[F] = instance
+  @inline def apply[F[_]](using instance: Bimonad[F]): Bimonad[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllBimonadOps[F[_], A](target: F[A])(implicit tc: Bimonad[F]): AllOps[F, A] {
+    implicit def toAllBimonadOps[F[_], A](target: F[A])(using tc: Bimonad[F]): AllOps[F, A] {
       type TypeClassType = Bimonad[F]
     } =
       new AllOps[F, A] {

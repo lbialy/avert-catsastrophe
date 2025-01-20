@@ -48,12 +48,12 @@ final case class Binested[F[_, _], G[_], H[_], A, B](value: F[G[A], H[B]])
 object Binested extends BinestedInstances
 
 trait BinestedInstances extends BinestedInstances0 {
-  implicit def catsDataEqForBinested[F[_, _], G[_], H[_], A, B](implicit
+  given catsDataEqForBinested[F[_, _], G[_], H[_], A, B](using
     F: Eq[F[G[A], H[B]]]
   ): Eq[Binested[F, G, H, A, B]] =
     Eq.by(_.value)
 
-  implicit def catsDataProfunctorForBinested[F[_, _], G[_], H[_]](implicit
+  given catsDataProfunctorForBinested[F[_, _], G[_], H[_]](using
     F: Profunctor[F],
     G: Functor[G],
     H: Functor[H]
@@ -63,7 +63,7 @@ trait BinestedInstances extends BinestedInstances0 {
         Binested(F.dimap(fab.value)(G.map(_: G[C])(f))(H.map(_)(g)))
     }
 
-  implicit def catsDataBitraverseForBinested[F[_, _], G[_], H[_]](implicit
+  given catsDataBitraverseForBinested[F[_, _], G[_], H[_]](using
     F0: Bitraverse[F],
     H0: Traverse[H],
     G0: Traverse[G]
@@ -76,7 +76,7 @@ trait BinestedInstances extends BinestedInstances0 {
 }
 
 private[data] trait BinestedInstances0 {
-  implicit def catsDataBifoldableForBinested[F[_, _], G[_], H[_]](implicit
+  given catsDataBifoldableForBinested[F[_, _], G[_], H[_]](using
     F0: Bifoldable[F],
     G0: Foldable[G],
     H0: Foldable[H]
@@ -87,7 +87,7 @@ private[data] trait BinestedInstances0 {
       implicit override def H: Foldable[H] = H0
     }
 
-  implicit def catsDataBifunctorForBinested[F[_, _], G[_], H[_]](implicit
+  given catsDataBifunctorForBinested[F[_, _], G[_], H[_]](using
     F: Bifunctor[F],
     G: Functor[G],
     H: Functor[H]
@@ -99,9 +99,9 @@ private[data] trait BinestedInstances0 {
 }
 
 sealed abstract class BinestedBifoldable[F[_, _], G[_], H[_]] extends Bifoldable[Binested[F, G, H, *, *]] {
-  implicit def F: Bifoldable[F]
-  implicit def G: Foldable[G]
-  implicit def H: Foldable[H]
+  given F: Bifoldable[F]
+  given G: Foldable[G]
+  given H: Foldable[H]
 
   def bifoldLeft[A, B, C](fab: Binested[F, G, H, A, B], c: C)(f: (C, A) => C, g: (C, B) => C): C =
     F.bifoldLeft(fab.value, c)(
@@ -127,6 +127,6 @@ sealed abstract class BinestedBitraverse[F[_, _], G[_], H[_]]
 
   def bitraverse[I[_], A, B, C, D](
     fab: Binested[F, G, H, A, B]
-  )(f: A => I[C], g: B => I[D])(implicit I: Applicative[I]): I[Binested[F, G, H, C, D]] =
+  )(f: A => I[C], g: B => I[D])(using I: Applicative[I]): I[Binested[F, G, H, C, D]] =
     I.map(F.bitraverse(fab.value)(G.traverse(_)(f), H.traverse(_)(g)))(Binested(_))
 }

@@ -49,13 +49,13 @@ object CommutativeApplicative {
   /**
    * Summon an instance of [[CommutativeApplicative]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: CommutativeApplicative[F]): CommutativeApplicative[F] = instance
+  @inline def apply[F[_]](using instance: CommutativeApplicative[F]): CommutativeApplicative[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
     implicit def toAllCommutativeApplicativeOps[F[_], A](
       target: F[A]
-    )(implicit tc: CommutativeApplicative[F]): AllOps[F, A] {
+    )(using tc: CommutativeApplicative[F]): AllOps[F, A] {
       type TypeClassType = CommutativeApplicative[F]
     } =
       new AllOps[F, A] {
@@ -73,7 +73,7 @@ object CommutativeApplicative {
     type TypeClassType <: CommutativeApplicative[F]
   }
   trait ToCommutativeApplicativeOps extends Serializable {
-    implicit def toCommutativeApplicativeOps[F[_], A](target: F[A])(implicit tc: CommutativeApplicative[F]): Ops[F, A] {
+    implicit def toCommutativeApplicativeOps[F[_], A](target: F[A])(using tc: CommutativeApplicative[F]): Ops[F, A] {
       type TypeClassType = CommutativeApplicative[F]
     } =
       new Ops[F, A] {

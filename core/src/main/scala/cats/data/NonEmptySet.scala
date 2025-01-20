@@ -50,12 +50,12 @@ object NonEmptySetImpl extends NonEmptySetInstances with Newtype {
     if (set.nonEmpty) create(set)
     else throw new IllegalArgumentException("Cannot create NonEmptySet from empty set")
 
-  def of[A](a: A, as: A*)(implicit A: Order[A]): NonEmptySet[A] =
+  def of[A](a: A, as: A*)(using A: Order[A]): NonEmptySet[A] =
     create(SortedSet(a +: as: _*)(A.toOrdering))
 
-  def apply[A](head: A, tail: SortedSet[A])(implicit A: Order[A]): NonEmptySet[A] =
+  def apply[A](head: A, tail: SortedSet[A])(using A: Order[A]): NonEmptySet[A] =
     create(SortedSet(head)(A.toOrdering) ++ tail)
-  def one[A](a: A)(implicit A: Order[A]): NonEmptySet[A] = create(SortedSet(a)(A.toOrdering))
+  def one[A](a: A)(using A: Order[A]): NonEmptySet[A] = create(SortedSet(a)(A.toOrdering))
 
   implicit def catsNonEmptySetOps[A](value: NonEmptySet[A]): NonEmptySetOps[A] =
     new NonEmptySetOps(value)
@@ -145,8 +145,8 @@ sealed class NonEmptySetOps[A](private[data] val value: NonEmptySet[A]) {
   /**
    * Applies f to all the elements
    */
-  def map[B](f: A => B)(implicit B: Order[B]): NonEmptySet[B] = {
-    implicit val bOrdering: Ordering[B] = B.toOrdering
+  def map[B](f: A => B)(using B: Order[B]): NonEmptySet[B] = {
+    given bOrdering: Ordering[B] = B.toOrdering
     NonEmptySetImpl.create(toSortedSet.map(f))
   }
 
@@ -229,8 +229,8 @@ sealed class NonEmptySetOps[A](private[data] val value: NonEmptySet[A]) {
   /**
    * Returns a new `SortedSet` containing all elements where the result of `pf` is defined.
    */
-  def collect[B](pf: PartialFunction[A, B])(implicit B: Order[B]): SortedSet[B] = {
-    implicit val ordering: Ordering[B] = B.toOrdering
+  def collect[B](pf: PartialFunction[A, B])(using B: Order[B]): SortedSet[B] = {
+    given ordering: Ordering[B] = B.toOrdering
     toSortedSet.collect(pf)
   }
 
@@ -290,7 +290,7 @@ sealed class NonEmptySetOps[A](private[data] val value: NonEmptySet[A]) {
   /**
    * Reduce using the Semigroup of A
    */
-  def reduce[AA >: A](implicit S: Semigroup[AA]): AA =
+  def reduce[AA >: A](using S: Semigroup[AA]): AA =
     S.combineAllOption(toSortedSet).get
 
   /**
@@ -303,8 +303,8 @@ sealed class NonEmptySetOps[A](private[data] val value: NonEmptySet[A]) {
    * res0: cats.data.NonEmptySet[Int] = TreeSet(1, 2, 3, 4, 5, 8, 10, 12, 15)
    * }}}
    */
-  def concatMap[B](f: A => NonEmptySet[B])(implicit B: Order[B]): NonEmptySet[B] = {
-    implicit val ordering: Ordering[B] = B.toOrdering
+  def concatMap[B](f: A => NonEmptySet[B])(using B: Order[B]): NonEmptySet[B] = {
+    given ordering: Ordering[B] = B.toOrdering
     NonEmptySetImpl.create(toSortedSet.flatMap(a => f(a).toSortedSet))
   }
 
@@ -315,7 +315,7 @@ sealed class NonEmptySetOps[A](private[data] val value: NonEmptySet[A]) {
    * values according to Show[_] instances, rather than using the
    * universal .toString method.
    */
-  def show(implicit A: Show[A]): String =
+  def show(using A: Show[A]): String =
     s"NonEmpty${Show[SortedSet[A]].show(toSortedSet)}"
 
   /**
@@ -346,8 +346,8 @@ sealed class NonEmptySetOps[A](private[data] val value: NonEmptySet[A]) {
    * res0: cats.data.NonEmptySet[String] = TreeSet(1A, 2B, 3C)
    * }}}
    */
-  def zipWith[B, C](b: NonEmptySet[B])(f: (A, B) => C)(implicit C: Order[C]): NonEmptySet[C] = {
-    implicit val cOrdering: Ordering[C] = C.toOrdering
+  def zipWith[B, C](b: NonEmptySet[B])(f: (A, B) => C)(using C: Order[C]): NonEmptySet[C] = {
+    given cOrdering: Ordering[C] = C.toOrdering
     NonEmptySetImpl.create(toSortedSet.lazyZip(b.toSortedSet).map(f))
   }
 
@@ -361,7 +361,7 @@ sealed class NonEmptySetOps[A](private[data] val value: NonEmptySet[A]) {
    * Groups elements inside this `NonEmptySet` according to the `Order`
    * of the keys produced by the given mapping function.
    */
-  def groupBy[B](f: A => B)(implicit B: Order[B]): NonEmptyMap[B, NonEmptySet[A]] =
+  def groupBy[B](f: A => B)(using B: Order[B]): NonEmptyMap[B, NonEmptySet[A]] =
     reduceLeftTo(a => NonEmptyMap.one(f(a), NonEmptySet.one(a))) { (acc, a) =>
       val key = f(a)
       val result = acc.lookup(key) match {
@@ -373,7 +373,7 @@ sealed class NonEmptySetOps[A](private[data] val value: NonEmptySet[A]) {
 }
 
 sealed abstract private[data] class NonEmptySetInstances extends NonEmptySetInstances0 {
-  implicit val catsDataInstancesForNonEmptySet: SemigroupK[NonEmptySet] & Reducible[NonEmptySet] =
+  given catsDataInstancesForNonEmptySet: (SemigroupK[NonEmptySet] & Reducible[NonEmptySet]) =
     new SemigroupK[NonEmptySet] with Reducible[NonEmptySet] {
 
       def combineK[A](a: NonEmptySet[A], b: NonEmptySet[A]): NonEmptySet[A] =
@@ -384,7 +384,7 @@ sealed abstract private[data] class NonEmptySetInstances extends NonEmptySetInst
       override def reduceLeft[A](fa: NonEmptySet[A])(f: (A, A) => A): A =
         fa.reduceLeft(f)
 
-      override def reduce[A](fa: NonEmptySet[A])(implicit A: Semigroup[A]): A =
+      override def reduce[A](fa: NonEmptySet[A])(using A: Semigroup[A]): A =
         fa.reduce
 
       def reduceLeftTo[A, B](fa: NonEmptySet[A])(f: A => B)(g: (B, A) => B): B = fa.reduceLeftTo(f)(g)
@@ -398,10 +398,10 @@ sealed abstract private[data] class NonEmptySetInstances extends NonEmptySetInst
       override def foldRight[A, B](fa: NonEmptySet[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
         fa.foldRight(lb)(f)
 
-      override def foldMap[A, B](fa: NonEmptySet[A])(f: A => B)(implicit B: Monoid[B]): B =
+      override def foldMap[A, B](fa: NonEmptySet[A])(f: A => B)(using B: Monoid[B]): B =
         B.combineAll(fa.toSortedSet.iterator.map(f))
 
-      override def fold[A](fa: NonEmptySet[A])(implicit A: Monoid[A]): A =
+      override def fold[A](fa: NonEmptySet[A])(using A: Monoid[A]): A =
         fa.reduce
 
       override def find[A](fa: NonEmptySet[A])(f: A => Boolean): Option[A] =
@@ -421,30 +421,30 @@ sealed abstract private[data] class NonEmptySetInstances extends NonEmptySetInst
         fa.toNonEmptyList
     }
 
-  implicit def catsDataOrderForNonEmptySet[A](implicit A: Order[A]): Order[NonEmptySet[A]] =
+  given catsDataOrderForNonEmptySet[A](using A: Order[A]): Order[NonEmptySet[A]] =
     new NonEmptySetOrder[A] {
       implicit override def A0: Order[A] = A
     }
 
-  implicit def catsDataShowForNonEmptySet[A: Show]: Show[NonEmptySet[A]] = _.show
+  given catsDataShowForNonEmptySet[A: Show]: Show[NonEmptySet[A]] = _.show
 
-  implicit def catsDataSemilatticeForNonEmptySet[A]: Semilattice[NonEmptySet[A]] =
+  given catsDataSemilatticeForNonEmptySet[A]: Semilattice[NonEmptySet[A]] =
     new Semilattice[NonEmptySet[A]] {
       def combine(x: NonEmptySet[A], y: NonEmptySet[A]): NonEmptySet[A] = x | y
     }
 }
 
 sealed abstract private[data] class NonEmptySetInstances0 extends NonEmptySetInstances1 {
-  implicit def catsDataHashForNonEmptySet[A: Order: Hash]: Hash[NonEmptySet[A]] =
+  given catsDataHashForNonEmptySet[A: Order: Hash]: Hash[NonEmptySet[A]] =
     Hash[SortedSet[A]].asInstanceOf[Hash[NonEmptySet[A]]]
 }
 
 sealed abstract private[data] class NonEmptySetInstances1 {
   @deprecated("use catsDataEqForNonEmptySetFromEqA instead", "2.8.0")
-  def catsDataEqForNonEmptySet[A](implicit A: Order[A]): Eq[NonEmptySet[A]] =
+  def catsDataEqForNonEmptySet[A](using A: Order[A]): Eq[NonEmptySet[A]] =
     catsDataEqForNonEmptySetFromEqA[A]
 
-  implicit def catsDataEqForNonEmptySetFromEqA[A](implicit A: Eq[A]): Eq[NonEmptySet[A]] =
+  given catsDataEqForNonEmptySetFromEqA[A](using A: Eq[A]): Eq[NonEmptySet[A]] =
     new NonEmptySetEq[A] {
       implicit override def A0: Eq[A] = A
     }
@@ -458,7 +458,7 @@ sealed abstract private[data] class NonEmptySetOrder[A] extends Order[NonEmptySe
 }
 
 sealed private[data] trait NonEmptySetEq[A] extends Eq[NonEmptySet[A]] {
-  implicit def A0: Eq[A]
+  given A0: Eq[A]
 
   override def eqv(x: NonEmptySet[A], y: NonEmptySet[A]): Boolean = x === y
 }

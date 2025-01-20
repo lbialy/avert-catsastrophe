@@ -69,7 +69,7 @@ trait MonoidK[F[_]] extends SemigroupK[F] { self =>
    * res1: Boolean = false
    * }}}
    */
-  def isEmpty[A](a: F[A])(implicit ev: Eq[F[A]]): Boolean =
+  def isEmpty[A](a: F[A])(using ev: Eq[F[A]]): Boolean =
     ev.eqv(a, empty)
 
   /**
@@ -156,11 +156,11 @@ object MonoidK {
   /**
    * Summon an instance of [[MonoidK]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: MonoidK[F]): MonoidK[F] = instance
+  @inline def apply[F[_]](using instance: MonoidK[F]): MonoidK[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllMonoidKOps[F[_], A](target: F[A])(implicit tc: MonoidK[F]): AllOps[F, A] {
+    implicit def toAllMonoidKOps[F[_], A](target: F[A])(using tc: MonoidK[F]): AllOps[F, A] {
       type TypeClassType = MonoidK[F]
     } =
       new AllOps[F, A] {
@@ -178,7 +178,7 @@ object MonoidK {
     type TypeClassType <: MonoidK[F]
   }
   trait ToMonoidKOps extends Serializable {
-    implicit def toMonoidKOps[F[_], A](target: F[A])(implicit tc: MonoidK[F]): Ops[F, A] {
+    implicit def toMonoidKOps[F[_], A](target: F[A])(using tc: MonoidK[F]): Ops[F, A] {
       type TypeClassType = MonoidK[F]
     } =
       new Ops[F, A] {

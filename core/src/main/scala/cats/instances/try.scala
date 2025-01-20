@@ -30,7 +30,7 @@ import scala.annotation.tailrec
 
 trait TryInstances extends TryInstances1 {
 
-  implicit def catsStdInstancesForTry: MonadThrow[Try] & CoflatMap[Try] & Traverse[Try] & Monad[Try] =
+  given catsStdInstancesForTry: (MonadThrow[Try] & CoflatMap[Try] & Traverse[Try] & Monad[Try]) =
     new TryCoflatMap with MonadThrow[Try] with Traverse[Try] with Monad[Try] {
       def pure[A](x: A): Try[A] = Success(x)
 
@@ -68,7 +68,7 @@ trait TryInstances extends TryInstances1 {
           case Failure(_) => lb
         }
 
-      def traverse[G[_], A, B](fa: Try[A])(f: A => G[B])(implicit G: Applicative[G]): G[Try[B]] =
+      def traverse[G[_], A, B](fa: Try[A])(f: A => G[B])(using G: Applicative[G]): G[Try[B]] =
         fa match {
           case Success(a)    => G.map(f(a))(Success(_))
           case f: Failure[?] => G.pure(castFailure[B](f))
@@ -116,7 +116,7 @@ trait TryInstances extends TryInstances1 {
 
       override def recoverWith[A](ta: Try[A])(pf: PartialFunction[Throwable, Try[A]]): Try[A] = ta.recoverWith(pf)
 
-      override def fromTry[A](t: Try[A])(implicit ev: Throwable <:< Throwable): Try[A] = t
+      override def fromTry[A](t: Try[A])(using ev: Throwable <:< Throwable): Try[A] = t
 
       override def map[A, B](ta: Try[A])(f: A => B): Try[B] = ta.map(f)
 
@@ -141,7 +141,7 @@ trait TryInstances extends TryInstances1 {
       override def find[A](fa: Try[A])(f: A => Boolean): Option[A] =
         fa.toOption.filter(f)
 
-      override def foldMap[A, B](fa: Try[A])(f: A => B)(implicit B: Monoid[B]): B =
+      override def foldMap[A, B](fa: Try[A])(f: A => B)(using B: Monoid[B]): B =
         fa match {
           case Failure(_) => B.empty
           case Success(a) => f(a)
@@ -167,9 +167,9 @@ trait TryInstances extends TryInstances1 {
 
       override def isEmpty[A](fa: Try[A]): Boolean = fa.isFailure
 
-      override def catchNonFatal[A](a: => A)(implicit ev: Throwable <:< Throwable): Try[A] = Try(a)
+      override def catchNonFatal[A](a: => A)(using ev: Throwable <:< Throwable): Try[A] = Try(a)
 
-      override def catchNonFatalEval[A](a: Eval[A])(implicit ev: Throwable <:< Throwable): Try[A] = Try(a.value)
+      override def catchNonFatalEval[A](a: Eval[A])(using ev: Throwable <:< Throwable): Try[A] = Try(a.value)
 
       private[this] val successUnit: Try[Unit] = Success(())
 
@@ -180,17 +180,17 @@ trait TryInstances extends TryInstances1 {
       override def unit: Try[Unit] = successUnit
     }
 
-  implicit def catsStdShowForTry[A](implicit A: Show[A]): Show[Try[A]] = {
+  given catsStdShowForTry[A](using A: Show[A]): Show[Try[A]] = {
     case Success(a) => s"Success(${A.show(a)})"
     case Failure(e) => s"Failure($e)"
   }
 
   /**
-   * you may wish to do equality by making `implicit val eqT: Eq[Throwable] = Eq.allEqual`
+   * you may wish to do equality by making `given eqT: Eq[Throwable] = Eq.allEqual`
    * doing a fine grained equality on Throwable can make the code very execution
    * order dependent
    */
-  implicit def catsStdEqForTry[A](implicit A: Eq[A], T: Eq[Throwable]): Eq[Try[A]] =
+  given catsStdEqForTry[A](using A: Eq[A], T: Eq[Throwable]): Eq[Try[A]] =
     Eq.catsStdEqForTry
 }
 
@@ -204,12 +204,12 @@ private[instances] object TryInstances {
 }
 
 sealed private[instances] trait TryInstances1 extends TryInstances2 {
-  implicit def catsStdMonoidForTry[A: Monoid]: Monoid[Try[A]] =
+  given catsStdMonoidForTry[A: Monoid]: Monoid[Try[A]] =
     new TryMonoid[A]
 }
 
 sealed private[instances] trait TryInstances2 {
-  implicit def catsStdSemigroupForTry[A: Semigroup]: Semigroup[Try[A]] =
+  given catsStdSemigroupForTry[A: Semigroup]: Semigroup[Try[A]] =
     new TrySemigroup[A]
 }
 
@@ -220,5 +220,5 @@ abstract private[cats] class TryCoflatMap extends CoflatMap[Try] {
 
 private[cats] class TrySemigroup[A: Semigroup] extends ApplySemigroup[Try, A](try_.catsStdInstancesForTry, implicitly)
 
-private[cats] class TryMonoid[A](implicit A: Monoid[A])
+private[cats] class TryMonoid[A](using A: Monoid[A])
     extends ApplicativeMonoid[Try, A](try_.catsStdInstancesForTry, implicitly)

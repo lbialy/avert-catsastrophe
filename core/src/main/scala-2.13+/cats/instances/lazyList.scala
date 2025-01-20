@@ -33,8 +33,8 @@ import scala.annotation.tailrec
 @suppressUnusedImportWarningForScalaVersionSpecific
 trait LazyListInstances extends cats.kernel.instances.LazyListInstances {
 
-  implicit val catsStdInstancesForLazyList
-    : Traverse[LazyList] & Alternative[LazyList] & Monad[LazyList] & CoflatMap[LazyList] & Align[LazyList] =
+  given catsStdInstancesForLazyList
+    : (Traverse[LazyList] & Alternative[LazyList] & Monad[LazyList] & CoflatMap[LazyList] & Align[LazyList]) =
     new Traverse[LazyList]
       with Alternative[LazyList]
       with Monad[LazyList]
@@ -85,10 +85,10 @@ trait LazyListInstances extends cats.kernel.instances.LazyListInstances {
           if (s.isEmpty) lb else f(s.head, Eval.defer(foldRight(s.tail, lb)(f)))
         }
 
-      override def foldMap[A, B](fa: LazyList[A])(f: A => B)(implicit B: Monoid[B]): B =
+      override def foldMap[A, B](fa: LazyList[A])(f: A => B)(using B: Monoid[B]): B =
         B.combineAll(fa.iterator.map(f))
 
-      def traverse[G[_], A, B](fa: LazyList[A])(f: A => G[B])(implicit G: Applicative[G]): G[LazyList[B]] =
+      def traverse[G[_], A, B](fa: LazyList[A])(f: A => G[B])(using G: Applicative[G]): G[LazyList[B]] =
         // We use foldRight to avoid possible stack overflows. Since
         // we don't want to return a Eval[_] instance, we call .value
         // at the end.
@@ -133,7 +133,7 @@ trait LazyListInstances extends cats.kernel.instances.LazyListInstances {
 
       override def isEmpty[A](fa: LazyList[A]): Boolean = fa.isEmpty
 
-      override def foldM[G[_], A, B](fa: LazyList[A], z: B)(f: (B, A) => G[B])(implicit G: Monad[G]): G[B] = {
+      override def foldM[G[_], A, B](fa: LazyList[A], z: B)(f: (B, A) => G[B])(using G: Monad[G]): G[B] = {
         def step(in: (LazyList[A], B)): G[Either[(LazyList[A], B), B]] = {
           val (s, b) = in
           if (s.isEmpty)
@@ -148,7 +148,7 @@ trait LazyListInstances extends cats.kernel.instances.LazyListInstances {
         G.tailRecM((fa, z))(step)
       }
 
-      override def fold[A](fa: LazyList[A])(implicit A: Monoid[A]): A = A.combineAll(fa)
+      override def fold[A](fa: LazyList[A])(using A: Monoid[A]): A = A.combineAll(fa)
 
       override def toList[A](fa: LazyList[A]): List[A] = fa.toList
 
@@ -175,10 +175,10 @@ trait LazyListInstances extends cats.kernel.instances.LazyListInstances {
         LazyList.from(Align.alignWithIterator[A, B, C](fa, fb)(f))
     }
 
-  implicit def catsStdShowForLazyList[A: Show]: Show[LazyList[A]] =
+  given catsStdShowForLazyList[A: Show]: Show[LazyList[A]] =
     list => if (list.isEmpty) "LazyList()" else s"LazyList(${list.head.show}, ?)"
 
-  implicit val catsStdTraverseFilterForLazyList: TraverseFilter[LazyList] = new TraverseFilter[LazyList] {
+  given catsStdTraverseFilterForLazyList: TraverseFilter[LazyList] = new TraverseFilter[LazyList] {
     val traverse: Traverse[LazyList] = catsStdInstancesForLazyList
 
     override def mapFilter[A, B](fa: LazyList[A])(f: (A) => Option[B]): LazyList[B] =
@@ -194,14 +194,14 @@ trait LazyListInstances extends cats.kernel.instances.LazyListInstances {
 
     def traverseFilter[G[_], A, B](
       fa: LazyList[A]
-    )(f: (A) => G[Option[B]])(implicit G: Applicative[G]): G[LazyList[B]] =
+    )(f: (A) => G[Option[B]])(using G: Applicative[G]): G[LazyList[B]] =
       traverse
         .foldRight(fa, Eval.now(G.pure(LazyList.empty[B])))((x, xse) =>
           G.map2Eval(f(x), xse)((i, o) => i.fold(o)(_ +: o))
         )
         .value
 
-    override def filterA[G[_], A](fa: LazyList[A])(f: (A) => G[Boolean])(implicit G: Applicative[G]): G[LazyList[A]] =
+    override def filterA[G[_], A](fa: LazyList[A])(f: (A) => G[Boolean])(using G: Applicative[G]): G[LazyList[A]] =
       traverse
         .foldRight(fa, Eval.now(G.pure(LazyList.empty[A])))((x, xse) =>
           G.map2Eval(f(x), xse)((b, as) => if (b) x +: as else as)
@@ -210,7 +210,7 @@ trait LazyListInstances extends cats.kernel.instances.LazyListInstances {
 
   }
 
-  implicit def catsStdParallelForLazyListZipLazyList[A]: Parallel.Aux[LazyList, ZipLazyList] =
+  given catsStdParallelForLazyListZipLazyList[A]: Parallel.Aux[LazyList, ZipLazyList] =
     new Parallel[LazyList] {
       type F[x] = ZipLazyList[x]
 

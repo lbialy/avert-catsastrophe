@@ -90,7 +90,8 @@ class OneAndSuite extends CatsSuite {
   }
 
   {
-    implicit val traverse: Traverse[OneAnd[ListWrapper, *]] = OneAnd.catsDataTraverseForOneAnd(ListWrapper.traverse)
+    implicit val traverse: Traverse[OneAnd[ListWrapper, *]] =
+      OneAnd.catsDataTraverseForOneAnd(using ListWrapper.traverse)
     checkAll("OneAnd[ListWrapper, Int] with Option",
              TraverseTests[OneAnd[ListWrapper, *]].traverse[Int, Int, Int, Int, Option, Option]
     )
@@ -98,7 +99,7 @@ class OneAndSuite extends CatsSuite {
   }
 
   implicit val iso: Isomorphisms[OneAnd[ListWrapper, *]] =
-    Isomorphisms.invariant[OneAnd[ListWrapper, *]](OneAnd.catsDataFunctorForOneAnd(ListWrapper.functor))
+    Isomorphisms.invariant[OneAnd[ListWrapper, *]](OneAnd.catsDataFunctorForOneAnd(using ListWrapper.functor))
 
   // Test instances that have more general constraints
   {

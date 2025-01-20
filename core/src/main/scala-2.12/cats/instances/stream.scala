@@ -31,7 +31,7 @@ import scala.annotation.tailrec
 @suppressUnusedImportWarningForScalaVersionSpecific
 trait StreamInstances extends cats.kernel.instances.StreamInstances {
 
-  implicit val catsStdInstancesForStream
+  given catsStdInstancesForStream
     : Traverse[Stream] with Alternative[Stream] with Monad[Stream] with CoflatMap[Stream] with Align[Stream] =
     new Traverse[Stream] with Alternative[Stream] with Monad[Stream] with CoflatMap[Stream] with Align[Stream] {
 
@@ -72,10 +72,10 @@ trait StreamInstances extends cats.kernel.instances.StreamInstances {
           if (s.isEmpty) lb else f(s.head, Eval.defer(foldRight(s.tail, lb)(f)))
         }
 
-      override def foldMap[A, B](fa: Stream[A])(f: A => B)(implicit B: Monoid[B]): B =
+      override def foldMap[A, B](fa: Stream[A])(f: A => B)(using B: Monoid[B]): B =
         B.combineAll(fa.iterator.map(f))
 
-      def traverse[G[_], A, B](fa: Stream[A])(f: A => G[B])(implicit G: Applicative[G]): G[Stream[B]] =
+      def traverse[G[_], A, B](fa: Stream[A])(f: A => G[B])(using G: Applicative[G]): G[Stream[B]] =
         // We use foldRight to avoid possible stack overflows. Since
         // we don't want to return a Eval[_] instance, we call .value
         // at the end.
@@ -152,7 +152,7 @@ trait StreamInstances extends cats.kernel.instances.StreamInstances {
 
       override def isEmpty[A](fa: Stream[A]): Boolean = fa.isEmpty
 
-      override def foldM[G[_], A, B](fa: Stream[A], z: B)(f: (B, A) => G[B])(implicit G: Monad[G]): G[B] = {
+      override def foldM[G[_], A, B](fa: Stream[A], z: B)(f: (B, A) => G[B])(using G: Monad[G]): G[B] = {
         def step(in: (Stream[A], B)): G[Either[(Stream[A], B), B]] = {
           val (s, b) = in
           if (s.isEmpty)
@@ -166,7 +166,7 @@ trait StreamInstances extends cats.kernel.instances.StreamInstances {
         G.tailRecM((fa, z))(step)
       }
 
-      override def fold[A](fa: Stream[A])(implicit A: Monoid[A]): A = A.combineAll(fa)
+      override def fold[A](fa: Stream[A])(using A: Monoid[A]): A = A.combineAll(fa)
 
       override def toList[A](fa: Stream[A]): List[A] = fa.toList
 
@@ -193,10 +193,10 @@ trait StreamInstances extends cats.kernel.instances.StreamInstances {
         Align.alignWithIterator[A, B, C](fa, fb)(f).toStream
     }
 
-  implicit def catsStdShowForStream[A: Show]: Show[Stream[A]] =
+  given catsStdShowForStream[A: Show]: Show[Stream[A]] =
     stream => if (stream.isEmpty) "Stream()" else s"Stream(${stream.head.show}, ?)"
 
-  implicit def catsStdParallelForStreamZipStream: Parallel.Aux[Stream, ZipStream] =
+  given catsStdParallelForStreamZipStream: Parallel.Aux[Stream, ZipStream] =
     new Parallel[Stream] {
       type F[x] = ZipStream[x]
 
@@ -212,7 +212,7 @@ trait StreamInstances extends cats.kernel.instances.StreamInstances {
 }
 
 private[instances] trait StreamInstancesBinCompat0 {
-  implicit val catsStdTraverseFilterForStream: TraverseFilter[Stream] = new TraverseFilter[Stream] {
+  given catsStdTraverseFilterForStream: TraverseFilter[Stream] = new TraverseFilter[Stream] {
     val traverse: Traverse[Stream] = cats.instances.stream.catsStdInstancesForStream
 
     override def mapFilter[A, B](fa: Stream[A])(f: (A) => Option[B]): Stream[B] =
@@ -226,14 +226,14 @@ private[instances] trait StreamInstancesBinCompat0 {
 
     override def flattenOption[A](fa: Stream[Option[A]]): Stream[A] = fa.flatten
 
-    def traverseFilter[G[_], A, B](fa: Stream[A])(f: (A) => G[Option[B]])(implicit G: Applicative[G]): G[Stream[B]] =
+    def traverseFilter[G[_], A, B](fa: Stream[A])(f: (A) => G[Option[B]])(using G: Applicative[G]): G[Stream[B]] =
       traverse
         .foldRight(fa, Eval.now(G.pure(Stream.empty[B])))((x, xse) =>
           G.map2Eval(f(x), xse)((i, o) => i.fold(o)(_ #:: o))
         )
         .value
 
-    override def filterA[G[_], A](fa: Stream[A])(f: (A) => G[Boolean])(implicit G: Applicative[G]): G[Stream[A]] =
+    override def filterA[G[_], A](fa: Stream[A])(f: (A) => G[Boolean])(using G: Applicative[G]): G[Stream[A]] =
       traverse
         .foldRight(fa, Eval.now(G.pure(Stream.empty[A])))((x, xse) =>
           G.map2Eval(f(x), xse)((b, stream) => if (b) x #:: stream else stream)

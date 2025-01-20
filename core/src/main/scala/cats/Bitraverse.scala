@@ -74,7 +74,7 @@ trait Bitraverse[F[_, _]] extends Bifoldable[F] with Bifunctor[F] { self =>
   /**
    * If F and G are both [[cats.Bitraverse]] then so is their composition F[G[_, _], G[_, _]]
    */
-  def compose[G[_, _]](implicit ev: Bitraverse[G]): Bitraverse[λ[(α, β) => F[G[α, β], G[α, β]]]] =
+  def compose[G[_, _]](using ev: Bitraverse[G]): Bitraverse[λ[(α, β) => F[G[α, β], G[α, β]]]] =
     new ComposedBitraverse[F, G] {
       val F = self
       val G = ev
@@ -101,7 +101,7 @@ trait Bitraverse[F[_, _]] extends Bifoldable[F] with Bifunctor[F] { self =>
    *  }}}
    */
 
-  def leftTraverse[G[_], A, B, C](fab: F[A, B])(f: A => G[C])(implicit G: Applicative[G]): G[F[C, B]] =
+  def leftTraverse[G[_], A, B, C](fab: F[A, B])(f: A => G[C])(using G: Applicative[G]): G[F[C, B]] =
     bitraverse(fab)(f, G.pure(_))
 
   /**
@@ -126,7 +126,7 @@ trait Bitraverse[F[_, _]] extends Bifoldable[F] with Bifunctor[F] { self =>
    * }}}
    */
 
-  def leftSequence[G[_], A, B](fgab: F[G[A], B])(implicit G: Applicative[G]): G[F[A, B]] =
+  def leftSequence[G[_], A, B](fgab: F[G[A], B])(using G: Applicative[G]): G[F[A, B]] =
     bitraverse(fgab)(identity, G.pure(_))
 }
 
@@ -135,11 +135,11 @@ object Bitraverse {
   /**
    * Summon an instance of [[Bitraverse]] for `F`.
    */
-  @inline def apply[F[_, _]](implicit instance: Bitraverse[F]): Bitraverse[F] = instance
+  @inline def apply[F[_, _]](using instance: Bitraverse[F]): Bitraverse[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllBitraverseOps[F[_, _], A, B](target: F[A, B])(implicit tc: Bitraverse[F]): AllOps[F, A, B] {
+    implicit def toAllBitraverseOps[F[_, _], A, B](target: F[A, B])(using tc: Bitraverse[F]): AllOps[F, A, B] {
       type TypeClassType = Bitraverse[F]
     } =
       new AllOps[F, A, B] {
@@ -152,16 +152,16 @@ object Bitraverse {
     type TypeClassType <: Bitraverse[F]
     def self: F[A, B]
     val typeClassInstance: TypeClassType
-    def bitraverse[G[_], C, D](f: A => G[C], g: B => G[D])(implicit ev$1: Applicative[G]): G[F[C, D]] =
+    def bitraverse[G[_], C, D](f: A => G[C], g: B => G[D])(using ev$1: Applicative[G]): G[F[C, D]] =
       typeClassInstance.bitraverse[G, A, B, C, D](self)(f, g)
-    def bisequence[G[_], C, D](implicit ev$1: A <:< G[C], ev$2: B <:< G[D], ev$3: Applicative[G]): G[F[C, D]] =
+    def bisequence[G[_], C, D](using ev$1: A <:< G[C], ev$2: B <:< G[D], ev$3: Applicative[G]): G[F[C, D]] =
       typeClassInstance.bisequence[G, C, D](self.asInstanceOf[F[G[C], G[D]]])
   }
   trait AllOps[F[_, _], A, B] extends Ops[F, A, B] with Bifoldable.AllOps[F, A, B] with Bifunctor.AllOps[F, A, B] {
     type TypeClassType <: Bitraverse[F]
   }
   trait ToBitraverseOps extends Serializable {
-    implicit def toBitraverseOps[F[_, _], A, B](target: F[A, B])(implicit tc: Bitraverse[F]): Ops[F, A, B] {
+    implicit def toBitraverseOps[F[_, _], A, B](target: F[A, B])(using tc: Bitraverse[F]): Ops[F, A, B] {
       type TypeClassType = Bitraverse[F]
     } =
       new Ops[F, A, B] {

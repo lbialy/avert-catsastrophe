@@ -138,7 +138,7 @@ package object data extends ScalaVersionSpecificPackage {
 
   object StoreT {
 
-    def pure[W[_], S, A](x: A)(implicit W: Applicative[W], S: Monoid[S]): StoreT[W, S, A] =
+    def pure[W[_], S, A](x: A)(using W: Applicative[W], S: Monoid[S]): StoreT[W, S, A] =
       RepresentableStoreT.pure[W, Function1[S, *], S, A](x)
 
   }

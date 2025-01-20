@@ -192,7 +192,7 @@ class NonEmptyVectorSuite extends NonEmptyCollectionSuite[Vector, NonEmptyVector
 
   test("reduce consistent with reduceK") {
     forAll { (nonEmptyVector: NonEmptyVector[Option[Int]]) =>
-      assert(nonEmptyVector.reduce(SemigroupK[Option].algebra[Int]) === (nonEmptyVector.reduceK))
+      assert(nonEmptyVector.reduce(using SemigroupK[Option].algebra[Int]) === (nonEmptyVector.reduceK))
     }
   }
 

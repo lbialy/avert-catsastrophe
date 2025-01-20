@@ -575,7 +575,7 @@ sealed abstract class Chain[+A] extends ChainCompat[A] {
   /**
    * Check whether an element is in this structure
    */
-  final def contains[AA >: A](a: AA)(implicit A: Eq[AA]): Boolean =
+  final def contains[AA >: A](a: AA)(using A: Eq[AA]): Boolean =
     exists(A.eqv(a, _))
 
   /**
@@ -622,7 +622,7 @@ sealed abstract class Chain[+A] extends ChainCompat[A] {
    * res0: Boolean = true
    * }}}
    */
-  final def groupBy[B](f: A => B)(implicit B: Order[B]): SortedMap[B, NonEmptyChain[A]] =
+  final def groupBy[B](f: A => B)(using B: Order[B]): SortedMap[B, NonEmptyChain[A]] =
     groupMap(key = f)(identity)
 
   /**
@@ -642,8 +642,8 @@ sealed abstract class Chain[+A] extends ChainCompat[A] {
    * res0: Boolean = true
    * }}}
    */
-  final def groupMap[K, B](key: A => K)(f: A => B)(implicit K: Order[K]): SortedMap[K, NonEmptyChain[B]] = {
-    implicit val ordering: Ordering[K] = K.toOrdering
+  final def groupMap[K, B](key: A => K)(f: A => B)(using K: Order[K]): SortedMap[K, NonEmptyChain[B]] = {
+    given ordering: Ordering[K] = K.toOrdering
     var m = SortedMap.empty[K, NonEmptyChain[B]]
 
     for (elem <- iterator) {
@@ -677,7 +677,7 @@ sealed abstract class Chain[+A] extends ChainCompat[A] {
    * res0: Boolean = true
    * }}}
    */
-  final def groupMapReduce[K, B](key: A => K)(f: A => B)(implicit K: Order[K], S: Semigroup[B]): SortedMap[K, B] =
+  final def groupMapReduce[K, B](key: A => K)(f: A => B)(using K: Order[K], S: Semigroup[B]): SortedMap[K, B] =
     groupMapReduceWith(key)(f)(S.combine)
 
   /**
@@ -699,10 +699,10 @@ sealed abstract class Chain[+A] extends ChainCompat[A] {
    * res0: Boolean = true
    * }}}
    */
-  final def groupMapReduceWith[K, B](key: A => K)(f: A => B)(combine: (B, B) => B)(implicit
+  final def groupMapReduceWith[K, B](key: A => K)(f: A => B)(combine: (B, B) => B)(using
     K: Order[K]
   ): SortedMap[K, B] = {
-    implicit val ordering: Ordering[K] = K.toOrdering
+    given ordering: Ordering[K] = K.toOrdering
     var m = SortedMap.empty[K, B]
 
     for (elem <- iterator) {
@@ -964,7 +964,7 @@ sealed abstract class Chain[+A] extends ChainCompat[A] {
    * equality provided by Eq[_] instances, rather than using the
    * universal equality provided by .equals.
    */
-  def ===[AA >: A](that: Chain[AA])(implicit A: Eq[AA]): Boolean =
+  def ===[AA >: A](that: Chain[AA])(using A: Eq[AA]): Boolean =
     (this eq that) || {
       val iterX = iterator
       val iterY = that.iterator
@@ -986,10 +986,10 @@ sealed abstract class Chain[+A] extends ChainCompat[A] {
    * res0: cats.data.Chain[Int] = Chain(1, 2, 3)
    * }}}
    */
-  def distinct[AA >: A](implicit O: Order[AA]): Chain[AA] = {
+  def distinct[AA >: A](using O: Order[AA]): Chain[AA] = {
     if (isEmptyOrSingleton) this
     else {
-      implicit val ord: Ordering[AA] = O.toOrdering
+      given ord: Ordering[AA] = O.toOrdering
 
       val bldr = Vector.newBuilder[AA]
       val seen = mutable.TreeSet.empty[AA]
@@ -1015,10 +1015,10 @@ sealed abstract class Chain[+A] extends ChainCompat[A] {
    * res0: cats.data.Chain[Int] = Chain(1, 2, 4)
    * }}}
    */
-  def distinctBy[B](f: A => B)(implicit O: Order[B]): Chain[A] = {
+  def distinctBy[B](f: A => B)(using O: Order[B]): Chain[A] = {
     if (isEmptyOrSingleton) this
     else {
-      implicit val ord: Ordering[B] = O.toOrdering
+      given ord: Ordering[B] = O.toOrdering
 
       val bldr = Vector.newBuilder[A]
       val seen = mutable.TreeSet.empty[B]
@@ -1033,7 +1033,7 @@ sealed abstract class Chain[+A] extends ChainCompat[A] {
     }
   }
 
-  def show[AA >: A](implicit AA: Show[AA]): String = {
+  def show[AA >: A](using AA: Show[AA]): String = {
     val builder = new StringBuilder("Chain(")
     var first = true
 
@@ -1047,20 +1047,20 @@ sealed abstract class Chain[+A] extends ChainCompat[A] {
     builder.result()
   }
 
-  def hash[AA >: A](implicit hashA: Hash[AA]): Int =
+  def hash[AA >: A](using hashA: Hash[AA]): Int =
     KernelStaticMethods.orderedHash((this: Chain[AA]).iterator)
 
   override def toString: String =
-    show(Show.fromToString)
+    show(using Show.fromToString)
 
   override def equals(o: Any): Boolean =
     o match {
       case thatChain: Chain[?] =>
-        (this: Chain[Any]).===(thatChain: Chain[Any])(Eq.fromUniversalEquals[Any])
+        (this: Chain[Any]).===(thatChain: Chain[Any])(using Eq.fromUniversalEquals[Any])
       case _ => false
     }
 
-  override def hashCode: Int = hash(Hash.fromUniversalHashCode[A])
+  override def hashCode: Int = hash(using Hash.fromUniversalHashCode[A])
 
   final def get(idx: Long): Option[A] =
     if (idx < 0) None
@@ -1079,7 +1079,7 @@ sealed abstract class Chain[+A] extends ChainCompat[A] {
       result
     }
 
-  final def sortBy[B](f: A => B)(implicit B: Order[B]): Chain[A] =
+  final def sortBy[B](f: A => B)(using B: Order[B]): Chain[A] =
     this match {
       case Append(_, _) => Wrap(toVector.sortBy(f)(B.toOrdering))
       case Wrap(seq)    => Wrap(seq.sortBy(f)(B.toOrdering))
@@ -1088,7 +1088,7 @@ sealed abstract class Chain[+A] extends ChainCompat[A] {
         this
     }
 
-  final def sorted[AA >: A](implicit AA: Order[AA]): Chain[AA] =
+  final def sorted[AA >: A](using AA: Order[AA]): Chain[AA] =
     this match {
       case Append(_, _) => Wrap(toVector.sorted(AA.toOrdering))
       case Wrap(seq)    => Wrap(seq.sorted(AA.toOrdering))
@@ -1189,7 +1189,7 @@ object Chain extends ChainInstances with ChainCompanionCompat {
 
   def traverseViaChain[G[_], A, B](
     as: immutable.IndexedSeq[A]
-  )(f: A => G[B])(implicit G: Applicative[G]): G[Chain[B]] =
+  )(f: A => G[B])(using G: Applicative[G]): G[Chain[B]] =
     if (as.isEmpty) G.pure(Chain.nil)
     else {
       // we branch out by this factor
@@ -1235,7 +1235,7 @@ object Chain extends ChainInstances with ChainCompanionCompat {
 
   def traverseFilterViaChain[G[_], A, B](
     as: immutable.IndexedSeq[A]
-  )(f: A => G[Option[B]])(implicit G: Applicative[G]): G[Chain[B]] =
+  )(f: A => G[Option[B]])(using G: Applicative[G]): G[Chain[B]] =
     if (as.isEmpty) G.pure(Chain.nil)
     else {
       // we branch out by this factor
@@ -1393,10 +1393,10 @@ object Chain extends ChainInstances with ChainCompanionCompat {
 }
 
 sealed abstract private[data] class ChainInstances extends ChainInstances1 {
-  implicit def catsDataMonoidForChain[A]: Monoid[Chain[A]] = theMonoid.asInstanceOf[Monoid[Chain[A]]]
+  given catsDataMonoidForChain[A]: Monoid[Chain[A]] = theMonoid.asInstanceOf[Monoid[Chain[A]]]
 
-  implicit val catsDataInstancesForChain
-    : Traverse[Chain] & Alternative[Chain] & Monad[Chain] & CoflatMap[Chain] & Align[Chain] =
+  given catsDataInstancesForChain
+    : (Traverse[Chain] & Alternative[Chain] & Monad[Chain] & CoflatMap[Chain] & Align[Chain]) =
     new Traverse[Chain] with Alternative[Chain] with Monad[Chain] with CoflatMap[Chain] with Align[Chain] {
       def foldLeft[A, B](fa: Chain[A], b: B)(f: (B, A) => B): B =
         fa.foldLeft(b)(f)
@@ -1410,7 +1410,7 @@ sealed abstract private[data] class ChainInstances extends ChainInstances1 {
         Eval.defer(loop(fa))
       }
 
-      override def foldMap[A, B](fa: Chain[A])(f: A => B)(implicit B: Monoid[B]): B =
+      override def foldMap[A, B](fa: Chain[A])(f: A => B)(using B: Monoid[B]): B =
         B.combineAll(fa.iterator.map(f))
 
       override def map[A, B](fa: Chain[A])(f: A => B): Chain[B] = fa.map(f)
@@ -1433,12 +1433,12 @@ sealed abstract private[data] class ChainInstances extends ChainInstances1 {
         go(fa, ListBuffer.empty)
       }
 
-      def traverse[G[_], A, B](fa: Chain[A])(f: A => G[B])(implicit G: Applicative[G]): G[Chain[B]] =
+      def traverse[G[_], A, B](fa: Chain[A])(f: A => G[B])(using G: Applicative[G]): G[Chain[B]] =
         if (fa.isEmpty) G.pure(Chain.nil)
         else
           G match {
             case x: StackSafeMonad[G] =>
-              Traverse.traverseDirectly(fa.iterator)(f)(x)
+              Traverse.traverseDirectly(fa.iterator)(f)(using x)
             case _ =>
               traverseViaChain {
                 val as = collection.mutable.ArrayBuffer[A]()
@@ -1447,9 +1447,9 @@ sealed abstract private[data] class ChainInstances extends ChainInstances1 {
               }(f)
           }
 
-      override def traverseVoid[G[_], A, B](fa: Chain[A])(f: A => G[B])(implicit G: Applicative[G]): G[Unit] =
+      override def traverseVoid[G[_], A, B](fa: Chain[A])(f: A => G[B])(using G: Applicative[G]): G[Unit] =
         G match {
-          case x: StackSafeMonad[G] => Traverse.traverseVoidDirectly(fa.iterator)(f)(x)
+          case x: StackSafeMonad[G] => Traverse.traverseVoidDirectly(fa.iterator)(f)(using x)
           case _ =>
             @tailrec
             def go(fa: NonEmpty[A], rhs: Chain[A], acc: G[Unit]): G[Unit] =
@@ -1486,13 +1486,13 @@ sealed abstract private[data] class ChainInstances extends ChainInstances1 {
       }
 
       override def mapAccumulate[S, A, B](init: S, fa: Chain[A])(f: (S, A) => (S, B)): (S, Chain[B]) =
-        StaticMethods.mapAccumulateFromStrictFunctor(init, fa, f)(this)
+        StaticMethods.mapAccumulateFromStrictFunctor(init, fa, f)(using this)
 
       override def mapWithIndex[A, B](fa: Chain[A])(f: (A, Int) => B): Chain[B] =
-        StaticMethods.mapWithIndexFromStrictFunctor(fa, f)(this)
+        StaticMethods.mapWithIndexFromStrictFunctor(fa, f)(using this)
 
       override def mapWithLongIndex[A, B](fa: Chain[A])(f: (A, Long) => B): Chain[B] =
-        StaticMethods.mapWithLongIndexFromStrictFunctor(fa, f)(this)
+        StaticMethods.mapWithLongIndexFromStrictFunctor(fa, f)(using this)
 
       override def zipWithIndex[A](fa: Chain[A]): Chain[(A, Int)] =
         fa.zipWithIndex
@@ -1555,11 +1555,11 @@ sealed abstract private[data] class ChainInstances extends ChainInstances1 {
       }
     }
 
-  implicit def catsDataShowForChain[A: Show]: Show[Chain[A]] = _.show
+  given catsDataShowForChain[A: Show]: Show[Chain[A]] = _.show
 
-  implicit def catsDataOrderForChain[A](implicit A0: Order[A]): Order[Chain[A]] =
+  given catsDataOrderForChain[A](using A0: Order[A]): Order[Chain[A]] =
     new Order[Chain[A]] with ChainPartialOrder[A] {
-      implicit def A: PartialOrder[A] = A0
+      given A: PartialOrder[A] = A0
       def compare(x: Chain[A], y: Chain[A]): Int =
         if (x eq y) 0
         else {
@@ -1576,7 +1576,7 @@ sealed abstract private[data] class ChainInstances extends ChainInstances1 {
         }
     }
 
-  implicit val catsDataTraverseFilterForChain: TraverseFilter[Chain] = new TraverseFilter[Chain] {
+  given catsDataTraverseFilterForChain: TraverseFilter[Chain] = new TraverseFilter[Chain] {
     def traverse: Traverse[Chain] & Alternative[Chain] = Chain.catsDataInstancesForChain
 
     override def filter[A](fa: Chain[A])(f: A => Boolean): Chain[A] = fa.filter(f)
@@ -1589,12 +1589,12 @@ sealed abstract private[data] class ChainInstances extends ChainInstances1 {
 
     override def flattenOption[A](fa: Chain[Option[A]]): Chain[A] = fa.collect { case Some(a) => a }
 
-    def traverseFilter[G[_], A, B](fa: Chain[A])(f: A => G[Option[B]])(implicit G: Applicative[G]): G[Chain[B]] =
+    def traverseFilter[G[_], A, B](fa: Chain[A])(f: A => G[Option[B]])(using G: Applicative[G]): G[Chain[B]] =
       if (fa.isEmpty) G.pure(Chain.nil)
       else
         G match {
           case x: StackSafeMonad[G] =>
-            TraverseFilter.traverseFilterDirectly(fa.iterator)(f)(x)
+            TraverseFilter.traverseFilterDirectly(fa.iterator)(f)(using x)
           case _ =>
             traverseFilterViaChain {
               val as = collection.mutable.ArrayBuffer[A]()
@@ -1603,7 +1603,7 @@ sealed abstract private[data] class ChainInstances extends ChainInstances1 {
             }(f)
         }
 
-    override def filterA[G[_], A](fa: Chain[A])(f: A => G[Boolean])(implicit G: Applicative[G]): G[Chain[A]] =
+    override def filterA[G[_], A](fa: Chain[A])(f: A => G[Boolean])(using G: Applicative[G]): G[Chain[A]] =
       traverse
         .foldRight(fa, Eval.now(G.pure(Chain.empty[A])))((x, xse) =>
           G.map2Eval(f(x), xse)((b, chain) => if (b) x +: chain else chain)
@@ -1621,12 +1621,12 @@ sealed abstract private[data] class ChainInstances extends ChainInstances1 {
 }
 
 sealed abstract private[data] class ChainInstances1 extends ChainInstances2 {
-  implicit def catsDataPartialOrderForChain[A](implicit A0: PartialOrder[A]): PartialOrder[Chain[A]] =
-    new ChainPartialOrder[A] { implicit def A: PartialOrder[A] = A0 }
+  given catsDataPartialOrderForChain[A](using A0: PartialOrder[A]): PartialOrder[Chain[A]] =
+    new ChainPartialOrder[A] { given A: PartialOrder[A] = A0 }
 }
 
 sealed abstract private[data] class ChainInstances2 extends ChainInstances3 {
-  implicit def catsDataHashForChain[A](implicit A: Hash[A]): Hash[Chain[A]] =
+  given catsDataHashForChain[A](using A: Hash[A]): Hash[Chain[A]] =
     new Hash[Chain[A]] {
       def eqv(x: Chain[A], y: Chain[A]): Boolean = x === y
 
@@ -1635,14 +1635,14 @@ sealed abstract private[data] class ChainInstances2 extends ChainInstances3 {
 }
 
 sealed abstract private[data] class ChainInstances3 {
-  implicit def catsDataEqForChain[A](implicit A: Eq[A]): Eq[Chain[A]] =
+  given catsDataEqForChain[A](using A: Eq[A]): Eq[Chain[A]] =
     new Eq[Chain[A]] {
       def eqv(x: Chain[A], y: Chain[A]): Boolean = x === y
     }
 }
 
 private[data] trait ChainPartialOrder[A] extends PartialOrder[Chain[A]] {
-  implicit def A: PartialOrder[A]
+  given A: PartialOrder[A]
 
   override def partialCompare(x: Chain[A], y: Chain[A]): Double =
     if (x eq y) 0.0

@@ -47,11 +47,11 @@ object Category {
   /**
    * Summon an instance of [[Category]] for `F`.
    */
-  @inline def apply[F[_, _]](implicit instance: Category[F]): Category[F] = instance
+  @inline def apply[F[_, _]](using instance: Category[F]): Category[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllCategoryOps[F[_, _], A, B](target: F[A, B])(implicit tc: Category[F]): AllOps[F, A, B] {
+    implicit def toAllCategoryOps[F[_, _], A, B](target: F[A, B])(using tc: Category[F]): AllOps[F, A, B] {
       type TypeClassType = Category[F]
     } =
       new AllOps[F, A, B] {
@@ -69,7 +69,7 @@ object Category {
     type TypeClassType <: Category[F]
   }
   trait ToCategoryOps extends Serializable {
-    implicit def toCategoryOps[F[_, _], A, B](target: F[A, B])(implicit tc: Category[F]): Ops[F, A, B] {
+    implicit def toCategoryOps[F[_, _], A, B](target: F[A, B])(using tc: Category[F]): Ops[F, A, B] {
       type TypeClassType = Category[F]
     } =
       new Ops[F, A, B] {

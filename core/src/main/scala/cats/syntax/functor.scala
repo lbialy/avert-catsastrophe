@@ -43,7 +43,7 @@ final class FunctorTuple2Ops[F[_], A, B](private val fab: F[(A, B)]) extends Any
    * res0: Boolean = true
    * }}}
    */
-  def _1F(implicit F: Functor[F]): F[A] = F.map(fab)(_._1)
+  def _1F(using F: Functor[F]): F[A] = F.map(fab)(_._1)
 
   /**
    * Lifts `Tuple2#_2` to Functor
@@ -56,7 +56,7 @@ final class FunctorTuple2Ops[F[_], A, B](private val fab: F[(A, B)]) extends Any
    * res0: Boolean = true
    * }}}
    */
-  def _2F(implicit F: Functor[F]): F[B] = F.map(fab)(_._2)
+  def _2F(using F: Functor[F]): F[B] = F.map(fab)(_._2)
 
   /**
    * Lifts `Tuple2#swap` to Functor
@@ -69,7 +69,7 @@ final class FunctorTuple2Ops[F[_], A, B](private val fab: F[(A, B)]) extends Any
    * res0: Boolean = true
    * }}}
    */
-  def swapF(implicit F: Functor[F]): F[(B, A)] = F.map(fab)(_.swap)
+  def swapF(using F: Functor[F]): F[(B, A)] = F.map(fab)(_.swap)
 
   /**
    * Un-zips an `F[(A, B)]` consisting of element pairs or Tuple2 into two separate F's tupled.
@@ -84,7 +84,7 @@ final class FunctorTuple2Ops[F[_], A, B](private val fab: F[(A, B)]) extends Any
    * res0: Boolean = true
    * }}}
    */
-  def unzip(implicit F: Functor[F]): (F[A], F[B]) = F.unzip(fab)
+  def unzip(using F: Functor[F]): (F[A], F[B]) = F.unzip(fab)
 }
 
 final class IfFOps[F[_]](private val fa: F[Boolean]) extends AnyVal {
@@ -100,5 +100,5 @@ final class IfFOps[F[_]](private val fa: F[Boolean]) extends AnyVal {
    * res0: List[Int] = List(1, 0, 0)
    * }}}
    */
-  def ifF[B](ifTrue: => B, ifFalse: => B)(implicit F: Functor[F]): F[B] = F.ifF(fa)(ifTrue, ifFalse)
+  def ifF[B](ifTrue: => B, ifFalse: => B)(using F: Functor[F]): F[B] = F.ifF(fa)(ifTrue, ifFalse)
 }

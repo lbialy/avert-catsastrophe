@@ -74,12 +74,12 @@ final class ApplyFABOps[F[_], A, B](private val fab: F[A => B]) extends AnyVal {
    * res3: Option[Long] = None
    * }}}
    */
-  def ap(fa: F[A])(implicit F: Apply[F]): F[B] = F.ap(fab)(fa)
+  def ap(fa: F[A])(using F: Apply[F]): F[B] = F.ap(fab)(fa)
 
   /**
    * Alias for [[ap]].
    */
-  def <*>(fa: F[A])(implicit F: Apply[F]): F[B] = F.<*>[A, B](fab)(fa)
+  def <*>(fa: F[A])(using F: Apply[F]): F[B] = F.<*>[A, B](fab)(fa)
 }
 
 final class ApplyFABCOps[F[_], A, B, C](private val ff: F[(A, B) => C]) extends AnyVal {
@@ -111,13 +111,13 @@ final class ApplyFABCOps[F[_], A, B, C](private val ff: F[(A, B) => C]) extends 
    * }}}
    *
    */
-  def ap2(fa: F[A], fb: F[B])(implicit F: Apply[F]): F[C] = F.ap2(ff)(fa, fb)
+  def ap2(fa: F[A], fb: F[B])(using F: Apply[F]): F[C] = F.ap2(ff)(fa, fb)
 }
 
 final class IfApplyOps[F[_]](private val fcond: F[Boolean]) extends AnyVal {
 
   @deprecated("Dangerous method, use ifM (a flatMap) or ifF (a map) instead", "2.6.2")
-  def ifA[A](ifTrue: F[A], ifFalse: F[A])(implicit F: Apply[F]): F[A] = F.ifA(fcond)(ifTrue, ifFalse)
+  def ifA[A](ifTrue: F[A], ifFalse: F[A])(using F: Apply[F]): F[A] = F.ifA(fcond)(ifTrue, ifFalse)
 }
 
 final class ApplyOps[F[_], A](private val fa: F[A]) extends AnyVal {
@@ -126,14 +126,14 @@ final class ApplyOps[F[_], A](private val fa: F[A]) extends AnyVal {
    * Alias for [[Apply.productR]].
    */
   @deprecated("Use *> or productR instead.", "1.0.0-RC2")
-  @inline private[syntax] def followedBy[B](fb: F[B])(implicit F: Apply[F]): F[B] =
+  @inline private[syntax] def followedBy[B](fb: F[B])(using F: Apply[F]): F[B] =
     F.productR(fa)(fb)
 
   /**
    * Alias for [[Apply.productL]].
    */
   @deprecated("Use <* or productL instead.", "1.0.0-RC2")
-  @inline private[syntax] def forEffect[B](fb: F[B])(implicit F: Apply[F]): F[A] =
+  @inline private[syntax] def forEffect[B](fb: F[B])(using F: Apply[F]): F[A] =
     F.productL(fa)(fb)
 
   /**
@@ -165,7 +165,7 @@ final class ApplyOps[F[_], A](private val fa: F[A]) extends AnyVal {
    * res3: ErrOr[Boolean] = Invalid(Invalid int.Invalid boolean.)
    * }}}
    */
-  def productR[B](fb: F[B])(implicit F: Apply[F]): F[B] = F.productR(fa)(fb)
+  def productR[B](fb: F[B])(using F: Apply[F]): F[B] = F.productR(fa)(fb)
 
   /**
    * @see [[Apply.productL]].
@@ -196,17 +196,17 @@ final class ApplyOps[F[_], A](private val fa: F[A]) extends AnyVal {
    * res3: ErrOr[Int] = Invalid(Invalid int.Invalid boolean.)
    * }}}
    */
-  def productL[B](fb: F[B])(implicit F: Apply[F]): F[A] = F.productL(fa)(fb)
+  def productL[B](fb: F[B])(using F: Apply[F]): F[A] = F.productL(fa)(fb)
 
   /**
    * Alias for [[productR]].
    */
-  def *>[B](fb: F[B])(implicit F: Apply[F]): F[B] = F.*>(fa)(fb)
+  def *>[B](fb: F[B])(using F: Apply[F]): F[B] = F.*>(fa)(fb)
 
   /**
    * Alias for [[productL]].
    */
-  def <*[B](fb: F[B])(implicit F: Apply[F]): F[A] = F.<*(fa)(fb)
+  def <*[B](fb: F[B])(using F: Apply[F]): F[A] = F.<*(fa)(fb)
 
   /**
    * @see [[Apply.map2]].
@@ -233,7 +233,7 @@ final class ApplyOps[F[_], A](private val fa: F[A]) extends AnyVal {
    * res0: Option[String] = None
    * }}}
    */
-  def map2[B, C](fb: F[B])(f: (A, B) => C)(implicit F: Apply[F]): F[C] =
+  def map2[B, C](fb: F[B])(f: (A, B) => C)(using F: Apply[F]): F[C] =
     F.map2(fa, fb)(f)
 
   /**
@@ -251,6 +251,6 @@ final class ApplyOps[F[_], A](private val fa: F[A]) extends AnyVal {
    * res0: Option[Int] = None
    * }}}
    */
-  def map2Eval[B, C](fb: Eval[F[B]])(f: (A, B) => C)(implicit F: Apply[F]): Eval[F[C]] =
+  def map2Eval[B, C](fb: Eval[F[B]])(f: (A, B) => C)(using F: Apply[F]): Eval[F[C]] =
     F.map2Eval(fa, fb)(f)
 }

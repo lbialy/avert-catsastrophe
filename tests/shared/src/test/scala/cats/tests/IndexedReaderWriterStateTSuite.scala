@@ -387,7 +387,7 @@ class ReaderWriterStateTSuite extends CatsSuite {
 
   implicit val iso: Isomorphisms[IndexedReaderWriterStateT[ListWrapper, String, String, Int, String, *]] =
     Isomorphisms.invariant[IndexedReaderWriterStateT[ListWrapper, String, String, Int, String, *]](
-      IndexedReaderWriterStateT.catsDataFunctorForIRWST(ListWrapper.functor)
+      IndexedReaderWriterStateT.catsDataFunctorForIRWST(using ListWrapper.functor)
     )
 
   checkAll(
@@ -451,9 +451,10 @@ class ReaderWriterStateTSuite extends CatsSuite {
   {
     implicit val G: Monad[ListWrapper] = ListWrapper.monad
 
-    val SA = IRWST.catsDataAlternativeForIRWST[ListWrapper, Boolean, String, MiniInt](ListWrapper.monad,
-                                                                                      ListWrapper.alternative,
-                                                                                      Monoid[String]
+    val SA = IRWST.catsDataAlternativeForIRWST[ListWrapper, Boolean, String, MiniInt](
+      using ListWrapper.monad,
+      ListWrapper.alternative,
+      Monoid[String]
     )
 
     checkAll(

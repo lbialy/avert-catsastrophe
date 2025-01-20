@@ -42,12 +42,12 @@ final class SequenceFilterOps[F[_], G[_], A](private val fgoa: F[G[Option[A]]]) 
    * b: Either[String, List[Int]] = Right(List(1, 5, 3))
    * }}}
    */
-  def sequenceFilter(implicit F: TraverseFilter[F], G: Applicative[G]): G[F[A]] = F.sequenceFilter(fgoa)
+  def sequenceFilter(using F: TraverseFilter[F], G: Applicative[G]): G[F[A]] = F.sequenceFilter(fgoa)
 }
 
 final class TraverseFilterOps[F[_], G[_], A](private val fa: F[A]) extends AnyVal {
 
-  def traverseCollect[B](f: PartialFunction[A, G[B]])(implicit
+  def traverseCollect[B](f: PartialFunction[A, G[B]])(using
     F: TraverseFilter[F],
     G: Applicative[G]
   ): G[F[B]] =

@@ -224,11 +224,11 @@ object FlatMap {
   /**
    * Summon an instance of [[FlatMap]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: FlatMap[F]): FlatMap[F] = instance
+  @inline def apply[F[_]](using instance: FlatMap[F]): FlatMap[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllFlatMapOps[F[_], A](target: F[A])(implicit tc: FlatMap[F]): AllOps[F, A] {
+    implicit def toAllFlatMapOps[F[_], A](target: F[A])(using tc: FlatMap[F]): AllOps[F, A] {
       type TypeClassType = FlatMap[F]
     } =
       new AllOps[F, A] {
@@ -242,7 +242,7 @@ object FlatMap {
     def self: F[A]
     val typeClassInstance: TypeClassType
     def flatMap[B](f: A => F[B]): F[B] = typeClassInstance.flatMap[A, B](self)(f)
-    def flatten[B](implicit ev$1: A <:< F[B]): F[B] = typeClassInstance.flatten[B](self.asInstanceOf[F[F[B]]])
+    def flatten[B](using ev$1: A <:< F[B]): F[B] = typeClassInstance.flatten[B](self.asInstanceOf[F[F[B]]])
     def productREval[B](fb: Eval[F[B]]): F[B] = typeClassInstance.productREval[A, B](self)(fb)
     def productLEval[B](fb: Eval[F[B]]): F[A] = typeClassInstance.productLEval[A, B](self)(fb)
     def mproduct[B](f: A => F[B]): F[(A, B)] = typeClassInstance.mproduct[A, B](self)(f)
@@ -252,7 +252,7 @@ object FlatMap {
     type TypeClassType <: FlatMap[F]
   }
   trait ToFlatMapOps extends Serializable {
-    implicit def toFlatMapOps[F[_], A](target: F[A])(implicit tc: FlatMap[F]): Ops[F, A] {
+    implicit def toFlatMapOps[F[_], A](target: F[A])(using tc: FlatMap[F]): Ops[F, A] {
       type TypeClassType = FlatMap[F]
     } =
       new Ops[F, A] {

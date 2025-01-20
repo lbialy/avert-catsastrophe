@@ -196,7 +196,7 @@ class FunctionSuite extends CatsSuite {
     def incrementAll(as: Int): Int = as + 1
     val bigList: List[Int => Int] = List.fill(50000)(incrementAll)
 
-    val sumAll = bigList.combineAll(MonoidK[Endo].algebra)
+    val sumAll = bigList.combineAll(using MonoidK[Endo].algebra)
     List(1, 1, 1).map(sumAll)
   }
 

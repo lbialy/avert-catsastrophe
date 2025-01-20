@@ -122,7 +122,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
         case None            => gb
       }
     }
-    Defer[G].defer(loop(Source.fromFoldable(fa)(self)))
+    Defer[G].defer(loop(Source.fromFoldable(fa)(using self)))
   }
 
   def reduceLeftToOption[A, B](fa: F[A])(f: A => B)(g: (B, A) => B): Option[B] =
@@ -132,7 +132,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
     }
 
   def reduceRightToOption[A, B](fa: F[A])(f: A => B)(g: (A, Eval[B]) => Eval[B]): Eval[Option[B]] = {
-    Source.fromFoldable(fa)(self).uncons match {
+    Source.fromFoldable(fa)(using self).uncons match {
       case Some((first, s)) =>
         def loop(now: A, source: Source[A]): Eval[B] =
           source.uncons match {
@@ -212,7 +212,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    *
    * @see [[maximumOption]] for maximum instead of minimum.
    */
-  def minimumOption[A](fa: F[A])(implicit A: Order[A]): Option[A] =
+  def minimumOption[A](fa: F[A])(using A: Order[A]): Option[A] =
     reduceLeftOption(fa)(A.min)
 
   /**
@@ -226,7 +226,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    *
    * @see [[minimumOption]] for minimum instead of maximum.
    */
-  def maximumOption[A](fa: F[A])(implicit A: Order[A]): Option[A] =
+  def maximumOption[A](fa: F[A])(using A: Order[A]): Option[A] =
     reduceLeftOption(fa)(A.max)
 
   /**
@@ -241,7 +241,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * @see [[maximumByOption]] for maximum instead of minimum.
    */
   def minimumByOption[A, B: Order](fa: F[A])(f: A => B): Option[A] =
-    minimumOption(fa)(Order.by(f))
+    minimumOption(fa)(using Order.by(f))
 
   /**
    * Find the maximum `A` item in this structure according to an `Order.by(f)`.
@@ -255,7 +255,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * @see [[minimumByOption]] for minimum instead of maximum.
    */
   def maximumByOption[A, B: Order](fa: F[A])(f: A => B): Option[A] =
-    maximumOption(fa)(Order.by(f))
+    maximumOption(fa)(using Order.by(f))
 
   /**
    * Find all the minimum `A` items in this structure.
@@ -266,7 +266,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    *
    * @see [[maximumList]] for maximum instead of minimum.
    */
-  def minimumList[A](fa: F[A])(implicit A: Order[A]): List[A] =
+  def minimumList[A](fa: F[A])(using A: Order[A]): List[A] =
     foldLeft(fa, List.empty[A]) {
       case (l @ (b :: _), a) if A.compare(a, b) > 0  => l
       case (l @ (b :: _), a) if A.compare(a, b) == 0 => a :: l
@@ -282,7 +282,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    *
    * @see [[minimumList]] for minimum instead of maximum.
    */
-  def maximumList[A](fa: F[A])(implicit A: Order[A]): List[A] =
+  def maximumList[A](fa: F[A])(using A: Order[A]): List[A] =
     foldLeft(fa, List.empty[A]) {
       case (l @ (b :: _), a) if A.compare(a, b) < 0  => l
       case (l @ (b :: _), a) if A.compare(a, b) == 0 => a :: l
@@ -299,7 +299,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * @see [[maximumByList]] for maximum instead of minimum.
    */
   def minimumByList[A, B: Order](fa: F[A])(f: A => B): List[A] =
-    minimumList(fa)(Order.by(f))
+    minimumList(fa)(using Order.by(f))
 
   /**
    * Find all the maximum `A` items in this structure according to an `Order.by(f)`.
@@ -311,12 +311,12 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * @see [[minimumByList]] for minimum instead of maximum.
    */
   def maximumByList[A, B: Order](fa: F[A])(f: A => B): List[A] =
-    maximumList(fa)(Order.by(f))
+    maximumList(fa)(using Order.by(f))
 
-  def sumAll[A](fa: F[A])(implicit A: Numeric[A]): A =
+  def sumAll[A](fa: F[A])(using A: Numeric[A]): A =
     foldLeft(fa, A.zero)(A.plus)
 
-  def productAll[A](fa: F[A])(implicit A: Numeric[A]): A =
+  def productAll[A](fa: F[A])(using A: Numeric[A]): A =
     foldLeft(fa, A.one)(A.times)
 
   /**
@@ -389,8 +389,8 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * }}}
    */
 
-  def collectFirstSomeM[G[_], A, B](fa: F[A])(f: A => G[Option[B]])(implicit G: Monad[G]): G[Option[B]] =
-    G.tailRecM(Foldable.Source.fromFoldable(fa)(self))(_.uncons match {
+  def collectFirstSomeM[G[_], A, B](fa: F[A])(f: A => G[Option[B]])(using G: Monad[G]): G[Option[B]] =
+    G.tailRecM(Foldable.Source.fromFoldable(fa)(using self))(_.uncons match {
       case Some((a, src)) =>
         G.map(f(a)) {
           case None => Left(src.value)
@@ -409,7 +409,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * }}}
    */
 
-  def collectFold[A, B](fa: F[A])(f: PartialFunction[A, B])(implicit B: Monoid[B]): B =
+  def collectFold[A, B](fa: F[A])(f: PartialFunction[A, B])(using B: Monoid[B]): B =
     foldLeft(fa, B.empty)((acc, a) => B.combine(acc, f.applyOrElse(a, (_: A) => B.empty)))
 
   /**
@@ -422,7 +422,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * res0: Int = 6
    * }}}
    */
-  def collectFoldSome[A, B](fa: F[A])(f: A => Option[B])(implicit B: Monoid[B]): B =
+  def collectFoldSome[A, B](fa: F[A])(f: A => Option[B])(using B: Monoid[B]): B =
     foldLeft(fa, B.empty)((acc, a) =>
       f(a) match {
         case Some(x) => B.combine(acc, x)
@@ -433,7 +433,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
   /**
    * Fold implemented using the given `Monoid[A]` instance.
    */
-  def fold[A](fa: F[A])(implicit A: Monoid[A]): A =
+  def fold[A](fa: F[A])(using A: Monoid[A]): A =
     A.combineAll(toIterable(fa))
 
   /**
@@ -441,7 +441,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    */
   def combineAll[A: Monoid](fa: F[A]): A = fold(fa)
 
-  def combineAllOption[A](fa: F[A])(implicit ev: Semigroup[A]): Option[A] =
+  def combineAllOption[A](fa: F[A])(using ev: Semigroup[A]): Option[A] =
     if (isEmpty(fa)) None else ev.combineAllOption(toIterable(fa))
 
   /**
@@ -457,7 +457,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * Fold implemented by mapping `A` values into `B` and then
    * combining them using the given `Monoid[B]` instance.
    */
-  def foldMap[A, B](fa: F[A])(f: A => B)(implicit B: Monoid[B]): B =
+  def foldMap[A, B](fa: F[A])(f: A => B)(using B: Monoid[B]): B =
     foldLeft(fa, B.empty)((b, a) => B.combine(b, f(a)))
 
   /**
@@ -473,8 +473,8 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * have a more efficient implementation than the default one
    * in terms of `foldRight`.
    */
-  def foldM[G[_], A, B](fa: F[A], z: B)(f: (B, A) => G[B])(implicit G: Monad[G]): G[B] = {
-    val src = Foldable.Source.fromFoldable(fa)(self)
+  def foldM[G[_], A, B](fa: F[A], z: B)(f: (B, A) => G[B])(using G: Monad[G]): G[B] = {
+    val src = Foldable.Source.fromFoldable(fa)(using self)
     G.tailRecM((z, src)) { case (b, src) =>
       src.uncons match {
         case Some((a, src)) => G.map(f(b, a))(b => Left((b, src.value)))
@@ -497,7 +497,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * res0: Either[String, Int] = Right(3)
    * }}}
    */
-  def foldA[G[_], A](fga: F[G[A]])(implicit G: Applicative[G], A: Monoid[A]): G[A] =
+  def foldA[G[_], A](fga: F[G[A]])(using G: Applicative[G], A: Monoid[A]): G[A] =
     foldMapA(fga)(identity)
 
   /**
@@ -513,7 +513,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * }}}
    */
 
-  def foldMapK[G[_], A, B](fa: F[A])(f: A => G[B])(implicit G: MonoidK[G]): G[B] =
+  def foldMapK[G[_], A, B](fa: F[A])(f: A => G[B])(using G: MonoidK[G]): G[B] =
     foldRight(fa, Eval.now(G.empty[B])) { (a, evalGb) =>
       G.combineKEval(f(a), evalGb)
     }.value
@@ -521,7 +521,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
   /**
    * Alias for [[foldM]].
    */
-  final def foldLeftM[G[_], A, B](fa: F[A], z: B)(f: (B, A) => G[B])(implicit G: Monad[G]): G[B] =
+  final def foldLeftM[G[_], A, B](fa: F[A], z: B)(f: (B, A) => G[B])(using G: Monad[G]): G[B] =
     foldM(fa, z)(f)
 
   /**
@@ -542,7 +542,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * res1: Option[Int] = None
    * }}}
    */
-  def foldMapM[G[_], A, B](fa: F[A])(f: A => G[B])(implicit G: Monad[G], B: Monoid[B]): G[B] =
+  def foldMapM[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Monad[G], B: Monoid[B]): G[B] =
     foldM(fa, B.empty)((b, a) => G.map(f(a))(B.combine(b, _)))
 
   /**
@@ -563,7 +563,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * res1: Option[Int] = None
    * }}}
    */
-  def foldMapA[G[_], A, B](fa: F[A])(f: A => G[B])(implicit G: Applicative[G], B: Monoid[B]): G[B] =
+  def foldMapA[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Applicative[G], B: Monoid[B]): G[B] =
     foldRight(fa, Eval.now(G.pure(B.empty)))((a, egb) => G.map2Eval(f(a), egb)(B.combine)).value
 
   /**
@@ -588,7 +588,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * or effect, and the specific `A` aspect of `G[A]` is not otherwise
    * needed.
    */
-  def traverseVoid[G[_], A, B](fa: F[A])(f: A => G[B])(implicit G: Applicative[G]): G[Unit] =
+  def traverseVoid[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Applicative[G]): G[Unit] =
     foldRight(fa, Always(G.unit)) { (a, acc) =>
       G.map2Eval(f(a), acc) { (_, _) =>
         ()
@@ -600,7 +600,7 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    *
    * @deprecated this method should be considered as deprecated and replaced by `traverseVoid`.
    */
-  def traverse_[G[_], A, B](fa: F[A])(f: A => G[B])(implicit G: Applicative[G]): G[Unit] =
+  def traverse_[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Applicative[G]): G[Unit] =
     traverseVoid(fa)(f)
 
   /**
@@ -646,8 +646,8 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * res0: List[Int] = List(1, 2, 3, 4, 5)
    * }}}
    */
-  def foldK[G[_], A](fga: F[G[A]])(implicit G: MonoidK[G]): G[A] =
-    fold(fga)(G.algebra)
+  def foldK[G[_], A](fga: F[G[A]])(using G: MonoidK[G]): G[A] =
+    fold(fga)(using G.algebra)
 
   /**
    * Find the first element matching the predicate, if one exists.
@@ -679,8 +679,8 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * }}}
    */
 
-  def findM[G[_], A](fa: F[A])(p: A => G[Boolean])(implicit G: Monad[G]): G[Option[A]] =
-    G.tailRecM(Foldable.Source.fromFoldable(fa)(self))(_.uncons match {
+  def findM[G[_], A](fa: F[A])(p: A => G[Boolean])(using G: Monad[G]): G[Option[A]] =
+    G.tailRecM(Foldable.Source.fromFoldable(fa)(using self))(_.uncons match {
       case Some((a, src)) => G.map(p(a))(if (_) Right(Some(a)) else Left(src.value))
       case None           => G.pure(Right(None))
     })
@@ -728,8 +728,8 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * res4: Option[Boolean] = None
    * }}}
    */
-  def existsM[G[_], A](fa: F[A])(p: A => G[Boolean])(implicit G: Monad[G]): G[Boolean] =
-    G.tailRecM(Foldable.Source.fromFoldable(fa)(self)) { src =>
+  def existsM[G[_], A](fa: F[A])(p: A => G[Boolean])(using G: Monad[G]): G[Boolean] =
+    G.tailRecM(Foldable.Source.fromFoldable(fa)(using self)) { src =>
       src.uncons match {
         case Some((a, src)) => G.map(p(a))(bb => if (bb) Right(true) else Left(src.value))
         case None           => G.pure(Right(false))
@@ -763,8 +763,8 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * res4: Option[Boolean] = None
    * }}}
    */
-  def forallM[G[_], A](fa: F[A])(p: A => G[Boolean])(implicit G: Monad[G]): G[Boolean] =
-    G.tailRecM(Foldable.Source.fromFoldable(fa)(self)) { src =>
+  def forallM[G[_], A](fa: F[A])(p: A => G[Boolean])(using G: Monad[G]): G[Boolean] =
+    G.tailRecM(Foldable.Source.fromFoldable(fa)(using self)) { src =>
       src.uncons match {
         case Some((a, src)) => G.map(p(a))(bb => if (!bb) Right(false) else Left(src.value))
         case None           => G.pure(Right(true))
@@ -792,9 +792,9 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * res1: (List[Nothing], List[Int]) = (List(),List(4, 8, 12, 16))
    * }}}
    */
-  def partitionEither[A, B, C](fa: F[A])(f: A => Either[B, C])(implicit A: Alternative[F]): (F[B], F[C]) = {
-    implicit val mb: Monoid[F[B]] = A.algebra[B]
-    implicit val mc: Monoid[F[C]] = A.algebra[C]
+  def partitionEither[A, B, C](fa: F[A])(f: A => Either[B, C])(using A: Alternative[F]): (F[B], F[C]) = {
+    given mb: Monoid[F[B]] = A.algebra[B]
+    given mc: Monoid[F[C]] = A.algebra[C]
 
     foldMap(fa)(a =>
       f(a) match {
@@ -852,8 +852,8 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
    * res3: Int = 8
    * }}}
    */
-  def intercalate[A](fa: F[A], a: A)(implicit A: Monoid[A]): A =
-    combineAllOption(fa)(A.intercalate(a)) match {
+  def intercalate[A](fa: F[A], a: A)(using A: Monoid[A]): A =
+    combineAllOption(fa)(using A.intercalate(a)) match {
       case None    => A.empty
       case Some(a) => a
     }
@@ -898,11 +898,11 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
 
   def partitionBifold[H[_, _], A, B, C](
     fa: F[A]
-  )(f: A => H[B, C])(implicit A: Alternative[F], H: Bifoldable[H]): (F[B], F[C]) = {
+  )(f: A => H[B, C])(using A: Alternative[F], H: Bifoldable[H]): (F[B], F[C]) = {
     import cats.instances.tuple._
 
-    implicit val mb: Monoid[F[B]] = A.algebra[B]
-    implicit val mc: Monoid[F[C]] = A.algebra[C]
+    given mb: Monoid[F[B]] = A.algebra[B]
+    given mc: Monoid[F[C]] = A.algebra[C]
 
     foldMap[A, (F[B], F[C])](fa)(a =>
       H.bifoldMap[B, C, (F[B], F[C])](f(a))(b => (A.pure(b), A.empty[C]), c => (A.empty[B], A.pure(c)))
@@ -924,11 +924,11 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
 
   def partitionBifoldM[G[_], H[_, _], A, B, C](
     fa: F[A]
-  )(f: A => G[H[B, C]])(implicit A: Alternative[F], M: Monad[G], H: Bifoldable[H]): G[(F[B], F[C])] = {
+  )(f: A => G[H[B, C]])(using A: Alternative[F], M: Monad[G], H: Bifoldable[H]): G[(F[B], F[C])] = {
     import cats.instances.tuple._
 
-    implicit val mb: Monoid[F[B]] = A.algebra[B]
-    implicit val mc: Monoid[F[C]] = A.algebra[C]
+    given mb: Monoid[F[B]] = A.algebra[B]
+    given mc: Monoid[F[C]] = A.algebra[C]
 
     foldMapM[G, A, (F[B], F[C])](fa)(a =>
       M.map(f(a)) {
@@ -956,9 +956,9 @@ trait Foldable[F[_]] extends UnorderedFoldable[F] with FoldableNFunctions[F] { s
 
   def partitionEitherM[G[_], A, B, C](
     fa: F[A]
-  )(f: A => G[Either[B, C]])(implicit A: Alternative[F], M: Monad[G]): G[(F[B], F[C])] = {
+  )(f: A => G[Either[B, C]])(using A: Alternative[F], M: Monad[G]): G[(F[B], F[C])] = {
     import cats.instances.either._
-    partitionBifoldM[G, Either, A, B, C](fa)(f)(A, M, Bifoldable[Either])
+    partitionBifoldM[G, Either, A, B, C](fa)(f)(using A, M, Bifoldable[Either])
   }
 }
 
@@ -1005,18 +1005,18 @@ object Foldable {
         def uncons: Option[(A, Eval[Source[A]])] = Some((a, src))
       }
 
-    def fromFoldable[F[_], A](fa: F[A])(implicit F: Foldable[F]): Source[A] =
+    def fromFoldable[F[_], A](fa: F[A])(using F: Foldable[F]): Source[A] =
       F.foldRight[A, Source[A]](fa, Now(Empty))((a, evalSrc) => Later(cons(a, evalSrc))).value
   }
 
   /**
    * Summon an instance of [[Foldable]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: Foldable[F]): Foldable[F] = instance
+  @inline def apply[F[_]](using instance: Foldable[F]): Foldable[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllFoldableOps[F[_], A](target: F[A])(implicit tc: Foldable[F]): AllOps[F, A] {
+    implicit def toAllFoldableOps[F[_], A](target: F[A])(using tc: Foldable[F]): AllOps[F, A] {
       type TypeClassType = Foldable[F]
     } =
       new AllOps[F, A] {
@@ -1031,7 +1031,7 @@ object Foldable {
     val typeClassInstance: TypeClassType
     def foldLeft[B](b: B)(f: (B, A) => B): B = typeClassInstance.foldLeft[A, B](self, b)(f)
     def foldRight[B](lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = typeClassInstance.foldRight[A, B](self, lb)(f)
-    def foldRightDefer[G[_], B](gb: G[B])(fn: (A, G[B]) => G[B])(implicit ev$1: Defer[G]): G[B] =
+    def foldRightDefer[G[_], B](gb: G[B])(fn: (A, G[B]) => G[B])(using ev$1: Defer[G]): G[B] =
       typeClassInstance.foldRightDefer[G, A, B](self, gb)(fn)
     def reduceLeftToOption[B](f: A => B)(g: (B, A) => B): Option[B] =
       typeClassInstance.reduceLeftToOption[A, B](self)(f)(g)
@@ -1039,67 +1039,67 @@ object Foldable {
       typeClassInstance.reduceRightToOption[A, B](self)(f)(g)
     def reduceLeftOption(f: (A, A) => A): Option[A] = typeClassInstance.reduceLeftOption[A](self)(f)
     def reduceRightOption(f: (A, Eval[A]) => Eval[A]): Eval[Option[A]] = typeClassInstance.reduceRightOption[A](self)(f)
-    def minimumOption(implicit A: Order[A]): Option[A] = typeClassInstance.minimumOption[A](self)(A)
-    def maximumOption(implicit A: Order[A]): Option[A] = typeClassInstance.maximumOption[A](self)(A)
-    def minimumByOption[B](f: A => B)(implicit ev$1: Order[B]): Option[A] =
+    def minimumOption(using A: Order[A]): Option[A] = typeClassInstance.minimumOption[A](self)(using A)
+    def maximumOption(using A: Order[A]): Option[A] = typeClassInstance.maximumOption[A](self)(using A)
+    def minimumByOption[B](f: A => B)(using ev$1: Order[B]): Option[A] =
       typeClassInstance.minimumByOption[A, B](self)(f)
-    def maximumByOption[B](f: A => B)(implicit ev$1: Order[B]): Option[A] =
+    def maximumByOption[B](f: A => B)(using ev$1: Order[B]): Option[A] =
       typeClassInstance.maximumByOption[A, B](self)(f)
-    def minimumList(implicit A: Order[A]): List[A] = typeClassInstance.minimumList[A](self)(A)
-    def maximumList(implicit A: Order[A]): List[A] = typeClassInstance.maximumList[A](self)(A)
-    def minimumByList[B](f: A => B)(implicit ev$1: Order[B]): List[A] = typeClassInstance.minimumByList[A, B](self)(f)
-    def maximumByList[B](f: A => B)(implicit ev$1: Order[B]): List[A] = typeClassInstance.maximumByList[A, B](self)(f)
+    def minimumList(using A: Order[A]): List[A] = typeClassInstance.minimumList[A](self)(using A)
+    def maximumList(using A: Order[A]): List[A] = typeClassInstance.maximumList[A](self)(using A)
+    def minimumByList[B](f: A => B)(using ev$1: Order[B]): List[A] = typeClassInstance.minimumByList[A, B](self)(f)
+    def maximumByList[B](f: A => B)(using ev$1: Order[B]): List[A] = typeClassInstance.maximumByList[A, B](self)(f)
     def get(idx: Long): Option[A] = typeClassInstance.get[A](self)(idx)
     def collectFirst[B](pf: PartialFunction[A, B]): Option[B] = typeClassInstance.collectFirst[A, B](self)(pf)
     def collectFirstSome[B](f: A => Option[B]): Option[B] = typeClassInstance.collectFirstSome[A, B](self)(f)
-    def collectFoldSome[B](f: A => Option[B])(implicit B: Monoid[B]): B =
-      typeClassInstance.collectFoldSome[A, B](self)(f)(B)
-    def fold(implicit A: Monoid[A]): A = typeClassInstance.fold[A](self)(A)
-    def sumAll(implicit A: Numeric[A]): A = typeClassInstance.sumAll[A](self)
-    def productAll(implicit A: Numeric[A]): A = typeClassInstance.productAll[A](self)
-    def combineAll(implicit ev$1: Monoid[A]): A = typeClassInstance.combineAll[A](self)
-    def combineAllOption(implicit ev: Semigroup[A]): Option[A] = typeClassInstance.combineAllOption[A](self)(ev)
+    def collectFoldSome[B](f: A => Option[B])(using B: Monoid[B]): B =
+      typeClassInstance.collectFoldSome[A, B](self)(f)(using B)
+    def fold(using A: Monoid[A]): A = typeClassInstance.fold[A](self)(using A)
+    def sumAll(using A: Numeric[A]): A = typeClassInstance.sumAll[A](self)
+    def productAll(using A: Numeric[A]): A = typeClassInstance.productAll[A](self)
+    def combineAll(using ev$1: Monoid[A]): A = typeClassInstance.combineAll[A](self)
+    def combineAllOption(using ev: Semigroup[A]): Option[A] = typeClassInstance.combineAllOption[A](self)(using ev)
     def toIterable: Iterable[A] = typeClassInstance.toIterable[A](self)
-    def foldMap[B](f: A => B)(implicit B: Monoid[B]): B = typeClassInstance.foldMap[A, B](self)(f)(B)
-    def foldM[G[_], B](z: B)(f: (B, A) => G[B])(implicit G: Monad[G]): G[B] =
-      typeClassInstance.foldM[G, A, B](self, z)(f)(G)
-    final def foldLeftM[G[_], B](z: B)(f: (B, A) => G[B])(implicit G: Monad[G]): G[B] =
-      typeClassInstance.foldLeftM[G, A, B](self, z)(f)(G)
-    def foldMapM[G[_], B](f: A => G[B])(implicit G: Monad[G], B: Monoid[B]): G[B] =
-      typeClassInstance.foldMapM[G, A, B](self)(f)(G, B)
-    def foldMapA[G[_], B](f: A => G[B])(implicit G: Applicative[G], B: Monoid[B]): G[B] =
-      typeClassInstance.foldMapA[G, A, B](self)(f)(G, B)
-    def traverseVoid[G[_], B](f: A => G[B])(implicit G: Applicative[G]): G[Unit] =
-      typeClassInstance.traverseVoid[G, A, B](self)(f)(G)
-    def traverse_[G[_], B](f: A => G[B])(implicit G: Applicative[G]): G[Unit] =
+    def foldMap[B](f: A => B)(using B: Monoid[B]): B = typeClassInstance.foldMap[A, B](self)(f)(using B)
+    def foldM[G[_], B](z: B)(f: (B, A) => G[B])(using G: Monad[G]): G[B] =
+      typeClassInstance.foldM[G, A, B](self, z)(f)(using G)
+    final def foldLeftM[G[_], B](z: B)(f: (B, A) => G[B])(using G: Monad[G]): G[B] =
+      typeClassInstance.foldLeftM[G, A, B](self, z)(f)(using G)
+    def foldMapM[G[_], B](f: A => G[B])(using G: Monad[G], B: Monoid[B]): G[B] =
+      typeClassInstance.foldMapM[G, A, B](self)(f)(using G, B)
+    def foldMapA[G[_], B](f: A => G[B])(using G: Applicative[G], B: Monoid[B]): G[B] =
+      typeClassInstance.foldMapA[G, A, B](self)(f)(using G, B)
+    def traverseVoid[G[_], B](f: A => G[B])(using G: Applicative[G]): G[Unit] =
+      typeClassInstance.traverseVoid[G, A, B](self)(f)(using G)
+    def traverse_[G[_], B](f: A => G[B])(using G: Applicative[G]): G[Unit] =
       traverseVoid[G, B](f)
     // TODO: looks like these two methods below duplicate the same named methods from `NestedFoldableOps`.
     //       Moreover, the other two methods take precedence, thereby these two are not in use whatsoever.
     //       Perhaps it makes sense to deprecate one pair of them either here or there.
-    def sequenceVoid[G[_], B](implicit ev$1: A <:< G[B], ev$2: Applicative[G]): G[Unit] =
+    def sequenceVoid[G[_], B](using ev$1: A <:< G[B], ev$2: Applicative[G]): G[Unit] =
       typeClassInstance.sequenceVoid[G, B](self.asInstanceOf[F[G[B]]])
-    def sequence_[G[_], B](implicit ev$1: A <:< G[B], ev$2: Applicative[G]): G[Unit] =
+    def sequence_[G[_], B](using ev$1: A <:< G[B], ev$2: Applicative[G]): G[Unit] =
       sequenceVoid[G, B]
-    def foldK[G[_], B](implicit ev$1: A <:< G[B], G: MonoidK[G]): G[B] =
-      typeClassInstance.foldK[G, B](self.asInstanceOf[F[G[B]]])(G)
+    def foldK[G[_], B](using ev$1: A <:< G[B], G: MonoidK[G]): G[B] =
+      typeClassInstance.foldK[G, B](self.asInstanceOf[F[G[B]]])(using G)
     def find(f: A => Boolean): Option[A] = typeClassInstance.find[A](self)(f)
-    def existsM[G[_]](p: A => G[Boolean])(implicit G: Monad[G]): G[Boolean] =
-      typeClassInstance.existsM[G, A](self)(p)(G)
-    def forallM[G[_]](p: A => G[Boolean])(implicit G: Monad[G]): G[Boolean] =
-      typeClassInstance.forallM[G, A](self)(p)(G)
+    def existsM[G[_]](p: A => G[Boolean])(using G: Monad[G]): G[Boolean] =
+      typeClassInstance.existsM[G, A](self)(p)(using G)
+    def forallM[G[_]](p: A => G[Boolean])(using G: Monad[G]): G[Boolean] =
+      typeClassInstance.forallM[G, A](self)(p)(using G)
     def toList: List[A] = typeClassInstance.toList[A](self)
-    def partitionEither[B, C](f: A => Either[B, C])(implicit A: Alternative[F]): (F[B], F[C]) =
-      typeClassInstance.partitionEither[A, B, C](self)(f)(A)
+    def partitionEither[B, C](f: A => Either[B, C])(using A: Alternative[F]): (F[B], F[C]) =
+      typeClassInstance.partitionEither[A, B, C](self)(f)(using A)
     def filter_(p: A => Boolean): List[A] = typeClassInstance.filter_[A](self)(p)
     def takeWhile_(p: A => Boolean): List[A] = typeClassInstance.takeWhile_[A](self)(p)
     def dropWhile_(p: A => Boolean): List[A] = typeClassInstance.dropWhile_[A](self)(p)
-    def intercalate(a: A)(implicit A: Monoid[A]): A = typeClassInstance.intercalate[A](self, a)(A)
+    def intercalate(a: A)(using A: Monoid[A]): A = typeClassInstance.intercalate[A](self, a)(using A)
   }
   trait AllOps[F[_], A] extends Ops[F, A] with UnorderedFoldable.AllOps[F, A] {
     type TypeClassType <: Foldable[F]
   }
   trait ToFoldableOps extends Serializable {
-    implicit def toFoldableOps[F[_], A](target: F[A])(implicit tc: Foldable[F]): Ops[F, A] {
+    implicit def toFoldableOps[F[_], A](target: F[A])(using tc: Foldable[F]): Ops[F, A] {
       type TypeClassType = Foldable[F]
     } =
       new Ops[F, A] {

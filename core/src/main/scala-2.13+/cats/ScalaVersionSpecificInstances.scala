@@ -26,77 +26,77 @@ import scala.collection.immutable.ArraySeq
 
 private[cats] trait ScalaVersionSpecificTraverseInstances {
   @deprecated("Use catsTraverseForLazyList", "3.0.0")
-  implicit def catsTraverseForStream: Traverse[Stream] = cats.instances.stream.catsStdInstancesForStream
+  given catsTraverseForStream: Traverse[Stream] = cats.instances.stream.catsStdInstancesForStream
 
-  implicit def catsTraverseForLazyList: Traverse[LazyList] = cats.instances.lazyList.catsStdInstancesForLazyList
-  implicit def catsTraverseForArraySeq: Traverse[ArraySeq] = cats.instances.arraySeq.catsStdInstancesForArraySeq
+  given catsTraverseForLazyList: Traverse[LazyList] = cats.instances.lazyList.catsStdInstancesForLazyList
+  given catsTraverseForArraySeq: Traverse[ArraySeq] = cats.instances.arraySeq.catsStdInstancesForArraySeq
 }
 
 private[cats] trait ScalaVersionSpecificShowInstances {
   @deprecated("Use catsShowForLazyList", "3.0.0")
-  implicit def catsShowForStream[A: Show]: Show[Stream[A]] = cats.instances.stream.catsStdShowForStream[A]
+  given catsShowForStream[A: Show]: Show[Stream[A]] = cats.instances.stream.catsStdShowForStream[A]
 
-  implicit def catsShowForLazyList[A: Show]: Show[LazyList[A]] = cats.instances.lazyList.catsStdShowForLazyList[A]
-  implicit def catsShowForArraySeq[A: Show]: Show[ArraySeq[A]] = cats.instances.arraySeq.catsStdShowForArraySeq[A]
+  given catsShowForLazyList[A: Show]: Show[LazyList[A]] = cats.instances.lazyList.catsStdShowForLazyList[A]
+  given catsShowForArraySeq[A: Show]: Show[ArraySeq[A]] = cats.instances.arraySeq.catsStdShowForArraySeq[A]
 }
 
 private[cats] trait ScalaVersionSpecificSemigroupalInstances {
   @deprecated("Use catsSemigroupalForLazyList", "3.0.0")
-  implicit def catsSemigroupalForStream: Semigroupal[Stream] = cats.instances.stream.catsStdInstancesForStream
+  given catsSemigroupalForStream: Semigroupal[Stream] = cats.instances.stream.catsStdInstancesForStream
 
-  implicit def catsSemigroupalForLazyList: Semigroupal[LazyList] = cats.instances.lazyList.catsStdInstancesForLazyList
-  implicit def catsSemigroupalForArraySeq: Semigroupal[ArraySeq] = cats.instances.arraySeq.catsStdInstancesForArraySeq
+  given catsSemigroupalForLazyList: Semigroupal[LazyList] = cats.instances.lazyList.catsStdInstancesForLazyList
+  given catsSemigroupalForArraySeq: Semigroupal[ArraySeq] = cats.instances.arraySeq.catsStdInstancesForArraySeq
 }
 
 private[cats] trait ScalaVersionSpecificMonoidKInstances {
   @deprecated("Use catsMonoidKForLazyList", "3.0.0")
-  implicit def catsMonoidKForStream: MonoidK[Stream] = cats.instances.stream.catsStdInstancesForStream
+  given catsMonoidKForStream: MonoidK[Stream] = cats.instances.stream.catsStdInstancesForStream
 
-  implicit def catsMonoidKForLazyList: MonoidK[LazyList] = cats.instances.lazyList.catsStdInstancesForLazyList
-  implicit def catsMonoidKForArraySeq: MonoidK[ArraySeq] = cats.instances.arraySeq.catsStdInstancesForArraySeq
+  given catsMonoidKForLazyList: MonoidK[LazyList] = cats.instances.lazyList.catsStdInstancesForLazyList
+  given catsMonoidKForArraySeq: MonoidK[ArraySeq] = cats.instances.arraySeq.catsStdInstancesForArraySeq
 }
 
 private[cats] trait ScalaVersionSpecificParallelInstances {
   @deprecated("Use catsStdParallelForZipLazyList", "3.0.0")
-  implicit def catsStdParallelForZipStream: Parallel.Aux[Stream, ZipStream] =
+  given catsStdParallelForZipStream: Parallel.Aux[Stream, ZipStream] =
     cats.instances.parallel.catsStdParallelForZipStream
 
-  implicit def catsStdParallelForZipLazyList: Parallel.Aux[LazyList, ZipLazyList] =
+  given catsStdParallelForZipLazyList: Parallel.Aux[LazyList, ZipLazyList] =
     cats.instances.lazyList.catsStdParallelForLazyListZipLazyList
 }
 
 private[cats] trait ScalaVersionSpecificInvariantInstances {
   @deprecated("Use catsInstancesForLazyList", "3.0.0")
-  implicit def catsInstancesForStream: Monad[Stream] & Alternative[Stream] & CoflatMap[Stream] =
+  given catsInstancesForStream: (Monad[Stream] & Alternative[Stream] & CoflatMap[Stream]) =
     cats.instances.stream.catsStdInstancesForStream
 
-  implicit def catsInstancesForLazyList: Monad[LazyList] & Alternative[LazyList] & CoflatMap[LazyList] =
+  given catsInstancesForLazyList: (Monad[LazyList] & Alternative[LazyList] & CoflatMap[LazyList]) =
     cats.instances.lazyList.catsStdInstancesForLazyList
 
-  implicit def catsInstancesForArraySeq: Monad[ArraySeq] & Alternative[ArraySeq] & CoflatMap[ArraySeq] =
+  given catsInstancesForArraySeq: (Monad[ArraySeq] & Alternative[ArraySeq] & CoflatMap[ArraySeq]) =
     cats.instances.arraySeq.catsStdInstancesForArraySeq
 }
 
 private[cats] trait ScalaVersionSpecificTraverseFilterInstances {
   @deprecated("Use catsTraverseFilterForLazyList", "3.0.0")
-  implicit def catsTraverseFilterForStream: TraverseFilter[Stream] =
+  given catsTraverseFilterForStream: TraverseFilter[Stream] =
     cats.instances.stream.catsStdTraverseFilterForStream
 
-  implicit def catsTraverseFilterForLazyList: TraverseFilter[LazyList] =
+  given catsTraverseFilterForLazyList: TraverseFilter[LazyList] =
     cats.instances.lazyList.catsStdTraverseFilterForLazyList
 
-  implicit def catsTraverseFilterForArraySeq: TraverseFilter[ArraySeq] =
+  given catsTraverseFilterForArraySeq: TraverseFilter[ArraySeq] =
     cats.instances.arraySeq.catsStdTraverseFilterForArraySeq
 }
 
 private[cats] trait ScalaVersionSpecificAlignInstances {
   @deprecated("Use catsAlignForLazyList", "3.0.0")
-  implicit def catsAlignForStream: Align[Stream] =
+  given catsAlignForStream: Align[Stream] =
     cats.instances.stream.catsStdInstancesForStream
 
-  implicit def catsAlignForLazyList: Align[LazyList] =
+  given catsAlignForLazyList: Align[LazyList] =
     cats.instances.lazyList.catsStdInstancesForLazyList
 
-  implicit def catsAlignForArraySeq: Align[ArraySeq] =
+  given catsAlignForArraySeq: Align[ArraySeq] =
     cats.instances.arraySeq.catsStdInstancesForArraySeq
 }

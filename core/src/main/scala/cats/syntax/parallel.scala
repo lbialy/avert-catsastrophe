@@ -170,34 +170,34 @@ trait ParallelReduceMapASyntax {
 
 @deprecated("Kept for binary compatibility", "2.6.0")
 final class ParallelTraversableOps[T[_], A](private val ta: T[A]) extends AnyVal {
-  def parTraverse[M[_]: Monad, B](f: A => M[B])(implicit T: Traverse[T], P: Parallel[M]): M[T[B]] =
+  def parTraverse[M[_]: Monad, B](f: A => M[B])(using T: Traverse[T], P: Parallel[M]): M[T[B]] =
     Parallel.parTraverse(ta)(f)
 }
 
 final class ParallelTraversableOps1[T[_], A](private val ta: T[A]) extends AnyVal {
-  def parTraverse[M[_], B](f: A => M[B])(implicit T: Traverse[T], P: Parallel[M]): M[T[B]] =
+  def parTraverse[M[_], B](f: A => M[B])(using T: Traverse[T], P: Parallel[M]): M[T[B]] =
     Parallel.parTraverse(ta)(f)
 }
 
 final class ParallelTraverseFilterOps[T[_], A](private val ta: T[A]) extends AnyVal {
-  def parTraverseFilter[M[_]: Parallel, B](f: A => M[Option[B]])(implicit T: TraverseFilter[T]): M[T[B]] =
+  def parTraverseFilter[M[_]: Parallel, B](f: A => M[Option[B]])(using T: TraverseFilter[T]): M[T[B]] =
     Parallel.parTraverseFilter(ta)(f)
 
-  def parFilterA[M[_]: Parallel](f: A => M[Boolean])(implicit T: TraverseFilter[T]): M[T[A]] =
+  def parFilterA[M[_]: Parallel](f: A => M[Boolean])(using T: TraverseFilter[T]): M[T[A]] =
     Parallel.parFilterA(ta)(f)
 }
 
 final class ParallelSequenceFilterOps[T[_], M[_], A](private val tmoa: T[M[Option[A]]]) extends AnyVal {
-  def parSequenceFilter(implicit P: Parallel[M], T: TraverseFilter[T]): M[T[A]] =
+  def parSequenceFilter(using P: Parallel[M], T: TraverseFilter[T]): M[T[A]] =
     Parallel.parSequenceFilter(tmoa)
 }
 
 // Note: this could be renamed to `ParallelTraversableVoidOps` for consistency,
 // but it looks like too much of a hassle of fighting binary compatibility issues for the implicit part of the API.
 final class ParallelTraversable_Ops[T[_], A](private val ta: T[A]) extends AnyVal {
-  def parTraverseVoid[M[_], B](f: A => M[B])(implicit T: Foldable[T], P: Parallel[M]): M[Unit] =
+  def parTraverseVoid[M[_], B](f: A => M[B])(using T: Foldable[T], P: Parallel[M]): M[Unit] =
     Parallel.parTraverseVoid(ta)(f)
-  def parTraverse_[M[_], B](f: A => M[B])(implicit T: Foldable[T], P: Parallel[M]): M[Unit] =
+  def parTraverse_[M[_], B](f: A => M[B])(using T: Foldable[T], P: Parallel[M]): M[Unit] =
     parTraverseVoid(f)
 }
 
@@ -205,48 +205,48 @@ final class ParallelTraversable_Ops[T[_], A](private val ta: T[A]) extends AnyVa
 final class ParallelFlatTraversableOps[T[_], A](private val ta: T[A]) extends AnyVal {
   def parFlatTraverse[M[_]: Monad, B](
     f: A => M[T[B]]
-  )(implicit T0: Traverse[T], T1: FlatMap[T], P: Parallel[M]): M[T[B]] =
+  )(using T0: Traverse[T], T1: FlatMap[T], P: Parallel[M]): M[T[B]] =
     Parallel.parFlatTraverse(ta)(f)
 }
 
 final class ParallelFlatTraversableOps1[T[_], A](private val ta: T[A]) extends AnyVal {
-  def parFlatTraverse[M[_], B](f: A => M[T[B]])(implicit T0: Traverse[T], T1: FlatMap[T], P: Parallel[M]): M[T[B]] =
+  def parFlatTraverse[M[_], B](f: A => M[T[B]])(using T0: Traverse[T], T1: FlatMap[T], P: Parallel[M]): M[T[B]] =
     Parallel.parFlatTraverse(ta)(f)
 }
 
 @deprecated("Kept for binary compatibility", "2.6.0")
 final class ParallelSequenceOps[T[_], M[_], A](private val tma: T[M[A]]) extends AnyVal {
-  def parSequence(implicit M: Monad[M], T: Traverse[T], P: Parallel[M]): M[T[A]] =
+  def parSequence(using M: Monad[M], T: Traverse[T], P: Parallel[M]): M[T[A]] =
     Parallel.parSequence(tma)
 }
 
 final class ParallelSequenceOps1[T[_], M[_], A](private val tma: T[M[A]]) extends AnyVal {
-  def parSequence(implicit T: Traverse[T], P: Parallel[M]): M[T[A]] =
+  def parSequence(using T: Traverse[T], P: Parallel[M]): M[T[A]] =
     Parallel.parSequence(tma)
 }
 
 // Note: this could be renamed to `ParallelSequenceVoidOps` for consistency,
 // but it looks like too much of a hassle of fighting binary compatibility issues for the implicit part of the API.
 final class ParallelSequence_Ops[T[_], M[_], A](private val tma: T[M[A]]) extends AnyVal {
-  def parSequenceVoid(implicit T: Foldable[T], P: Parallel[M]): M[Unit] =
+  def parSequenceVoid(using T: Foldable[T], P: Parallel[M]): M[Unit] =
     Parallel.parSequenceVoid(tma)
-  def parSequence_(implicit T: Foldable[T], P: Parallel[M]): M[Unit] =
+  def parSequence_(using T: Foldable[T], P: Parallel[M]): M[Unit] =
     parSequenceVoid
 }
 
 @deprecated("Kept for binary compatibility", "2.6.0")
 final class ParallelFlatSequenceOps[T[_], M[_], A](private val tmta: T[M[T[A]]]) extends AnyVal {
-  def parFlatSequence(implicit M: Monad[M], T0: Traverse[T], T1: FlatMap[T], P: Parallel[M]): M[T[A]] =
+  def parFlatSequence(using M: Monad[M], T0: Traverse[T], T1: FlatMap[T], P: Parallel[M]): M[T[A]] =
     Parallel.parFlatSequence(tmta)
 }
 
 final class ParallelFlatSequenceOps1[T[_], M[_], A](private val tmta: T[M[T[A]]]) extends AnyVal {
-  def parFlatSequence(implicit T0: Traverse[T], T1: FlatMap[T], P: Parallel[M]): M[T[A]] =
+  def parFlatSequence(using T0: Traverse[T], T1: FlatMap[T], P: Parallel[M]): M[T[A]] =
     Parallel.parFlatSequence(tmta)
 }
 
 final class ParallelUnorderedSequenceOps[T[_], M[_], A](private val tmta: T[M[A]]) extends AnyVal {
-  def parUnorderedSequence[F[_]](implicit
+  def parUnorderedSequence[F[_]](using
     P: Parallel.Aux[M, F],
     F: CommutativeApplicative[F],
     Tutraverse: UnorderedTraverse[T]
@@ -257,12 +257,12 @@ final class ParallelUnorderedSequenceOps[T[_], M[_], A](private val tmta: T[M[A]
 final class ParallelUnorderedTraverseOps[T[_], A](private val ta: T[A]) extends AnyVal {
   def parUnorderedTraverse[M[_], F[_], B](
     f: A => M[B]
-  )(implicit P: Parallel.Aux[M, F], F: CommutativeApplicative[F], Tutraverse: UnorderedTraverse[T]): M[T[B]] =
+  )(using P: Parallel.Aux[M, F], F: CommutativeApplicative[F], Tutraverse: UnorderedTraverse[T]): M[T[B]] =
     Parallel.parUnorderedTraverse(ta)(f)
 
   def parUnorderedFlatTraverse[M[_], F[_], B](
     f: A => M[T[B]]
-  )(implicit
+  )(using
     P: Parallel.Aux[M, F],
     F: CommutativeApplicative[F],
     Tflatmap: FlatMap[T],
@@ -272,7 +272,7 @@ final class ParallelUnorderedTraverseOps[T[_], A](private val ta: T[A]) extends 
 }
 
 final class ParallelUnorderedFlatSequenceOps[T[_], M[_], A](private val tmta: T[M[T[A]]]) extends AnyVal {
-  def parUnorderedFlatSequence[F[_]](implicit
+  def parUnorderedFlatSequence[F[_]](using
     P: Parallel.Aux[M, F],
     Tflatmap: FlatMap[T],
     F: CommutativeApplicative[F],
@@ -283,95 +283,95 @@ final class ParallelUnorderedFlatSequenceOps[T[_], M[_], A](private val tmta: T[
 
 @deprecated("Kept for binary compatibility", "2.8.0")
 final class ParallelApOps[M[_], A](private val ma: M[A]) extends AnyVal {
-  def &>[B](mb: M[B])(implicit P: Parallel[M]): M[B] =
+  def &>[B](mb: M[B])(using P: Parallel[M]): M[B] =
     P.parProductR(ma)(mb)
 
-  def <&[B](mb: M[B])(implicit P: Parallel[M]): M[A] =
+  def <&[B](mb: M[B])(using P: Parallel[M]): M[A] =
     P.parProductL(ma)(mb)
 
-  def parProductL[B](mb: M[B])(implicit P: Parallel[M]): M[A] =
+  def parProductL[B](mb: M[B])(using P: Parallel[M]): M[A] =
     P.parProductL(ma)(mb)
 
-  def parProductR[B](mb: M[B])(implicit P: Parallel[M]): M[B] =
+  def parProductR[B](mb: M[B])(using P: Parallel[M]): M[B] =
     P.parProductR(ma)(mb)
 
-  def parProduct[B](mb: M[B])(implicit P: Parallel[M]): M[(A, B)] =
+  def parProduct[B](mb: M[B])(using P: Parallel[M]): M[(A, B)] =
     Parallel.parProduct(ma, mb)
 
-  def parReplicateA(n: Int)(implicit P: Parallel[M]): M[List[A]] =
+  def parReplicateA(n: Int)(using P: Parallel[M]): M[List[A]] =
     Parallel.parReplicateA(n, ma)
 
-  def parReplicateA_(n: Int)(implicit P: Parallel[M]): M[Unit] =
+  def parReplicateA_(n: Int)(using P: Parallel[M]): M[Unit] =
     Parallel.parReplicateA_(n, ma)
 }
 
 final class ParallelApOps1[M[_], A](private val ma: M[A]) extends AnyVal {
-  def parReplicateA(n: Int)(implicit P: Parallel[M]): M[List[A]] =
+  def parReplicateA(n: Int)(using P: Parallel[M]): M[List[A]] =
     Parallel.parReplicateA(n, ma)
-  def parReplicateA_(n: Int)(implicit P: Parallel[M]): M[Unit] =
+  def parReplicateA_(n: Int)(using P: Parallel[M]): M[Unit] =
     Parallel.parReplicateA_(n, ma)
 }
 
 final class NonEmptyParallelApOps[M[_], A](private val ma: M[A]) extends AnyVal {
-  def &>[B](mb: M[B])(implicit P: NonEmptyParallel[M]): M[B] =
+  def &>[B](mb: M[B])(using P: NonEmptyParallel[M]): M[B] =
     P.parProductR[A, B](ma)(mb)
 
-  def <&[B](mb: M[B])(implicit P: NonEmptyParallel[M]): M[A] =
+  def <&[B](mb: M[B])(using P: NonEmptyParallel[M]): M[A] =
     P.parProductL[A, B](ma)(mb)
 
-  def parProductL[B](mb: M[B])(implicit P: NonEmptyParallel[M]): M[A] =
+  def parProductL[B](mb: M[B])(using P: NonEmptyParallel[M]): M[A] =
     P.parProductL[A, B](ma)(mb)
 
-  def parProductR[B](mb: M[B])(implicit P: NonEmptyParallel[M]): M[B] =
+  def parProductR[B](mb: M[B])(using P: NonEmptyParallel[M]): M[B] =
     P.parProductR[A, B](ma)(mb)
 
-  def parProduct[B](mb: M[B])(implicit P: NonEmptyParallel[M]): M[(A, B)] =
+  def parProduct[B](mb: M[B])(using P: NonEmptyParallel[M]): M[(A, B)] =
     Parallel.parProduct(ma, mb)
 }
 
 @deprecated("Kept for binary compatibility", "2.8.0")
 final class ParallelApplyOps[M[_], A, B](private val mab: M[A => B]) extends AnyVal {
-  def <&>(ma: M[A])(implicit P: Parallel[M]): M[B] =
-    Parallel.parAp(mab)(ma)(P)
+  def <&>(ma: M[A])(using P: Parallel[M]): M[B] =
+    Parallel.parAp(mab)(ma)(using P)
 
-  def parAp(ma: M[A])(implicit P: Parallel[M]): M[B] =
+  def parAp(ma: M[A])(using P: Parallel[M]): M[B] =
     Parallel.parAp(mab)(ma)
 }
 
 final class NonEmptyParallelApplyOps[M[_], A, B](private val mab: M[A => B]) extends AnyVal {
-  def <&>(ma: M[A])(implicit P: NonEmptyParallel[M]): M[B] =
-    Parallel.parAp[M, A, B](mab)(ma)(P)
+  def <&>(ma: M[A])(using P: NonEmptyParallel[M]): M[B] =
+    Parallel.parAp[M, A, B](mab)(ma)(using P)
 
-  def parAp(ma: M[A])(implicit P: NonEmptyParallel[M]): M[B] =
+  def parAp(ma: M[A])(using P: NonEmptyParallel[M]): M[B] =
     Parallel.parAp[M, A, B](mab)(ma)
 }
 
 final class ParallelBitraverseOps[T[_, _], A, B](private val tab: T[A, B]) extends AnyVal {
-  def parBitraverse[M[_], C, D](f: A => M[C], g: B => M[D])(implicit T: Bitraverse[T], P: Parallel[M]): M[T[C, D]] =
+  def parBitraverse[M[_], C, D](f: A => M[C], g: B => M[D])(using T: Bitraverse[T], P: Parallel[M]): M[T[C, D]] =
     Parallel.parBitraverse(tab)(f, g)
 }
 
 final class ParallelBisequenceOps[T[_, _], M[_], A, B](private val tmamb: T[M[A], M[B]]) extends AnyVal {
-  def parBisequence(implicit T: Bitraverse[T], P: Parallel[M]): M[T[A, B]] =
+  def parBisequence(using T: Bitraverse[T], P: Parallel[M]): M[T[A, B]] =
     Parallel.parBisequence(tmamb)
 }
 
 final class ParallelLeftTraverseOps[T[_, _], A, B](private val tab: T[A, B]) extends AnyVal {
-  def parLeftTraverse[M[_], C](f: A => M[C])(implicit T: Bitraverse[T], P: Parallel[M]): M[T[C, B]] =
+  def parLeftTraverse[M[_], C](f: A => M[C])(using T: Bitraverse[T], P: Parallel[M]): M[T[C, B]] =
     Parallel.parLeftTraverse(tab)(f)
 }
 
 final class ParallelLeftSequenceOps[T[_, _], M[_], A, B](private val tmab: T[M[A], B]) extends AnyVal {
-  def parLeftSequence(implicit T: Bitraverse[T], P: Parallel[M]): M[T[A, B]] =
+  def parLeftSequence(using T: Bitraverse[T], P: Parallel[M]): M[T[A, B]] =
     Parallel.parLeftSequence(tmab)
 }
 
 final class ParallelFoldMapAOps[T[_], A](private val ma: T[A]) extends AnyVal {
-  def parFoldMapA[M[_], B](f: A => M[B])(implicit T: Foldable[T], P: Parallel[M], B: Monoid[B]): M[B] =
+  def parFoldMapA[M[_], B](f: A => M[B])(using T: Foldable[T], P: Parallel[M], B: Monoid[B]): M[B] =
     Parallel.parFoldMapA(ma)(f)
 }
 
 final class ParallelReduceMapAOps[T[_], A](private val ma: T[A]) extends AnyVal {
-  def parReduceMapA[M[_], B](f: A => M[B])(implicit T: Reducible[T], P: NonEmptyParallel[M], B: Semigroup[B]): M[B] =
+  def parReduceMapA[M[_], B](f: A => M[B])(using T: Reducible[T], P: NonEmptyParallel[M], B: Semigroup[B]): M[B] =
     Parallel.parReduceMapA(ma)(f)
 }

@@ -38,7 +38,7 @@ import org.scalacheck.Prop._
 
 class OptionTSuite extends CatsSuite {
   implicit val iso: Isomorphisms[OptionT[ListWrapper, *]] = Isomorphisms
-    .invariant[OptionT[ListWrapper, *]](OptionT.catsDataFunctorForOptionT(ListWrapper.functor))
+    .invariant[OptionT[ListWrapper, *]](OptionT.catsDataFunctorForOptionT(using ListWrapper.functor))
 
   checkAll("OptionT[Eval, *]", DeferTests[OptionT[Eval, *]].defer[Int])
   checkAll("OptionT[Eval, *]", FunctorFilterTests[OptionT[Eval, *]].functorFilter[Int, Int, Int])
@@ -135,7 +135,7 @@ class OptionTSuite extends CatsSuite {
     implicit val F: Monad[ListWrapper] = ListWrapper.monad
     implicit val eq0: Eq[OptionT[ListWrapper, Option[Int]]] = OptionT.catsDataEqForOptionT[ListWrapper, Option[Int]]
     implicit val eq1: Eq[OptionT[OptionT[ListWrapper, *], Int]] =
-      OptionT.catsDataEqForOptionT[OptionT[ListWrapper, *], Int](eq0)
+      OptionT.catsDataEqForOptionT[OptionT[ListWrapper, *], Int](using eq0)
 
     checkAll("OptionT[ListWrapper, Int]", MonadTests[OptionT[ListWrapper, *]].monad[Int, Int, Int])
     checkAll("Monad[OptionT[ListWrapper, *]]", SerializableTests.serializable(Monad[OptionT[ListWrapper, *]]))

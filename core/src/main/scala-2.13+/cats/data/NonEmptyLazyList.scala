@@ -212,7 +212,7 @@ class NonEmptyLazyListOps[A](private val value: NonEmptyLazyList[A])
   /**
    * Tests if some element is contained in this NonEmptyLazyList
    */
-  final def contains(a: A)(implicit A: Eq[A]): Boolean =
+  final def contains(a: A)(using A: Eq[A]): Boolean =
     toLazyList.exists(A.eqv(_, a))
 
   /**
@@ -311,7 +311,7 @@ class NonEmptyLazyListOps[A](private val value: NonEmptyLazyList[A])
   /**
    * Reduce using the Semigroup of A
    */
-  final def reduce[AA >: A](implicit S: Semigroup[AA]): AA =
+  final def reduce[AA >: A](using S: Semigroup[AA]): AA =
     S.combineAllOption(iterator).get
 
   /**
@@ -345,10 +345,10 @@ class NonEmptyLazyListOps[A](private val value: NonEmptyLazyList[A])
   /**
    * Remove duplicates. Duplicates are checked using `Order[_]` instance.
    */
-  override def distinct[AA >: A](implicit O: Order[AA]): NonEmptyLazyList[AA] = distinctBy(identity[AA])
+  override def distinct[AA >: A](using O: Order[AA]): NonEmptyLazyList[AA] = distinctBy(identity[AA])
 
-  override def distinctBy[B](f: A => B)(implicit O: Order[B]): NonEmptyLazyList[A] = {
-    implicit val ord: Ordering[B] = O.toOrdering
+  override def distinctBy[B](f: A => B)(using O: Order[B]): NonEmptyLazyList[A] = {
+    given ord: Ordering[B] = O.toOrdering
 
     val buf = LazyList.newBuilder[A]
     toLazyList.foldLeft(TreeSet.empty[B]) { (elementsSoFar, a) =>
@@ -373,7 +373,7 @@ class NonEmptyLazyListOps[A](private val value: NonEmptyLazyList[A])
    * res0: List[(Char, Int)] = List((z,1), (a,4), (e,22))
    * }}}
    */
-  final def sortBy[B](f: A => B)(implicit B: Order[B]): NonEmptyLazyList[A] =
+  final def sortBy[B](f: A => B)(using B: Order[B]): NonEmptyLazyList[A] =
     // safe: sorting a NonEmptyList cannot produce an empty List
     create(toLazyList.sortBy(f)(B.toOrdering))
 
@@ -388,7 +388,7 @@ class NonEmptyLazyListOps[A](private val value: NonEmptyLazyList[A])
    * res0: List[Int] = List(3, 4, 9, 12)
    * }}}
    */
-  final def sorted[AA >: A](implicit AA: Order[AA]): NonEmptyLazyList[AA] =
+  final def sorted[AA >: A](using AA: Order[AA]): NonEmptyLazyList[AA] =
     create(toLazyList.sorted(AA.toOrdering))
 
   /**
@@ -406,8 +406,8 @@ class NonEmptyLazyListOps[A](private val value: NonEmptyLazyList[A])
    * res0: Boolean = true
    * }}}
    */
-  final def groupBy[B](f: A => B)(implicit B: Order[B]): SortedMap[B, NonEmptyLazyList[A]] = {
-    implicit val ordering: Ordering[B] = B.toOrdering
+  final def groupBy[B](f: A => B)(using B: Order[B]): SortedMap[B, NonEmptyLazyList[A]] = {
+    given ordering: Ordering[B] = B.toOrdering
     var m = TreeMap.empty[B, mutable.Builder[A, LazyList[A]]]
 
     for { elem <- toLazyList } {
@@ -438,7 +438,7 @@ class NonEmptyLazyListOps[A](private val value: NonEmptyLazyList[A])
    * res0: Boolean = true
    * }}}
    */
-  final def groupByNem[B](f: A => B)(implicit B: Order[B]): NonEmptyMap[B, NonEmptyLazyList[A]] =
+  final def groupByNem[B](f: A => B)(using B: Order[B]): NonEmptyMap[B, NonEmptyLazyList[A]] =
     NonEmptyMap.fromMapUnsafe(groupBy(f))
 
   /**
@@ -474,7 +474,7 @@ class NonEmptyLazyListOps[A](private val value: NonEmptyLazyList[A])
    * res0: Boolean = true
    * }}}
    */
-  final def toNem[T, U](implicit ev: A <:< (T, U), order: Order[T]): NonEmptyMap[T, U] =
+  final def toNem[T, U](using ev: A <:< (T, U), order: Order[T]): NonEmptyMap[T, U] =
     NonEmptyMap.fromMapUnsafe(SortedMap(toLazyList.map(ev): _*)(order.toOrdering))
 
   /**
@@ -487,7 +487,7 @@ class NonEmptyLazyListOps[A](private val value: NonEmptyLazyList[A])
    * res0: cats.data.NonEmptySet[Int] = TreeSet(1, 2, 3, 4)
    * }}}
    */
-  final def toNes[B >: A](implicit order: Order[B]): NonEmptySet[B] =
+  final def toNes[B >: A](using order: Order[B]): NonEmptySet[B] =
     NonEmptySet.of(head, tail: _*)
 
   /**
@@ -505,14 +505,14 @@ class NonEmptyLazyListOps[A](private val value: NonEmptyLazyList[A])
   final def toNev[B >: A]: NonEmptyVector[B] =
     NonEmptyVector.fromVectorUnsafe(toLazyList.toVector)
 
-  final def show[AA >: A](implicit AA: Show[AA]): String = s"NonEmpty${Show[LazyList[AA]].show(toLazyList)}"
+  final def show[AA >: A](using AA: Show[AA]): String = s"NonEmpty${Show[LazyList[AA]].show(toLazyList)}"
 }
 
 sealed abstract private[data] class NonEmptyLazyListInstances extends NonEmptyLazyListInstances1 {
 
-  implicit val catsDataInstancesForNonEmptyLazyList: Bimonad[NonEmptyLazyList] & NonEmptyTraverse[
+  given catsDataInstancesForNonEmptyLazyList: (Bimonad[NonEmptyLazyList] & NonEmptyTraverse[
     NonEmptyLazyList
-  ] & NonEmptyAlternative[NonEmptyLazyList] & Align[NonEmptyLazyList] =
+  ] & NonEmptyAlternative[NonEmptyLazyList] & Align[NonEmptyLazyList]) =
     new AbstractNonEmptyInstances[LazyList, NonEmptyLazyList] with Align[NonEmptyLazyList] {
 
       def extract[A](fa: NonEmptyLazyList[A]): A = fa.head
@@ -549,20 +549,20 @@ sealed abstract private[data] class NonEmptyLazyListInstances extends NonEmptyLa
         alignInstance.alignWith(fa, fb)(f)
     }
 
-  implicit def catsDataOrderForNonEmptyLazyList[A: Order]: Order[NonEmptyLazyList[A]] =
+  given catsDataOrderForNonEmptyLazyList[A: Order]: Order[NonEmptyLazyList[A]] =
     Order[LazyList[A]].asInstanceOf[Order[NonEmptyLazyList[A]]]
 
-  implicit def catsDataSemigroupForNonEmptyLazyList[A]: Semigroup[NonEmptyLazyList[A]] =
+  given catsDataSemigroupForNonEmptyLazyList[A]: Semigroup[NonEmptyLazyList[A]] =
     Semigroup[LazyList[A]].asInstanceOf[Semigroup[NonEmptyLazyList[A]]]
 
-  implicit def catsDataShowForNonEmptyLazyList[A: Show]: Show[NonEmptyLazyList[A]] = _.show
+  given catsDataShowForNonEmptyLazyList[A: Show]: Show[NonEmptyLazyList[A]] = _.show
 
-  implicit def catsDataParallelForNonEmptyLazyList: Parallel.Aux[NonEmptyLazyList, OneAnd[ZipLazyList, *]] =
+  given catsDataParallelForNonEmptyLazyList: Parallel.Aux[NonEmptyLazyList, OneAnd[ZipLazyList, *]] =
     new Parallel[NonEmptyLazyList] {
       type F[x] = OneAnd[ZipLazyList, x]
 
       def applicative: Applicative[OneAnd[ZipLazyList, *]] =
-        OneAnd.catsDataApplicativeForOneAnd(ZipLazyList.catsDataAlternativeForZipLazyList)
+        OneAnd.catsDataApplicativeForOneAnd(using ZipLazyList.catsDataAlternativeForZipLazyList)
       def monad: Monad[NonEmptyLazyList] = NonEmptyLazyList.catsDataInstancesForNonEmptyLazyList
 
       def sequential: OneAnd[ZipLazyList, *] ~> NonEmptyLazyList =
@@ -580,17 +580,17 @@ sealed abstract private[data] class NonEmptyLazyListInstances extends NonEmptyLa
 
 sealed abstract private[data] class NonEmptyLazyListInstances1 extends NonEmptyLazyListInstances2 {
 
-  implicit def catsDataHashForNonEmptyLazyList[A: Hash]: Hash[NonEmptyLazyList[A]] =
+  given catsDataHashForNonEmptyLazyList[A: Hash]: Hash[NonEmptyLazyList[A]] =
     Hash[LazyList[A]].asInstanceOf[Hash[NonEmptyLazyList[A]]]
 
 }
 
 sealed abstract private[data] class NonEmptyLazyListInstances2 extends NonEmptyLazyListInstances3 {
-  implicit def catsDataPartialOrderForNonEmptyLazyList[A: PartialOrder]: PartialOrder[NonEmptyLazyList[A]] =
+  given catsDataPartialOrderForNonEmptyLazyList[A: PartialOrder]: PartialOrder[NonEmptyLazyList[A]] =
     PartialOrder[LazyList[A]].asInstanceOf[PartialOrder[NonEmptyLazyList[A]]]
 }
 
 sealed abstract private[data] class NonEmptyLazyListInstances3 {
-  implicit def catsDataEqForNonEmptyLazyList[A: Eq]: Eq[NonEmptyLazyList[A]] =
+  given catsDataEqForNonEmptyLazyList[A: Eq]: Eq[NonEmptyLazyList[A]] =
     Eq[LazyList[A]].asInstanceOf[Eq[NonEmptyLazyList[A]]]
 }

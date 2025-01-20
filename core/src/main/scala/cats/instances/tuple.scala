@@ -33,7 +33,7 @@ private[instances] trait Tuple2InstancesBinCompat0 {
   /**
    * Witness for: (A, A) <-> Boolean => A
    */
-  implicit def catsDataRepresentableForPair(implicit
+  given catsDataRepresentableForPair(using
     PF: Functor[λ[P => (P, P)]]
   ): Representable.Aux[λ[P => (P, P)], Boolean] =
     new Representable[λ[P => (P, P)]] {
@@ -48,7 +48,7 @@ private[instances] trait Tuple2InstancesBinCompat0 {
       }
     }
 
-  implicit val catsDataFunctorForPair: Functor[λ[P => (P, P)]] = new Functor[λ[P => (P, P)]] {
+  given catsDataFunctorForPair: Functor[λ[P => (P, P)]] = new Functor[λ[P => (P, P)]] {
     override def map[A, B](fa: (A, A))(f: A => B): (B, B) = (f(fa._1), f(fa._2))
   }
 }
@@ -70,14 +70,14 @@ sealed private[instances] trait Tuple2Instances extends Tuple2Instances1 {
     }
 
   @deprecated("Use catsStdShowForTuple2 in cats.instances.NTupleShowInstances", "2.4.0")
-  def catsStdShowForTuple2[A, B](implicit aShow: Show[A], bShow: Show[B]): Show[(A, B)] = { case (a, b) =>
+  def catsStdShowForTuple2[A, B](using aShow: Show[A], bShow: Show[B]): Show[(A, B)] = { case (a, b) =>
     s"(${aShow.show(a)},${bShow.show(b)})"
   }
 
   @deprecated("Use catsStdInstancesForTuple2 in cats.instances.NTupleMonadInstances", "2.4.0")
   def catsStdInstancesForTuple2[X]: Traverse[(X, *)] & Comonad[(X, *)] & Reducible[(X, *)] =
     new Traverse[(X, *)] with Comonad[(X, *)] with Reducible[(X, *)] {
-      def traverse[G[_], A, B](fa: (X, A))(f: A => G[B])(implicit G: Applicative[G]): G[(X, B)] =
+      def traverse[G[_], A, B](fa: (X, A))(f: A => G[B])(using G: Applicative[G]): G[(X, B)] =
         G.map(f(fa._2))((fa._1, _))
 
       def foldLeft[A, B](fa: (X, A), b: B)(f: (B, A) => B): B = f(b, fa._2)
@@ -97,9 +97,9 @@ sealed private[instances] trait Tuple2Instances extends Tuple2Instances1 {
 
       override def coflatten[A](fa: (X, A)): (X, (X, A)) = (fa._1, fa)
 
-      override def foldMap[A, B](fa: (X, A))(f: A => B)(implicit B: Monoid[B]): B = f(fa._2)
+      override def foldMap[A, B](fa: (X, A))(f: A => B)(using B: Monoid[B]): B = f(fa._2)
 
-      override def reduce[A](fa: (X, A))(implicit A: Semigroup[A]): A = fa._2
+      override def reduce[A](fa: (X, A))(using A: Semigroup[A]): A = fa._2
 
       def reduceLeftTo[A, B](fa: (X, A))(f: A => B)(g: (B, A) => B): B = f(fa._2)
 
@@ -117,7 +117,7 @@ sealed private[instances] trait Tuple2Instances extends Tuple2Instances1 {
       override def reduceRightToOption[A, B](fa: (X, A))(f: A => B)(g: (A, Eval[B]) => Eval[B]): Eval[Option[B]] =
         Now(Some(f(fa._2)))
 
-      override def reduceMap[A, B](fa: (X, A))(f: A => B)(implicit B: Semigroup[B]): B =
+      override def reduceMap[A, B](fa: (X, A))(f: A => B)(using B: Semigroup[B]): B =
         f(fa._2)
 
       override def size[A](fa: (X, A)): Long = 1L
@@ -139,7 +139,7 @@ sealed private[instances] trait Tuple2Instances extends Tuple2Instances1 {
 
 sealed private[instances] trait Tuple2Instances1 extends Tuple2Instances2 {
   @deprecated("Use catsStdCommutativeMonadForTuple2 in cats.instances.NTupleMonadInstances", "2.4.0")
-  def catsStdCommutativeMonadForTuple2[X](implicit MX: CommutativeMonoid[X]): CommutativeMonad[(X, *)] =
+  def catsStdCommutativeMonadForTuple2[X](using MX: CommutativeMonoid[X]): CommutativeMonad[(X, *)] =
     new FlatMapTuple2[X](MX) with CommutativeMonad[(X, *)] {
       def pure[A](a: A): (X, A) = (MX.empty, a)
     }
@@ -147,13 +147,13 @@ sealed private[instances] trait Tuple2Instances1 extends Tuple2Instances2 {
 
 sealed private[instances] trait Tuple2Instances2 extends Tuple2Instances3 {
   @deprecated("Use catsStdCommutativeFlatMapForTuple2 in cats.instances.NTupleMonadInstances", "2.4.0")
-  def catsStdCommutativeFlatMapForTuple2[X](implicit MX: CommutativeSemigroup[X]): CommutativeFlatMap[(X, *)] =
+  def catsStdCommutativeFlatMapForTuple2[X](using MX: CommutativeSemigroup[X]): CommutativeFlatMap[(X, *)] =
     new FlatMapTuple2[X](MX) with CommutativeFlatMap[(X, *)]
 }
 
 sealed private[instances] trait Tuple2Instances3 extends Tuple2Instances4 {
   @deprecated("Use catsStdMonadForTuple2 in cats.instances.NTupleMonadInstances", "2.4.0")
-  def catsStdMonadForTuple2[X](implicit MX: Monoid[X]): Monad[(X, *)] =
+  def catsStdMonadForTuple2[X](using MX: Monoid[X]): Monad[(X, *)] =
     new FlatMapTuple2[X](MX) with Monad[(X, *)] {
       def pure[A](a: A): (X, A) = (MX.empty, a)
     }
@@ -161,7 +161,7 @@ sealed private[instances] trait Tuple2Instances3 extends Tuple2Instances4 {
 
 sealed private[instances] trait Tuple2Instances4 {
   @deprecated("Use catsStdFlatMapForTuple2 on cats.instances.NTupleMonadInstances", "2.4.0")
-  def catsStdFlatMapForTuple2[X](implicit SX: Semigroup[X]): FlatMap[(X, *)] =
+  def catsStdFlatMapForTuple2[X](using SX: Semigroup[X]): FlatMap[(X, *)] =
     new FlatMapTuple2[X](SX)
 }
 

@@ -46,7 +46,7 @@ trait ShortCircuitingLaws[F[_]] {
     val maxInvocationsAllowed = size / 2
     val f = new RestrictedFunction[A, Option[A]](Function.const(None), maxInvocationsAllowed, Some(empty))
 
-    fa.foldMapK(f)(F, nonShortCircuitingMonoidK)
+    fa.foldMapK(f)(using F, nonShortCircuitingMonoidK)
     f.invocations.get <-> size
   }
 
@@ -64,7 +64,7 @@ trait ShortCircuitingLaws[F[_]] {
     val maxInvocationsAllowed = size / 2
     val f = new RestrictedFunction((i: A) => Some(i), maxInvocationsAllowed, None)
 
-    fa.traverse(f)(nonShortCircuitingApplicative)
+    fa.traverse(f)(using nonShortCircuitingApplicative)
     f.invocations.get <-> size
   }
 
@@ -82,7 +82,7 @@ trait ShortCircuitingLaws[F[_]] {
     val maxInvocationsAllowed = size / 2
     val f = new RestrictedFunction((i: A) => Some(i), maxInvocationsAllowed, None)
 
-    fa.nonEmptyTraverse(f)(nonShortCircuitingApplicative)
+    fa.nonEmptyTraverse(f)(using nonShortCircuitingApplicative)
     f.invocations.get <-> size
   }
 
@@ -104,7 +104,7 @@ trait ShortCircuitingLaws[F[_]] {
     val maxInvocationsAllowed = size / 2
     val f = new RestrictedFunction((i: A) => Option(Option(i)), maxInvocationsAllowed, None)
 
-    fa.traverseFilter(f)(nonShortCircuitingApplicative)
+    fa.traverseFilter(f)(using nonShortCircuitingApplicative)
     f.invocations.get <-> size
   }
 
@@ -126,7 +126,7 @@ trait ShortCircuitingLaws[F[_]] {
     val maxInvocationsAllowed = size / 2
     val f = new RestrictedFunction((_: A) => Some(true), maxInvocationsAllowed, None)
 
-    fa.filterA(f)(nonShortCircuitingApplicative)
+    fa.filterA(f)(using nonShortCircuitingApplicative)
     f.invocations.get <-> size
   }
 

@@ -107,7 +107,7 @@ package object cats {
           case Left(a1) => tailRecM(a1)(f)
           case Right(b) => b
         }
-      override def distribute[F[_], A, B](fa: F[A])(f: A => B)(implicit F: Functor[F]): Id[F[B]] = F.map(fa)(f)
+      override def distribute[F[_], A, B](fa: F[A])(f: A => B)(using F: Functor[F]): Id[F[B]] = F.map(fa)(f)
       override def map[A, B](fa: A)(f: A => B): B = f(fa)
       override def ap[A, B](ff: A => B)(fa: A): B = ff(fa)
       override def flatten[A](ffa: A): A = ffa
@@ -118,12 +118,12 @@ package object cats {
       def foldLeft[A, B](a: A, b: B)(f: (B, A) => B) = f(b, a)
       def foldRight[A, B](a: A, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
         f(a, lb)
-      def nonEmptyTraverse[G[_], A, B](a: A)(f: A => G[B])(implicit G: Apply[G]): G[B] =
+      def nonEmptyTraverse[G[_], A, B](a: A)(f: A => G[B])(using G: Apply[G]): G[B] =
         f(a)
       override def mapAccumulate[S, A, B](init: S, fa: Id[A])(f: (S, A) => (S, B)): (S, Id[B]) =
         f(init, fa)
-      override def foldMap[A, B](fa: Id[A])(f: A => B)(implicit B: Monoid[B]): B = f(fa)
-      override def reduce[A](fa: Id[A])(implicit A: Semigroup[A]): A =
+      override def foldMap[A, B](fa: Id[A])(f: A => B)(using B: Monoid[B]): B = f(fa)
+      override def reduce[A](fa: Id[A])(using A: Semigroup[A]): A =
         fa
       def reduceLeftTo[A, B](fa: Id[A])(f: A => B)(g: (B, A) => B): B =
         f(fa)
@@ -137,7 +137,7 @@ package object cats {
         Now(f(fa))
       override def reduceRightToOption[A, B](fa: Id[A])(f: A => B)(g: (A, Eval[B]) => Eval[B]): Eval[Option[B]] =
         Now(Some(f(fa)))
-      override def reduceMap[A, B](fa: Id[A])(f: A => B)(implicit B: Semigroup[B]): B = f(fa)
+      override def reduceMap[A, B](fa: Id[A])(f: A => B)(using B: Semigroup[B]): B = f(fa)
       override def size[A](fa: Id[A]): Long = 1L
       override def get[A](fa: Id[A])(idx: Long): Option[A] =
         if (idx == 0L) Some(fa) else None
@@ -147,7 +147,7 @@ package object cats {
   /**
    * Witness for: Id[A] <-> Unit => A
    */
-  implicit val catsRepresentableForId: Representable.Aux[Id, Unit] = new Representable[Id] {
+  given catsRepresentableForId: Representable.Aux[Id, Unit] = new Representable[Id] {
     override type Representation = Unit
     override val F: Functor[Id] = Functor[Id]
 
@@ -163,7 +163,7 @@ package object cats {
 
   }
 
-  implicit val catsParallelForId: Parallel.Aux[Id, Id] = Parallel.identity
+  given catsParallelForId: Parallel.Aux[Id, Id] = Parallel.identity
 
   type Eq[A] = cats.kernel.Eq[A]
   type PartialOrder[A] = cats.kernel.PartialOrder[A]
@@ -185,11 +185,11 @@ package object cats {
 
   type ApplicativeThrow[F[_]] = ApplicativeError[F, Throwable]
   object ApplicativeThrow {
-    def apply[F[_]](implicit ev: ApplicativeThrow[F]): ApplicativeThrow[F] = ev
+    def apply[F[_]](using ev: ApplicativeThrow[F]): ApplicativeThrow[F] = ev
   }
 
   type MonadThrow[F[_]] = MonadError[F, Throwable]
   object MonadThrow {
-    def apply[F[_]](implicit ev: MonadThrow[F]): MonadThrow[F] = ev
+    def apply[F[_]](using ev: MonadThrow[F]): MonadThrow[F] = ev
   }
 }

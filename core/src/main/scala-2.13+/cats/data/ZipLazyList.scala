@@ -28,7 +28,7 @@ object ZipLazyList {
 
   def apply[A](value: LazyList[A]): ZipLazyList[A] = new ZipLazyList(value)
 
-  implicit val catsDataAlternativeForZipLazyList: Alternative[ZipLazyList] & CommutativeApplicative[ZipLazyList] =
+  given catsDataAlternativeForZipLazyList: (Alternative[ZipLazyList] & CommutativeApplicative[ZipLazyList]) =
     new Alternative[ZipLazyList] with CommutativeApplicative[ZipLazyList] {
       def pure[A](x: A): ZipLazyList[A] = new ZipLazyList(LazyList.continually(x))
 
@@ -47,6 +47,6 @@ object ZipLazyList {
         ZipLazyList(cats.instances.lazyList.catsStdInstancesForLazyList.combineK(x.value, y.value))
     }
 
-  implicit def catsDataEqForZipLazyList[A: Eq]: Eq[ZipLazyList[A]] =
+  given catsDataEqForZipLazyList[A: Eq]: Eq[ZipLazyList[A]] =
     Eq.by((_: ZipLazyList[A]).value)(cats.kernel.instances.lazyList.catsKernelStdEqForLazyList[A])
 }

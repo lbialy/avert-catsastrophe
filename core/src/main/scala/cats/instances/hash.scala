@@ -26,7 +26,7 @@ import scala.annotation.tailrec
 
 trait HashInstances extends kernel.instances.HashInstances {
 
-  implicit val catsContravariantForHash: Contravariant[Hash] =
+  given catsContravariantForHash: Contravariant[Hash] =
     new Contravariant[Hash] {
 
       /**
@@ -36,7 +36,7 @@ trait HashInstances extends kernel.instances.HashInstances {
 
     }
 
-  implicit def catsDeferForHash: Defer[Hash] = HashInstances.catsDeferForHashCache
+  given catsDeferForHash: Defer[Hash] = HashInstances.catsDeferForHashCache
 }
 object HashInstances {
   private val catsDeferForHashCache: Defer[Hash] =

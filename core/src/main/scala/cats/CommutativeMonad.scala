@@ -37,11 +37,11 @@ object CommutativeMonad {
   /**
    * Summon an instance of [[CommutativeMonad]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: CommutativeMonad[F]): CommutativeMonad[F] = instance
+  @inline def apply[F[_]](using instance: CommutativeMonad[F]): CommutativeMonad[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllCommutativeMonadOps[F[_], A](target: F[A])(implicit tc: CommutativeMonad[F]): AllOps[F, A] {
+    implicit def toAllCommutativeMonadOps[F[_], A](target: F[A])(using tc: CommutativeMonad[F]): AllOps[F, A] {
       type TypeClassType = CommutativeMonad[F]
     } =
       new AllOps[F, A] {
@@ -63,7 +63,7 @@ object CommutativeMonad {
     type TypeClassType <: CommutativeMonad[F]
   }
   trait ToCommutativeMonadOps extends Serializable {
-    implicit def toCommutativeMonadOps[F[_], A](target: F[A])(implicit tc: CommutativeMonad[F]): Ops[F, A] {
+    implicit def toCommutativeMonadOps[F[_], A](target: F[A])(using tc: CommutativeMonad[F]): Ops[F, A] {
       type TypeClassType = CommutativeMonad[F]
     } =
       new Ops[F, A] {

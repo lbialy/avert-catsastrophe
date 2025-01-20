@@ -44,7 +44,7 @@ trait ApplicativeError[F[_], E] extends Applicative[F] {
    * scala> import cats.syntax.all._
    *
    * // integer-rounded division
-   * scala> def divide[F[_]](dividend: Int, divisor: Int)(implicit F: ApplicativeError[F, String]): F[Int] =
+   * scala> def divide[F[_]](dividend: Int, divisor: Int)(using F: ApplicativeError[F, String]): F[Int] =
    *      | if (divisor === 0) F.raiseError("division by zero")
    *      | else F.pure(dividend / divisor)
    *
@@ -146,7 +146,7 @@ trait ApplicativeError[F[_], E] extends Applicative[F] {
   /**
    * Similar to [[attempt]], but it only handles errors of type `EE`.
    */
-  def attemptNarrow[EE <: Throwable, A](fa: F[A])(implicit tag: ClassTag[EE], ev: EE <:< E): F[Either[EE, A]] =
+  def attemptNarrow[EE <: Throwable, A](fa: F[A])(using tag: ClassTag[EE], ev: EE <:< E): F[Either[EE, A]] =
     recover(map(fa)(Right[EE, A](_): Either[EE, A])) { case e: EE => Left[EE, A](e) }
 
   /**
@@ -265,7 +265,7 @@ trait ApplicativeError[F[_], E] extends Applicative[F] {
    * Often E is Throwable. Here we try to call pure or catch
    * and raise.
    */
-  def catchNonFatal[A](a: => A)(implicit ev: Throwable <:< E): F[A] =
+  def catchNonFatal[A](a: => A)(using ev: Throwable <:< E): F[A] =
     try pure(a)
     catch {
       case e if NonFatal(e) => raiseError(e)
@@ -275,7 +275,7 @@ trait ApplicativeError[F[_], E] extends Applicative[F] {
    * Often E is Throwable. Here we try to call pure or catch
    * and raise
    */
-  def catchNonFatalEval[A](a: Eval[A])(implicit ev: Throwable <:< E): F[A] =
+  def catchNonFatalEval[A](a: Eval[A])(using ev: Throwable <:< E): F[A] =
     try pure(a.value)
     catch {
       case e if NonFatal(e) => raiseError(e)
@@ -290,7 +290,7 @@ trait ApplicativeError[F[_], E] extends Applicative[F] {
   /**
    * If the error type is Throwable, we can convert from a scala.util.Try
    */
-  def fromTry[A](t: Try[A])(implicit ev: Throwable <:< E): F[A] =
+  def fromTry[A](t: Try[A])(using ev: Throwable <:< E): F[A] =
     t match {
       case Success(a) => pure(a)
       case Failure(e) => raiseError(e)
@@ -362,10 +362,10 @@ trait ApplicativeError[F[_], E] extends Applicative[F] {
 }
 
 object ApplicativeError {
-  def apply[F[_], E](implicit F: ApplicativeError[F, E]): ApplicativeError[F, E] = F
+  def apply[F[_], E](using F: ApplicativeError[F, E]): ApplicativeError[F, E] = F
 
   final private[cats] class LiftFromOptionPartially[F[_]](private val dummy: Boolean = true) extends AnyVal {
-    def apply[E, A](oa: Option[A], ifEmpty: => E)(implicit F: ApplicativeError[F, ? >: E]): F[A] =
+    def apply[E, A](oa: Option[A], ifEmpty: => E)(using F: ApplicativeError[F, ? >: E]): F[A] =
       oa match {
         case Some(a) => F.pure(a)
         case None    => F.raiseError(ifEmpty)
@@ -374,7 +374,7 @@ object ApplicativeError {
 
   final private[cats] class CatchOnlyPartiallyApplied[T, F[_], E](private val F: ApplicativeError[F, E])
       extends AnyVal {
-    def apply[A](f: => A)(implicit CT: ClassTag[T], NT: NotNull[T], ev: Throwable <:< E): F[A] =
+    def apply[A](f: => A)(using CT: ClassTag[T], NT: NotNull[T], ev: Throwable <:< E): F[A] =
       try {
         F.pure(f)
       } catch {

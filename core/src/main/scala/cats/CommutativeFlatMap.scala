@@ -37,11 +37,11 @@ object CommutativeFlatMap {
   /**
    * Summon an instance of [[CommutativeFlatMap]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: CommutativeFlatMap[F]): CommutativeFlatMap[F] = instance
+  @inline def apply[F[_]](using instance: CommutativeFlatMap[F]): CommutativeFlatMap[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllCommutativeFlatMapOps[F[_], A](target: F[A])(implicit tc: CommutativeFlatMap[F]): AllOps[F, A] {
+    implicit def toAllCommutativeFlatMapOps[F[_], A](target: F[A])(using tc: CommutativeFlatMap[F]): AllOps[F, A] {
       type TypeClassType = CommutativeFlatMap[F]
     } =
       new AllOps[F, A] {
@@ -59,7 +59,7 @@ object CommutativeFlatMap {
     type TypeClassType <: CommutativeFlatMap[F]
   }
   trait ToCommutativeFlatMapOps extends Serializable {
-    implicit def toCommutativeFlatMapOps[F[_], A](target: F[A])(implicit tc: CommutativeFlatMap[F]): Ops[F, A] {
+    implicit def toCommutativeFlatMapOps[F[_], A](target: F[A])(using tc: CommutativeFlatMap[F]): Ops[F, A] {
       type TypeClassType = CommutativeFlatMap[F]
     } =
       new Ops[F, A] {

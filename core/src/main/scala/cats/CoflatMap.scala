@@ -70,11 +70,11 @@ object CoflatMap {
   /**
    * Summon an instance of [[CoflatMap]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: CoflatMap[F]): CoflatMap[F] = instance
+  @inline def apply[F[_]](using instance: CoflatMap[F]): CoflatMap[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllCoflatMapOps[F[_], A](target: F[A])(implicit tc: CoflatMap[F]): AllOps[F, A] {
+    implicit def toAllCoflatMapOps[F[_], A](target: F[A])(using tc: CoflatMap[F]): AllOps[F, A] {
       type TypeClassType = CoflatMap[F]
     } =
       new AllOps[F, A] {
@@ -94,7 +94,7 @@ object CoflatMap {
     type TypeClassType <: CoflatMap[F]
   }
   trait ToCoflatMapOps extends Serializable {
-    implicit def toCoflatMapOps[F[_], A](target: F[A])(implicit tc: CoflatMap[F]): Ops[F, A] {
+    implicit def toCoflatMapOps[F[_], A](target: F[A])(using tc: CoflatMap[F]): Ops[F, A] {
       type TypeClassType = CoflatMap[F]
     } =
       new Ops[F, A] {
