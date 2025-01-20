@@ -28,7 +28,7 @@ import scala.annotation.tailrec
 
 trait SortedSetInstances extends SortedSetInstances1 {
 
-  implicit val catsStdInstancesForSortedSet: Foldable[SortedSet] & SemigroupK[SortedSet] =
+  given catsStdInstancesForSortedSet: (Foldable[SortedSet] & SemigroupK[SortedSet]) =
     new Foldable[SortedSet] with SemigroupK[SortedSet] {
 
       def combineK[A](x: SortedSet[A], y: SortedSet[A]): SortedSet[A] = x | y
@@ -39,7 +39,7 @@ trait SortedSetInstances extends SortedSetInstances1 {
       def foldRight[A, B](fa: SortedSet[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
         Foldable.iterateRight(fa, lb)(f)
 
-      override def foldMap[A, B](fa: SortedSet[A])(f: A => B)(implicit B: Monoid[B]): B =
+      override def foldMap[A, B](fa: SortedSet[A])(f: A => B)(using B: Monoid[B]): B =
         B.combineAll(fa.iterator.map(f))
 
       override def get[A](fa: SortedSet[A])(idx: Long): Option[A] = {
@@ -65,7 +65,7 @@ trait SortedSetInstances extends SortedSetInstances1 {
 
       override def isEmpty[A](fa: SortedSet[A]): Boolean = fa.isEmpty
 
-      override def fold[A](fa: SortedSet[A])(implicit A: Monoid[A]): A = A.combineAll(fa)
+      override def fold[A](fa: SortedSet[A])(using A: Monoid[A]): A = A.combineAll(fa)
 
       override def toList[A](fa: SortedSet[A]): List[A] = fa.toList
 
@@ -83,7 +83,7 @@ trait SortedSetInstances extends SortedSetInstances1 {
         fa.collectFirst(Function.unlift(f))
     }
 
-  implicit def catsStdShowForSortedSet[A: Show]: Show[SortedSet[A]] =
+  given catsStdShowForSortedSet[A: Show]: Show[SortedSet[A]] =
     _.iterator.map(Show[A].show).mkString("SortedSet(", ", ", ")")
 
   @deprecated("Use cats.kernel.instances.sortedSet.catsKernelStdOrderForSortedSet", "2.0.0-RC2")
@@ -102,10 +102,10 @@ private[instances] trait SortedSetInstances1 {
 }
 
 private[instances] trait SortedSetInstancesBinCompat0 {
-  implicit val catsStdSemigroupalForSortedSet: Semigroupal[SortedSet] = new Semigroupal[SortedSet] {
+  given catsStdSemigroupalForSortedSet: Semigroupal[SortedSet] = new Semigroupal[SortedSet] {
     override def product[A, B](fa: SortedSet[A], fb: SortedSet[B]): SortedSet[(A, B)] = {
-      implicit val orderingA: Ordering[A] = fa.ordering
-      implicit val orderingB: Ordering[B] = fb.ordering
+      given orderingA: Ordering[A] = fa.ordering
+      given orderingB: Ordering[B] = fb.ordering
 
       fa.flatMap(a => fb.map(b => a -> b))
     }
@@ -113,7 +113,7 @@ private[instances] trait SortedSetInstancesBinCompat0 {
 }
 
 private[instances] trait SortedSetInstancesBinCompat1 extends LowPrioritySortedSetInstancesBinCompat1 {
-  implicit def catsKernelStdHashForSortedSet1[A: Hash]: Hash[SortedSet[A]] =
+  given catsKernelStdHashForSortedSet1[A: Hash]: Hash[SortedSet[A]] =
     cats.kernel.instances.sortedSet.catsKernelStdHashForSortedSet[A](Hash[A])
 
   @deprecated("Use cats.kernel.instances.sortedSet.catsKernelStdHashForSortedSet", "2.0.0-RC3")

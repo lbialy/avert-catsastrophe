@@ -34,10 +34,10 @@ final class MonadIdOps[A](private val a: A) extends AnyVal {
   /**
    * Iterative application of `f` while `p` holds.
    */
-  def iterateWhileM[F[_]](f: A => F[A])(p: A => Boolean)(implicit M: Monad[F]): F[A] = M.iterateWhileM(a)(f)(p)
+  def iterateWhileM[F[_]](f: A => F[A])(p: A => Boolean)(using M: Monad[F]): F[A] = M.iterateWhileM(a)(f)(p)
 
   /**
    * Iterative application of `f` until `p` holds.
    */
-  def iterateUntilM[F[_]](f: A => F[A])(p: A => Boolean)(implicit M: Monad[F]): F[A] = M.iterateUntilM(a)(f)(p)
+  def iterateUntilM[F[_]](f: A => F[A])(p: A => Boolean)(using M: Monad[F]): F[A] = M.iterateUntilM(a)(f)(p)
 }

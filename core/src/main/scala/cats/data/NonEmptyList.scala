@@ -311,10 +311,10 @@ final case class NonEmptyList[+A](head: A, tail: List[A]) extends NonEmptyCollec
   /**
    * Reduce using the `Semigroup` of `AA`.
    */
-  def reduce[AA >: A](implicit S: Semigroup[AA]): AA =
+  def reduce[AA >: A](using S: Semigroup[AA]): AA =
     S.combineAllOption(toList).get
 
-  def traverse[G[_], B](f: A => G[B])(implicit G: Applicative[G]): G[NonEmptyList[B]] =
+  def traverse[G[_], B](f: A => G[B])(using G: Applicative[G]): G[NonEmptyList[B]] =
     G.map2Eval(f(head), Always(Traverse[List].traverse(tail)(f)))(NonEmptyList(_, _)).value
 
   def coflatMap[B](f: NonEmptyList[A] => B): NonEmptyList[B] = {
@@ -329,10 +329,10 @@ final case class NonEmptyList[+A](head: A, tail: List[A]) extends NonEmptyCollec
     NonEmptyList(f(this), consume(tail))
   }
 
-  def ===[AA >: A](o: NonEmptyList[AA])(implicit AA: Eq[AA]): Boolean =
+  def ===[AA >: A](o: NonEmptyList[AA])(using AA: Eq[AA]): Boolean =
     AA.eqv(this.head, o.head) && Eq[List[AA]].eqv(this.tail, o.tail)
 
-  def show[AA >: A](implicit AA: Show[AA]): String =
+  def show[AA >: A](using AA: Show[AA]): String =
     toList.iterator.map(AA.show).mkString("NonEmptyList(", ", ", ")")
 
   override def toString: String = s"NonEmpty$toList"
@@ -340,10 +340,10 @@ final case class NonEmptyList[+A](head: A, tail: List[A]) extends NonEmptyCollec
   /**
    * Remove duplicates. Duplicates are checked using `Order[_]` instance.
    */
-  override def distinct[AA >: A](implicit O: Order[AA]): NonEmptyList[AA] = distinctBy(identity[AA])
+  override def distinct[AA >: A](using O: Order[AA]): NonEmptyList[AA] = distinctBy(identity[AA])
 
-  override def distinctBy[B](f: A => B)(implicit O: Order[B]): NonEmptyList[A] = {
-    implicit val ord: Ordering[B] = O.toOrdering
+  override def distinctBy[B](f: A => B)(using O: Order[B]): NonEmptyList[A] = {
+    given ord: Ordering[B] = O.toOrdering
 
     val buf = ListBuffer.empty[A]
     tail.foldLeft(TreeSet(f(head): B)) { (elementsSoFar, a) =>
@@ -447,7 +447,7 @@ final case class NonEmptyList[+A](head: A, tail: List[A]) extends NonEmptyCollec
    * res0: cats.data.NonEmptyList[(Char, Int)] = NonEmptyList((z,1), (a,4), (e,22))
    * }}}
    */
-  def sortBy[B](f: A => B)(implicit B: Order[B]): NonEmptyList[A] =
+  def sortBy[B](f: A => B)(using B: Order[B]): NonEmptyList[A] =
     // safe: sorting a NonEmptyList cannot produce an empty List
     NonEmptyList.fromListUnsafe(toList.sortBy(f)(B.toOrdering))
 
@@ -462,7 +462,7 @@ final case class NonEmptyList[+A](head: A, tail: List[A]) extends NonEmptyCollec
    * res0: cats.data.NonEmptyList[Int] = NonEmptyList(3, 4, 9, 12)
    * }}}
    */
-  def sorted[AA >: A](implicit AA: Order[AA]): NonEmptyList[AA] =
+  def sorted[AA >: A](using AA: Order[AA]): NonEmptyList[AA] =
     // safe: sorting a NonEmptyList cannot produce an empty List
     NonEmptyList.fromListUnsafe(toList.sorted(AA.toOrdering))
 
@@ -481,7 +481,7 @@ final case class NonEmptyList[+A](head: A, tail: List[A]) extends NonEmptyCollec
    * res0: Boolean = true
    * }}}
    */
-  def groupBy[B](f: A => B)(implicit B: Order[B]): SortedMap[B, NonEmptyList[A]] =
+  def groupBy[B](f: A => B)(using B: Order[B]): SortedMap[B, NonEmptyList[A]] =
     groupMap(key = f)(identity)
 
   /**
@@ -498,7 +498,7 @@ final case class NonEmptyList[+A](head: A, tail: List[A]) extends NonEmptyCollec
    * res0: Boolean = true
    * }}}
    */
-  def groupByNem[B](f: A => B)(implicit B: Order[B]): NonEmptyMap[B, NonEmptyList[A]] =
+  def groupByNem[B](f: A => B)(using B: Order[B]): NonEmptyMap[B, NonEmptyList[A]] =
     NonEmptyMap.fromMapUnsafe(groupBy(f))
 
   /**
@@ -518,8 +518,8 @@ final case class NonEmptyList[+A](head: A, tail: List[A]) extends NonEmptyCollec
    * res0: Boolean = true
    * }}}
    */
-  def groupMap[K, B](key: A => K)(f: A => B)(implicit K: Order[K]): SortedMap[K, NonEmptyList[B]] = {
-    implicit val ordering: Ordering[K] = K.toOrdering
+  def groupMap[K, B](key: A => K)(f: A => B)(using K: Order[K]): SortedMap[K, NonEmptyList[B]] = {
+    given ordering: Ordering[K] = K.toOrdering
     var m = TreeMap.empty[K, mutable.Builder[B, List[B]]]
 
     for (elem <- toList) {
@@ -552,7 +552,7 @@ final case class NonEmptyList[+A](head: A, tail: List[A]) extends NonEmptyCollec
    * res0: Boolean = true
    * }}}
    */
-  def groupMapNem[K, B](key: A => K)(f: A => B)(implicit K: Order[K]): NonEmptyMap[K, NonEmptyList[B]] =
+  def groupMapNem[K, B](key: A => K)(f: A => B)(using K: Order[K]): NonEmptyMap[K, NonEmptyList[B]] =
     NonEmptyMap.fromMapUnsafe(groupMap(key)(f))
 
   /**
@@ -574,7 +574,7 @@ final case class NonEmptyList[+A](head: A, tail: List[A]) extends NonEmptyCollec
    * res0: Boolean = true
    * }}}
    */
-  def groupMapReduce[K, B](key: A => K)(f: A => B)(implicit K: Order[K], B: Semigroup[B]): SortedMap[K, B] =
+  def groupMapReduce[K, B](key: A => K)(f: A => B)(using K: Order[K], B: Semigroup[B]): SortedMap[K, B] =
     groupMapReduceWith(key)(f)(B.combine)
 
   /**
@@ -595,7 +595,7 @@ final case class NonEmptyList[+A](head: A, tail: List[A]) extends NonEmptyCollec
    * res0: Boolean = true
    * }}}
    */
-  def groupMapReduceNem[K, B](key: A => K)(f: A => B)(implicit K: Order[K], B: Semigroup[B]): NonEmptyMap[K, B] =
+  def groupMapReduceNem[K, B](key: A => K)(f: A => B)(using K: Order[K], B: Semigroup[B]): NonEmptyMap[K, B] =
     NonEmptyMap.fromMapUnsafe(groupMapReduce(key)(f))
 
   /**
@@ -617,8 +617,8 @@ final case class NonEmptyList[+A](head: A, tail: List[A]) extends NonEmptyCollec
    * res0: Boolean = true
    * }}}
    */
-  def groupMapReduceWith[K, B](key: A => K)(f: A => B)(combine: (B, B) => B)(implicit K: Order[K]): SortedMap[K, B] = {
-    implicit val ordering: Ordering[K] = K.toOrdering
+  def groupMapReduceWith[K, B](key: A => K)(f: A => B)(combine: (B, B) => B)(using K: Order[K]): SortedMap[K, B] = {
+    given ordering: Ordering[K] = K.toOrdering
     var m = TreeMap.empty[K, B]
 
     for (elem <- toList) {
@@ -651,7 +651,7 @@ final case class NonEmptyList[+A](head: A, tail: List[A]) extends NonEmptyCollec
    * res0: Boolean = true
    * }}}
    */
-  def groupMapReduceWithNem[K, B](key: A => K)(f: A => B)(combine: (B, B) => B)(implicit
+  def groupMapReduceWithNem[K, B](key: A => K)(f: A => B)(combine: (B, B) => B)(using
     K: Order[K]
   ): NonEmptyMap[K, B] =
     NonEmptyMap.fromMapUnsafe(groupMapReduceWith(key)(f)(combine))
@@ -686,7 +686,7 @@ final case class NonEmptyList[+A](head: A, tail: List[A]) extends NonEmptyCollec
    * res0: Boolean = true
    * }}}
    */
-  def toNem[T, U](implicit ev: A <:< (T, U), order: Order[T]): NonEmptyMap[T, U] =
+  def toNem[T, U](using ev: A <:< (T, U), order: Order[T]): NonEmptyMap[T, U] =
     NonEmptyMap.fromMapUnsafe(SortedMap(toList.map(ev): _*)(order.toOrdering))
 
   /**
@@ -699,7 +699,7 @@ final case class NonEmptyList[+A](head: A, tail: List[A]) extends NonEmptyCollec
    * res0: cats.data.NonEmptySet[Int] = TreeSet(1, 2, 3, 4)
    * }}}
    */
-  def toNes[B >: A](implicit order: Order[B]): NonEmptySet[B] =
+  def toNes[B >: A](using order: Order[B]): NonEmptySet[B] =
     NonEmptySet.of(head, tail: _*)
 
   /**
@@ -757,10 +757,10 @@ object NonEmptyList extends NonEmptyListInstances {
       case h :: t => NonEmptyList(h, t)
     }
 
-  def fromFoldable[F[_], A](fa: F[A])(implicit F: Foldable[F]): Option[NonEmptyList[A]] =
+  def fromFoldable[F[_], A](fa: F[A])(using F: Foldable[F]): Option[NonEmptyList[A]] =
     fromList(F.toList(fa))
 
-  def fromReducible[F[_], A](fa: F[A])(implicit F: Reducible[F]): NonEmptyList[A] =
+  def fromReducible[F[_], A](fa: F[A])(using F: Reducible[F]): NonEmptyList[A] =
     F.toNonEmptyList(fa)
 
   class ZipNonEmptyList[A](val value: NonEmptyList[A]) extends AnyVal
@@ -770,7 +770,7 @@ object NonEmptyList extends NonEmptyListInstances {
     def apply[A](nev: NonEmptyList[A]): ZipNonEmptyList[A] =
       new ZipNonEmptyList(nev)
 
-    implicit val catsDataCommutativeApplyForZipNonEmptyList: CommutativeApply[ZipNonEmptyList] =
+    given catsDataCommutativeApplyForZipNonEmptyList: CommutativeApply[ZipNonEmptyList] =
       new CommutativeApply[ZipNonEmptyList] {
         def ap[A, B](ff: ZipNonEmptyList[A => B])(fa: ZipNonEmptyList[A]): ZipNonEmptyList[B] =
           ZipNonEmptyList(ff.value.zipWith(fa.value)(_.apply(_)))
@@ -785,7 +785,7 @@ object NonEmptyList extends NonEmptyListInstances {
     @deprecated("Use catsDataEqForZipNonEmptyList", "2.0.0-RC2")
     private[data] def zipNelEq[A: Eq]: Eq[ZipNonEmptyList[A]] = catsDataEqForZipNonEmptyList[A]
 
-    implicit def catsDataEqForZipNonEmptyList[A: Eq]: Eq[ZipNonEmptyList[A]] = Eq.by(_.value)
+    given catsDataEqForZipNonEmptyList[A: Eq]: Eq[ZipNonEmptyList[A]] = Eq.by(_.value)
   }
 }
 
@@ -805,10 +805,10 @@ sealed abstract private[data] class NonEmptyListInstances extends NonEmptyListIn
    *
    * Also see the discussion: PR #3541 and issue #3069.
    */
-  implicit val catsDataInstancesForNonEmptyListBinCompat1
-    : NonEmptyAlternative[NonEmptyList] & Bimonad[NonEmptyList] & NonEmptyTraverse[NonEmptyList] & Align[
+  given catsDataInstancesForNonEmptyListBinCompat1
+    : (NonEmptyAlternative[NonEmptyList] & Bimonad[NonEmptyList] & NonEmptyTraverse[NonEmptyList] & Align[
       NonEmptyList
-    ] =
+    ]) =
     new NonEmptyReducible[NonEmptyList, List]
       with NonEmptyAlternative[NonEmptyList]
       with Bimonad[NonEmptyList]
@@ -829,7 +829,7 @@ sealed abstract private[data] class NonEmptyListInstances extends NonEmptyListIn
       override def reduceLeft[A](fa: NonEmptyList[A])(f: (A, A) => A): A =
         fa.reduceLeft(f)
 
-      override def reduce[A](fa: NonEmptyList[A])(implicit A: Semigroup[A]): A =
+      override def reduce[A](fa: NonEmptyList[A])(using A: Semigroup[A]): A =
         fa.reduce
 
       override def map[A, B](fa: NonEmptyList[A])(f: A => B): NonEmptyList[B] =
@@ -846,7 +846,7 @@ sealed abstract private[data] class NonEmptyListInstances extends NonEmptyListIn
 
       def extract[A](fa: NonEmptyList[A]): A = fa.head
 
-      def nonEmptyTraverse[G[_], A, B](nel: NonEmptyList[A])(f: A => G[B])(implicit G: Apply[G]): G[NonEmptyList[B]] = {
+      def nonEmptyTraverse[G[_], A, B](nel: NonEmptyList[A])(f: A => G[B])(using G: Apply[G]): G[NonEmptyList[B]] = {
         def loop(head: A, tail: List[A]): Eval[G[NonEmptyList[B]]] =
           tail match {
             case Nil    => Eval.now(G.map(f(head))(NonEmptyList(_, Nil)))
@@ -858,17 +858,17 @@ sealed abstract private[data] class NonEmptyListInstances extends NonEmptyListIn
 
       override def traverse[G[_], A, B](
         fa: NonEmptyList[A]
-      )(f: A => G[B])(implicit G: Applicative[G]): G[NonEmptyList[B]] =
+      )(f: A => G[B])(using G: Applicative[G]): G[NonEmptyList[B]] =
         fa.traverse(f)
 
       override def mapAccumulate[S, A, B](init: S, fa: NonEmptyList[A])(f: (S, A) => (S, B)): (S, NonEmptyList[B]) =
-        StaticMethods.mapAccumulateFromStrictFunctor(init, fa, f)(this)
+        StaticMethods.mapAccumulateFromStrictFunctor(init, fa, f)(using this)
 
       override def mapWithIndex[A, B](fa: NonEmptyList[A])(f: (A, Int) => B): NonEmptyList[B] =
-        StaticMethods.mapWithIndexFromStrictFunctor(fa, f)(this)
+        StaticMethods.mapWithIndexFromStrictFunctor(fa, f)(using this)
 
       override def mapWithLongIndex[A, B](fa: NonEmptyList[A])(f: (A, Long) => B): NonEmptyList[B] =
-        StaticMethods.mapWithLongIndexFromStrictFunctor(fa, f)(this)
+        StaticMethods.mapWithLongIndexFromStrictFunctor(fa, f)(using this)
 
       override def zipWithIndex[A](fa: NonEmptyList[A]): NonEmptyList[(A, Int)] =
         fa.zipWithIndex
@@ -879,7 +879,7 @@ sealed abstract private[data] class NonEmptyListInstances extends NonEmptyListIn
       override def foldRight[A, B](fa: NonEmptyList[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
         fa.foldRight(lb)(f)
 
-      override def foldMap[A, B](fa: NonEmptyList[A])(f: A => B)(implicit B: Monoid[B]): B =
+      override def foldMap[A, B](fa: NonEmptyList[A])(f: A => B)(using B: Monoid[B]): B =
         B.combineAll(fa.toList.iterator.map(f))
 
       def tailRecM[A, B](a: A)(f: A => NonEmptyList[Either[A, B]]): NonEmptyList[B] = {
@@ -898,7 +898,7 @@ sealed abstract private[data] class NonEmptyListInstances extends NonEmptyListIn
         NonEmptyList.fromListUnsafe(buf.result())
       }
 
-      override def fold[A](fa: NonEmptyList[A])(implicit A: Monoid[A]): A =
+      override def fold[A](fa: NonEmptyList[A])(using A: Monoid[A]): A =
         fa.reduce
 
       override def nonEmptyPartition[A, B, C](
@@ -960,17 +960,17 @@ sealed abstract private[data] class NonEmptyListInstances extends NonEmptyListIn
 
     }
 
-  implicit def catsDataShowForNonEmptyList[A: Show]: Show[NonEmptyList[A]] = _.show
+  given catsDataShowForNonEmptyList[A: Show]: Show[NonEmptyList[A]] = _.show
 
-  implicit def catsDataSemigroupForNonEmptyList[A]: Semigroup[NonEmptyList[A]] =
+  given catsDataSemigroupForNonEmptyList[A]: Semigroup[NonEmptyList[A]] =
     SemigroupK[NonEmptyList].algebra[A]
 
-  implicit def catsDataOrderForNonEmptyList[A](implicit A: Order[A]): Order[NonEmptyList[A]] =
+  given catsDataOrderForNonEmptyList[A](using A: Order[A]): Order[NonEmptyList[A]] =
     new NonEmptyListOrder[A] {
       val A0 = A
     }
 
-  implicit def catsDataNonEmptyParallelForNonEmptyList[A]: NonEmptyParallel.Aux[NonEmptyList, ZipNonEmptyList] =
+  given catsDataNonEmptyParallelForNonEmptyList[A]: NonEmptyParallel.Aux[NonEmptyList, ZipNonEmptyList] =
     new NonEmptyParallel[NonEmptyList] {
       type F[x] = ZipNonEmptyList[x]
 
@@ -989,7 +989,7 @@ sealed abstract private[data] class NonEmptyListInstances extends NonEmptyListIn
 }
 
 sealed abstract private[data] class NonEmptyListInstances0 extends NonEmptyListInstances1 {
-  implicit def catsDataPartialOrderForNonEmptyList[A](implicit A: PartialOrder[A]): PartialOrder[NonEmptyList[A]] =
+  given catsDataPartialOrderForNonEmptyList[A](using A: PartialOrder[A]): PartialOrder[NonEmptyList[A]] =
     new NonEmptyListPartialOrder[A] {
       val A0 = A
     }
@@ -997,14 +997,14 @@ sealed abstract private[data] class NonEmptyListInstances0 extends NonEmptyListI
 
 sealed abstract private[data] class NonEmptyListInstances1 {
 
-  implicit def catsDataEqForNonEmptyList[A](implicit A: Eq[A]): Eq[NonEmptyList[A]] =
+  given catsDataEqForNonEmptyList[A](using A: Eq[A]): Eq[NonEmptyList[A]] =
     new NonEmptyListEq[A] {
       val A0 = A
     }
 }
 
 sealed private[data] trait NonEmptyListEq[A] extends Eq[NonEmptyList[A]] {
-  implicit def A0: Eq[A]
+  given A0: Eq[A]
 
   override def eqv(x: NonEmptyList[A], y: NonEmptyList[A]): Boolean = x === y
 }

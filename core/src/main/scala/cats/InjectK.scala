@@ -54,7 +54,7 @@ abstract class InjectK[F[_], G[_]] {
 }
 
 sealed abstract private[cats] class InjectKInstances {
-  implicit def catsReflexiveInjectKInstance[F[_]]: InjectK[F, F] =
+  given catsReflexiveInjectKInstance[F[_]]: InjectK[F, F] =
     new InjectK[F, F] {
       val inj = FunctionK.id[F]
 
@@ -63,7 +63,7 @@ sealed abstract private[cats] class InjectKInstances {
       }
     }
 
-  implicit def catsLeftInjectKInstance[F[_], G[_]]: InjectK[F, EitherK[F, G, *]] =
+  given catsLeftInjectKInstance[F[_], G[_]]: InjectK[F, EitherK[F, G, *]] =
     new InjectK[F, EitherK[F, G, *]] {
       val inj: FunctionK[F, EitherK[F, G, *]] = new FunctionK[F, EitherK[F, G, *]] {
         def apply[A](a: F[A]): EitherK[F, G, A] = EitherK.leftc(a)
@@ -75,7 +75,7 @@ sealed abstract private[cats] class InjectKInstances {
         }
     }
 
-  implicit def catsRightInjectKInstance[F[_], G[_], H[_]](implicit I: InjectK[F, G]): InjectK[F, EitherK[H, G, *]] =
+  given catsRightInjectKInstance[F[_], G[_], H[_]](using I: InjectK[F, G]): InjectK[F, EitherK[H, G, *]] =
     new InjectK[F, EitherK[H, G, *]] {
       val inj = new FunctionK[G, EitherK[H, G, *]] { def apply[A](a: G[A]): EitherK[H, G, A] = EitherK.rightc(a) }
         .compose(I.inj)
@@ -88,5 +88,5 @@ sealed abstract private[cats] class InjectKInstances {
 }
 
 object InjectK extends InjectKInstances {
-  def apply[F[_], G[_]](implicit I: InjectK[F, G]): InjectK[F, G] = I
+  def apply[F[_], G[_]](using I: InjectK[F, G]): InjectK[F, G] = I
 }

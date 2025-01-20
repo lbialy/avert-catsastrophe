@@ -266,7 +266,7 @@ trait Applicative[F[_]] extends Apply[F] with InvariantMonoidal[F] { self =>
 }
 
 object Applicative {
-  def monoid[F[_], A](implicit f: Applicative[F], monoid: Monoid[A]): Monoid[F[A]] =
+  def monoid[F[_], A](using f: Applicative[F], monoid: Monoid[A]): Monoid[F[A]] =
     new ApplicativeMonoid[F, A](f, monoid)
 
   /**
@@ -284,7 +284,7 @@ object Applicative {
    * res0: (Long, Int) = (3,6)
    * }}}
    */
-  def catsApplicativeForArrow[F[_, _], A](implicit F: Arrow[F]): Applicative[F[A, *]] =
+  def catsApplicativeForArrow[F[_, _], A](using F: Arrow[F]): Applicative[F[A, *]] =
     new ArrowApplicative[F, A](F)
 
   /**
@@ -301,7 +301,7 @@ object Applicative {
    * res0: Option[Option[Int]] = Some(Some(3))
    * }}}
    */
-  def coflatMap[F[_]](implicit F: Applicative[F]): CoflatMap[F] =
+  def coflatMap[F[_]](using F: Applicative[F]): CoflatMap[F] =
     new CoflatMap[F] {
       def coflatMap[A, B](fa: F[A])(f: F[A] => B): F[B] = F.pure(f(fa))
       def map[A, B](fa: F[A])(f: A => B): F[B] = F.map(fa)(f)
@@ -310,11 +310,11 @@ object Applicative {
   /**
    * Summon an instance of [[Applicative]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: Applicative[F]): Applicative[F] = instance
+  @inline def apply[F[_]](using instance: Applicative[F]): Applicative[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllApplicativeOps[F[_], A](target: F[A])(implicit tc: Applicative[F]): AllOps[F, A] {
+    implicit def toAllApplicativeOps[F[_], A](target: F[A])(using tc: Applicative[F]): AllOps[F, A] {
       type TypeClassType = Applicative[F]
     } =
       new AllOps[F, A] {
@@ -332,7 +332,7 @@ object Applicative {
     type TypeClassType <: Applicative[F]
   }
   trait ToApplicativeOps extends Serializable {
-    implicit def toApplicativeOps[F[_], A](target: F[A])(implicit tc: Applicative[F]): Ops[F, A] {
+    implicit def toApplicativeOps[F[_], A](target: F[A])(using tc: Applicative[F]): Ops[F, A] {
       type TypeClassType = Applicative[F]
     } =
       new Ops[F, A] {

@@ -199,7 +199,9 @@ class WriterTSuite extends CatsSuite {
   }
 
   implicit val iso: Isomorphisms[WriterT[ListWrapper, ListWrapper[Int], *]] = Isomorphisms
-    .invariant[WriterT[ListWrapper, ListWrapper[Int], *]](WriterT.catsDataCoflatMapForWriterT(ListWrapper.functor))
+    .invariant[WriterT[ListWrapper, ListWrapper[Int], *]](
+      WriterT.catsDataCoflatMapForWriterT(using ListWrapper.functor)
+    )
 
   // We have varying instances available depending on `F` and `L`.
   // We also battle some inference issues with `Id`.

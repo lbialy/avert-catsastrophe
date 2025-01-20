@@ -210,7 +210,7 @@ class NonEmptyListSuite extends NonEmptyCollectionSuite[List, NonEmptyList, NonE
 
   test("reduce consistent with reduceK") {
     forAll { (nel: NonEmptyList[Option[Int]]) =>
-      assert(nel.reduce(SemigroupK[Option].algebra[Int]) === (nel.reduceK))
+      assert(nel.reduce(using SemigroupK[Option].algebra[Int]) === (nel.reduceK))
     }
   }
 

@@ -44,7 +44,7 @@ final class UnorderedFoldableOps[F[_], A](private val fa: F[A]) extends AnyVal {
    * res1: Boolean = false
    * }}}
    */
-  def contains_(v: A)(implicit ev: Eq[A], F: UnorderedFoldable[F]): Boolean =
+  def contains_(v: A)(using ev: Eq[A], F: UnorderedFoldable[F]): Boolean =
     F.contains_(fa, v)
 
   /**
@@ -64,6 +64,6 @@ final class UnorderedFoldableOps[F[_], A](private val fa: F[A]) extends AnyVal {
    * res1: Long = 2
    * }}}
    */
-  def count(p: A => Boolean)(implicit F: UnorderedFoldable[F]): Long =
+  def count(p: A => Boolean)(using F: UnorderedFoldable[F]): Long =
     F.count(fa)(p)
 }

@@ -27,7 +27,7 @@ import cats.{Invariant, InvariantMonoidal, InvariantSemigroupal, Monoid}
 
 trait InvariantMonoidalInstances {
 
-  implicit def catsSemigroupalForMonoid: InvariantSemigroupal[Monoid] =
+  given catsSemigroupalForMonoid: InvariantSemigroupal[Monoid] =
     new InvariantSemigroupal[Monoid] {
       def product[A, B](fa: Monoid[A], fb: Monoid[B]): Monoid[(A, B)] =
         new Monoid[(A, B)] {
@@ -43,7 +43,7 @@ trait InvariantMonoidalInstances {
         }
     }
 
-  implicit val catsInvariantMonoidalSemigroup: InvariantMonoidal[Semigroup] = new InvariantMonoidal[Semigroup] {
+  given catsInvariantMonoidalSemigroup: InvariantMonoidal[Semigroup] = new InvariantMonoidal[Semigroup] {
     def product[A, B](fa: Semigroup[A], fb: Semigroup[B]): Semigroup[(A, B)] =
       (x, y) => fa.combine(x._1, y._1) -> fb.combine(x._2, y._2)
 
@@ -53,7 +53,7 @@ trait InvariantMonoidalInstances {
     def unit: Semigroup[Unit] = implicitly
   }
 
-  implicit val catsInvariantMonoidalCommutativeSemigroup: InvariantMonoidal[CommutativeSemigroup] =
+  given catsInvariantMonoidalCommutativeSemigroup: InvariantMonoidal[CommutativeSemigroup] =
     new InvariantMonoidal[CommutativeSemigroup] {
       def product[A, B](fa: CommutativeSemigroup[A], fb: CommutativeSemigroup[B]): CommutativeSemigroup[(A, B)] =
         (x, y) => fa.combine(x._1, y._1) -> fb.combine(x._2, y._2)
@@ -66,12 +66,12 @@ trait InvariantMonoidalInstances {
 }
 
 trait InvariantInstances {
-  implicit val catsInvariantForNumeric: Invariant[Numeric] = new Invariant[Numeric] {
+  given catsInvariantForNumeric: Invariant[Numeric] = new Invariant[Numeric] {
     def imap[A, B](fa: Numeric[A])(f: A => B)(g: B => A): Numeric[B] =
       new ScalaVersionSpecificNumeric[A, B](fa)(f)(g) {}
   }
 
-  implicit val catsInvariantForIntegral: Invariant[Integral] = new Invariant[Integral] {
+  given catsInvariantForIntegral: Invariant[Integral] = new Invariant[Integral] {
     def imap[A, B](fa: Integral[A])(f: A => B)(g: B => A): Integral[B] =
       new ScalaVersionSpecificNumeric[A, B](fa)(f)(g) with Integral[B] {
         override def quot(x: B, y: B): B = f(fa.quot(g(x), g(y)))
@@ -81,7 +81,7 @@ trait InvariantInstances {
 }
 
 trait InvariantInstancesBinCompat0 {
-  implicit val catsInvariantForFractional: Invariant[Fractional] = new Invariant[Fractional] {
+  given catsInvariantForFractional: Invariant[Fractional] = new Invariant[Fractional] {
     def imap[A, B](fa: Fractional[A])(f: A => B)(g: B => A): Fractional[B] =
       new ScalaVersionSpecificNumeric[A, B](fa)(f)(g) with Fractional[B] {
         override def div(x: B, y: B): B = f(fa.div(g(x), g(y)))

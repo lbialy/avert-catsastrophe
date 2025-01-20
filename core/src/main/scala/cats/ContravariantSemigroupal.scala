@@ -35,19 +35,19 @@ trait ContravariantSemigroupal[F[_]] extends InvariantSemigroupal[F] with Contra
 }
 
 object ContravariantSemigroupal extends SemigroupalArityFunctions {
-  def semigroup[F[_], A](implicit f: ContravariantSemigroupal[F]): Semigroup[F[A]] =
+  def semigroup[F[_], A](using f: ContravariantSemigroupal[F]): Semigroup[F[A]] =
     new ContravariantSemigroupalSemigroup[F, A](f)
 
   /**
    * Summon an instance of [[ContravariantSemigroupal]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: ContravariantSemigroupal[F]): ContravariantSemigroupal[F] = instance
+  @inline def apply[F[_]](using instance: ContravariantSemigroupal[F]): ContravariantSemigroupal[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
     implicit def toAllContravariantSemigroupalOps[F[_], A](
       target: F[A]
-    )(implicit tc: ContravariantSemigroupal[F]): AllOps[F, A] {
+    )(using tc: ContravariantSemigroupal[F]): AllOps[F, A] {
       type TypeClassType = ContravariantSemigroupal[F]
     } =
       new AllOps[F, A] {
@@ -67,7 +67,7 @@ object ContravariantSemigroupal extends SemigroupalArityFunctions {
   trait ToContravariantSemigroupalOps extends Serializable {
     implicit def toContravariantSemigroupalOps[F[_], A](
       target: F[A]
-    )(implicit tc: ContravariantSemigroupal[F]): Ops[F, A] {
+    )(using tc: ContravariantSemigroupal[F]): Ops[F, A] {
       type TypeClassType = ContravariantSemigroupal[F]
     } =
       new Ops[F, A] {

@@ -39,13 +39,13 @@ final case class OneAnd[F[_], A](head: A, tail: F[A]) {
   /**
    * Combine the head and tail into a single `F[A]` value.
    */
-  def unwrap(implicit F: Alternative[F]): F[A] =
+  def unwrap(using F: Alternative[F]): F[A] =
     F.prependK(head, tail)
 
   /**
    * remove elements not matching the predicate
    */
-  def filter(f: A => Boolean)(implicit FA: Alternative[F], FM: Monad[F]): F[A] = {
+  def filter(f: A => Boolean)(using FA: Alternative[F], FM: Monad[F]): F[A] = {
     val rest = FM.flatMap(tail)(a => if (f(a)) FM.pure(a) else FA.empty[A])
     if (f(head)) FA.combineK(FM.pure(head), rest) else rest
   }
@@ -53,46 +53,46 @@ final case class OneAnd[F[_], A](head: A, tail: F[A]) {
   /**
    * Append another OneAnd to this
    */
-  def combine(other: OneAnd[F, A])(implicit F: Alternative[F]): OneAnd[F, A] =
+  def combine(other: OneAnd[F, A])(using F: Alternative[F]): OneAnd[F, A] =
     OneAnd(head, F.combineK(tail, other.unwrap))
 
   /**
    * find the first element matching the predicate, if one exists
    */
-  def find(f: A => Boolean)(implicit F: Foldable[F]): Option[A] =
+  def find(f: A => Boolean)(using F: Foldable[F]): Option[A] =
     if (f(head)) Some(head) else F.find(tail)(f)
 
   /**
    * Check whether at least one element satisfies the predicate.
    */
-  def exists(p: A => Boolean)(implicit F: Foldable[F]): Boolean =
+  def exists(p: A => Boolean)(using F: Foldable[F]): Boolean =
     p(head) || F.exists(tail)(p)
 
   /**
    * Check whether all elements satisfy the predicate.
    */
-  def forall(p: A => Boolean)(implicit F: Foldable[F]): Boolean =
+  def forall(p: A => Boolean)(using F: Foldable[F]): Boolean =
     p(head) && F.forall(tail)(p)
 
-  def reduceLeft(f: (A, A) => A)(implicit F: Foldable[F]): A =
+  def reduceLeft(f: (A, A) => A)(using F: Foldable[F]): A =
     F.foldLeft(tail, head)(f)
 
   /**
    * Left-associative fold on the structure using f.
    */
-  def foldLeft[B](b: B)(f: (B, A) => B)(implicit F: Foldable[F]): B =
+  def foldLeft[B](b: B)(f: (B, A) => B)(using F: Foldable[F]): B =
     F.foldLeft(tail, f(b, head))(f)
 
   /**
    * Right-associative fold on the structure using f.
    */
-  def foldRight[B](lb: Eval[B])(f: (A, Eval[B]) => Eval[B])(implicit F: Foldable[F]): Eval[B] =
+  def foldRight[B](lb: Eval[B])(f: (A, Eval[B]) => Eval[B])(using F: Foldable[F]): Eval[B] =
     Eval.defer(f(head, F.foldRight(tail, lb)(f)))
 
   /**
    * Applies f to all the elements of the structure
    */
-  def map[B](f: A => B)(implicit F: Functor[F]): OneAnd[F, B] =
+  def map[B](f: A => B)(using F: Functor[F]): OneAnd[F, B] =
     OneAnd(f(head), F.map(tail)(f))
 
   /**
@@ -109,7 +109,7 @@ final case class OneAnd[F[_], A](head: A, tail: F[A]) {
    * equality provided by Eq[_] instances, rather than using the
    * universal equality provided by .equals.
    */
-  def ===(that: OneAnd[F, A])(implicit A: Eq[A], FA: Eq[F[A]]): Boolean =
+  def ===(that: OneAnd[F, A])(using A: Eq[A], FA: Eq[F[A]]): Boolean =
     A.eqv(head, that.head) && FA.eqv(tail, that.tail)
 
   /**
@@ -119,21 +119,21 @@ final case class OneAnd[F[_], A](head: A, tail: F[A]) {
    * values according to Show[_] instances, rather than using the
    * universal .toString method.
    */
-  def show(implicit A: Show[A], FA: Show[F[A]]): String =
+  def show(using A: Show[A], FA: Show[F[A]]): String =
     s"OneAnd(${A.show(head)}, ${FA.show(tail)})"
 }
 
 @suppressUnusedImportWarningForScalaVersionSpecific
 sealed abstract private[data] class OneAndInstances extends OneAndLowPriority0 {
 
-  implicit def catsDataParallelForOneAnd[A, M[_]: Alternative, F0[_]: Alternative](implicit
+  given catsDataParallelForOneAnd[A, M[_]: Alternative, F0[_]: Alternative](using
     P: Parallel.Aux[M, F0]
   ): Parallel.Aux[OneAnd[M, *], OneAnd[F0, *]] =
     new Parallel[OneAnd[M, *]] {
       type F[x] = OneAnd[F0, x]
-      def monad: Monad[OneAnd[M, *]] = catsDataMonadForOneAnd(P.monad, Alternative[M])
+      def monad: Monad[OneAnd[M, *]] = catsDataMonadForOneAnd(using P.monad, Alternative[M])
 
-      def applicative: Applicative[OneAnd[F0, *]] = catsDataApplicativeForOneAnd(Alternative[F0])
+      def applicative: Applicative[OneAnd[F0, *]] = catsDataApplicativeForOneAnd(using Alternative[F0])
 
       def sequential: OneAnd[F0, *] ~> OneAnd[M, *] =
         new (OneAnd[F0, *] ~> OneAnd[M, *]) {
@@ -147,7 +147,7 @@ sealed abstract private[data] class OneAndInstances extends OneAndLowPriority0 {
 
     }
 
-  implicit def catsDataOrderForOneAnd[A, F[_]](implicit A: Order[A], FA: Order[F[A]]): Order[OneAnd[F, A]] =
+  given catsDataOrderForOneAnd[A, F[_]](using A: Order[A], FA: Order[F[A]]): Order[OneAnd[F, A]] =
     new Order[OneAnd[F, A]] {
       def compare(x: OneAnd[F, A], y: OneAnd[F, A]): Int =
         A.compare(x.head, y.head) match {
@@ -156,24 +156,24 @@ sealed abstract private[data] class OneAndInstances extends OneAndLowPriority0 {
         }
     }
 
-  implicit def catsDataShowForOneAnd[A, F[_]](implicit A: Show[A], FA: Show[F[A]]): Show[OneAnd[F, A]] = _.show
+  given catsDataShowForOneAnd[A, F[_]](using A: Show[A], FA: Show[F[A]]): Show[OneAnd[F, A]] = _.show
 
-  implicit def catsDataSemigroupKForOneAnd[F[_]: Alternative]: SemigroupK[OneAnd[F, *]] =
+  given catsDataSemigroupKForOneAnd[F[_]: Alternative]: SemigroupK[OneAnd[F, *]] =
     new SemigroupK[OneAnd[F, *]] {
       def combineK[A](a: OneAnd[F, A], b: OneAnd[F, A]): OneAnd[F, A] =
         a.combine(b)
     }
 
-  implicit def catsDataSemigroupForOneAnd[F[_]: Alternative, A]: Semigroup[OneAnd[F, A]] =
+  given catsDataSemigroupForOneAnd[F[_]: Alternative, A]: Semigroup[OneAnd[F, A]] =
     catsDataSemigroupKForOneAnd[F].algebra
 
-  implicit def catsDataMonadForOneAnd[F[_]](implicit
+  given catsDataMonadForOneAnd[F[_]](using
     monad: Monad[F],
     alternative: Alternative[F]
   ): Monad[OneAnd[F, *]] =
     new Monad[OneAnd[F, *]] {
       override def map[A, B](fa: OneAnd[F, A])(f: A => B): OneAnd[F, B] =
-        fa.map(f)(monad)
+        fa.map(f)(using monad)
 
       def pure[A](x: A): OneAnd[F, A] =
         OneAnd(x, alternative.empty)
@@ -225,7 +225,7 @@ sealed abstract private[data] class OneAndInstances extends OneAndLowPriority0 {
 
 sealed abstract private[data] class OneAndLowPriority3 extends OneAndLowPriority4 {
 
-  implicit def catsDataFunctorForOneAnd[F[_]](implicit F: Functor[F]): Functor[OneAnd[F, *]] =
+  given catsDataFunctorForOneAnd[F[_]](using F: Functor[F]): Functor[OneAnd[F, *]] =
     new Functor[OneAnd[F, *]] {
       def map[A, B](fa: OneAnd[F, A])(f: A => B): OneAnd[F, B] =
         fa.map(f)
@@ -235,7 +235,7 @@ sealed abstract private[data] class OneAndLowPriority3 extends OneAndLowPriority
 
 sealed abstract private[data] class OneAndLowPriority2 extends OneAndLowPriority3 {
 
-  implicit def catsDataApplicativeForOneAnd[F[_]](implicit F: Alternative[F]): Applicative[OneAnd[F, *]] =
+  given catsDataApplicativeForOneAnd[F[_]](using F: Alternative[F]): Applicative[OneAnd[F, *]] =
     new Applicative[OneAnd[F, *]] {
       override def map[A, B](fa: OneAnd[F, A])(f: A => B): OneAnd[F, B] =
         fa.map(f)
@@ -255,9 +255,9 @@ sealed abstract private[data] class OneAndLowPriority2 extends OneAndLowPriority
 
 sealed abstract private[data] class OneAndLowPriority1 extends OneAndLowPriority2 {
 
-  implicit def catsDataTraverseForOneAnd[F[_]](implicit F: Traverse[F]): Traverse[OneAnd[F, *]] =
+  given catsDataTraverseForOneAnd[F[_]](using F: Traverse[F]): Traverse[OneAnd[F, *]] =
     new Traverse[OneAnd[F, *]] {
-      def traverse[G[_], A, B](fa: OneAnd[F, A])(f: (A) => G[B])(implicit G: Applicative[G]): G[OneAnd[F, B]] =
+      def traverse[G[_], A, B](fa: OneAnd[F, A])(f: (A) => G[B])(using G: Applicative[G]): G[OneAnd[F, B]] =
         G.map2Eval(f(fa.head), Always(F.traverse(fa.tail)(f)))(OneAnd(_, _)).value
 
       override def mapAccumulate[S, A, B](init: S, fa: OneAnd[F, A])(f: (S, A) => (S, B)): (S, OneAnd[F, B]) = {
@@ -276,9 +276,9 @@ sealed abstract private[data] class OneAndLowPriority1 extends OneAndLowPriority
 
 sealed abstract private[data] class OneAndLowPriority0_5 extends OneAndLowPriority1 {
 
-  implicit def catsDataEqForOneAnd[A, F[_]](implicit A: Eq[A], FA: Eq[F[A]]): Eq[OneAnd[F, A]] = _ === _
+  given catsDataEqForOneAnd[A, F[_]](using A: Eq[A], FA: Eq[F[A]]): Eq[OneAnd[F, A]] = _ === _
 
-  implicit def catsDataReducibleForOneAnd[F[_]](implicit F: Foldable[F]): Reducible[OneAnd[F, *]] =
+  given catsDataReducibleForOneAnd[F[_]](using F: Foldable[F]): Reducible[OneAnd[F, *]] =
     new NonEmptyReducible[OneAnd[F, *], F] {
       override def split[A](fa: OneAnd[F, A]): (A, F[A]) = (fa.head, fa.tail)
 
@@ -291,7 +291,7 @@ sealed abstract private[data] class OneAndLowPriority0_5 extends OneAndLowPriori
 
 sealed abstract private[data] class OneAndLowPriority0 extends OneAndLowPriority0_5 {
 
-  implicit def catsDataPartialOrderForOneAnd[A, F[_]](implicit
+  given catsDataPartialOrderForOneAnd[A, F[_]](using
     A: PartialOrder[A],
     FA: PartialOrder[F[A]]
   ): PartialOrder[OneAnd[F, A]] =
@@ -304,12 +304,12 @@ sealed abstract private[data] class OneAndLowPriority0 extends OneAndLowPriority
       }
     }
 
-  implicit def catsDataNonEmptyTraverseForOneAnd[F[_]](implicit
+  given catsDataNonEmptyTraverseForOneAnd[F[_]](using
     F: Traverse[F],
     F2: Alternative[F]
   ): NonEmptyTraverse[OneAnd[F, *]] =
     new NonEmptyReducible[OneAnd[F, *], F] with NonEmptyTraverse[OneAnd[F, *]] {
-      def nonEmptyTraverse[G[_], A, B](fa: OneAnd[F, A])(f: (A) => G[B])(implicit G: Apply[G]): G[OneAnd[F, B]] = {
+      def nonEmptyTraverse[G[_], A, B](fa: OneAnd[F, A])(f: (A) => G[B])(using G: Apply[G]): G[OneAnd[F, B]] = {
         import syntax.foldable._
 
         def loop(head: A, tail: Iterator[A]): Eval[G[OneAnd[F, B]]] =
@@ -324,7 +324,7 @@ sealed abstract private[data] class OneAndLowPriority0 extends OneAndLowPriority
         loop(fa.head, fa.tail.toIterable.iterator).value
       }
 
-      override def traverse[G[_], A, B](fa: OneAnd[F, A])(f: (A) => G[B])(implicit G: Applicative[G]): G[OneAnd[F, B]] =
+      override def traverse[G[_], A, B](fa: OneAnd[F, A])(f: (A) => G[B])(using G: Applicative[G]): G[OneAnd[F, B]] =
         G.map2Eval(f(fa.head), Always(F.traverse(fa.tail)(f)))(OneAnd(_, _)).value
 
       def split[A](fa: OneAnd[F, A]): (A, F[A]) = (fa.head, fa.tail)

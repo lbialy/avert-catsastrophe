@@ -36,7 +36,7 @@ import org.scalacheck.Prop._
 
 class EitherTSuite extends CatsSuite {
   implicit val iso: Isomorphisms[EitherT[ListWrapper, String, *]] = Isomorphisms
-    .invariant[EitherT[ListWrapper, String, *]](EitherT.catsDataFunctorForEitherT(ListWrapper.functor))
+    .invariant[EitherT[ListWrapper, String, *]](EitherT.catsDataFunctorForEitherT(using ListWrapper.functor))
 
   // Test instance summoning
   def summon[F[_]: Traverse](): Unit = {
@@ -119,7 +119,7 @@ class EitherTSuite extends CatsSuite {
     implicit val eq0: Eq[EitherT[ListWrapper, String, Either[String, Int]]] =
       EitherT.catsDataEqForEitherT[ListWrapper, String, Either[String, Int]]
     implicit val eq1: Eq[EitherT[EitherT[ListWrapper, String, *], String, Int]] =
-      EitherT.catsDataEqForEitherT[EitherT[ListWrapper, String, *], String, Int](eq0)
+      EitherT.catsDataEqForEitherT[EitherT[ListWrapper, String, *], String, Int](using eq0)
 
     Functor[EitherT[ListWrapper, String, *]]
     Applicative[EitherT[ListWrapper, String, *]]
@@ -141,9 +141,9 @@ class EitherTSuite extends CatsSuite {
     implicit val eq1: Eq[EitherT[Option, String, Either[Unit, String]]] =
       EitherT.catsDataEqForEitherT[Option, String, Either[Unit, String]]
     implicit val eq2: Eq[EitherT[EitherT[Option, String, *], Unit, String]] =
-      EitherT.catsDataEqForEitherT[EitherT[Option, String, *], Unit, String](eq1)
+      EitherT.catsDataEqForEitherT[EitherT[Option, String, *], Unit, String](using eq1)
     implicit val me: MonadError[EitherT[Option, String, *], Unit] =
-      EitherT.catsDataMonadErrorFForEitherT[Option, Unit, String](cats.instances.option.catsStdInstancesForOption)
+      EitherT.catsDataMonadErrorFForEitherT[Option, Unit, String](using cats.instances.option.catsStdInstancesForOption)
 
     Functor[EitherT[Option, String, *]]
     Applicative[EitherT[Option, String, *]]

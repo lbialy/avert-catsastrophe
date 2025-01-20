@@ -338,7 +338,7 @@ final class OptionOps[A](private val oa: Option[A]) extends AnyVal {
    * res1: String = ""
    * }}}
    */
-  def orEmpty(implicit A: Monoid[A]): A = oa.getOrElse(A.empty)
+  def orEmpty(using A: Monoid[A]): A = oa.getOrElse(A.empty)
 
   /**
    * Lift to a F[A] as long as it has an ApplicativeError[F] instance
@@ -373,7 +373,7 @@ final class OptionOps[A](private val oa: Option[A]) extends AnyVal {
    * res1: scala.Either[String, Unit] = Left(Failed)
    * }}}
    */
-  def raiseTo[F[_]](implicit F: ApplicativeError[F, A]): F[Unit] =
+  def raiseTo[F[_]](using F: ApplicativeError[F, A]): F[Unit] =
     oa.fold(F.unit)(F.raiseError)
 
   /**
@@ -391,7 +391,7 @@ final class OptionOps[A](private val oa: Option[A]) extends AnyVal {
 
 object OptionOps {
   final class LiftToPartiallyApplied[F[_], A](oa: Option[A]) {
-    def apply[E](ifEmpty: => E)(implicit F: ApplicativeError[F, ? >: E]): F[A] =
+    def apply[E](ifEmpty: => E)(using F: ApplicativeError[F, ? >: E]): F[A] =
       ApplicativeError.liftFromOption(oa, ifEmpty)
   }
 }

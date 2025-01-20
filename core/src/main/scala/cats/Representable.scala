@@ -80,7 +80,7 @@ trait Representable[F[_]] extends Serializable { self =>
    */
   def tabulate[A](f: Representation => A): F[A]
 
-  def compose[G[_]](implicit
+  def compose[G[_]](using
     G: Representable[G]
   ): Representable.Aux[λ[α => F[G[α]]], (self.Representation, G.Representation)] =
     new Representable[λ[α => F[G[α]]]] { inner =>
@@ -140,7 +140,7 @@ private trait RepresentableDistributive[F[_], R] extends Distributive[F] {
 
   def R: Representable.Aux[F, R]
 
-  override def distribute[G[_], A, B](ga: G[A])(f: A => F[B])(implicit G: Functor[G]): F[G[B]] =
+  override def distribute[G[_], A, B](ga: G[A])(f: A => F[B])(using G: Functor[G]): F[G[B]] =
     R.tabulate(r => G.map(ga)(a => R.index(f(a))(r)))
 
   override def map[A, B](fa: F[A])(f: A => B): F[B] = R.F.map(fa)(f)
@@ -162,12 +162,12 @@ object Representable {
    * res0: String = bar
    * }}}
    */
-  def apply[F[_]](implicit ev: Representable[F]): Representable.Aux[F, ev.Representation] = ev
+  def apply[F[_]](using ev: Representable[F]): Representable.Aux[F, ev.Representation] = ev
 
   /**
    * Derives a `Monad` instance for any `Representable` functor
    */
-  def monad[F[_]](implicit Rep: Representable[F]): Monad[F] =
+  def monad[F[_]](using Rep: Representable[F]): Monad[F] =
     new RepresentableMonad[F, Rep.Representation] {
       override def R: Representable.Aux[F, Rep.Representation] = Rep
     }
@@ -176,7 +176,7 @@ object Representable {
    * Derives a `Bimonad` instance for any `Representable` functor whose representation
    * has a `Monoid` instance.
    */
-  def bimonad[F[_], R](implicit Rep: Representable.Aux[F, R], Mon: Monoid[R]): Bimonad[F] =
+  def bimonad[F[_], R](using Rep: Representable.Aux[F, R], Mon: Monoid[R]): Bimonad[F] =
     new RepresentableBimonad[F, R] {
       override def R: Representable.Aux[F, R] = Rep
       override def M: Monoid[R] = Mon
@@ -185,15 +185,15 @@ object Representable {
   /**
    * Derives a `Distributive` instance for any `Representable` functor
    */
-  def distributive[F[_]](implicit Rep: Representable[F]): Distributive[F] =
+  def distributive[F[_]](using Rep: Representable[F]): Distributive[F] =
     new RepresentableDistributive[F, Rep.Representation] {
       override def R: Aux[F, Rep.Representation] = Rep
     }
 
-  implicit def catsRepresentableForFunction1[E](implicit EF: Functor[E => *]): Representable.Aux[E => *, E] =
+  given catsRepresentableForFunction1[E](using EF: Functor[E => *]): Representable.Aux[E => *, E] =
     cats.instances.function.catsStdRepresentableForFunction1[E]
 
-  implicit def catsRepresentableForPair(implicit
+  given catsRepresentableForPair(using
     PF: Functor[λ[P => (P, P)]]
   ): Representable.Aux[λ[P => (P, P)], Boolean] = cats.instances.tuple.catsDataRepresentableForPair
 }

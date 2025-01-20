@@ -235,11 +235,11 @@ object Functor {
   /**
    * Summon an instance of [[Functor]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: Functor[F]): Functor[F] = instance
+  @inline def apply[F[_]](using instance: Functor[F]): Functor[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllFunctorOps[F[_], A](target: F[A])(implicit tc: Functor[F]): AllOps[F, A] {
+    implicit def toAllFunctorOps[F[_], A](target: F[A])(using tc: Functor[F]): AllOps[F, A] {
       type TypeClassType = Functor[F]
     } =
       new AllOps[F, A] {
@@ -267,7 +267,7 @@ object Functor {
     type TypeClassType <: Functor[F]
   }
   trait ToFunctorOps extends Serializable {
-    implicit def toFunctorOps[F[_], A](target: F[A])(implicit tc: Functor[F]): Ops[F, A] {
+    implicit def toFunctorOps[F[_], A](target: F[A])(using tc: Functor[F]): Ops[F, A] {
       type TypeClassType = Functor[F]
     } =
       new Ops[F, A] {

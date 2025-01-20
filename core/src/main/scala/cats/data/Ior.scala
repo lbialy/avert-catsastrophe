@@ -142,7 +142,7 @@ sealed abstract class Ior[+A, +B] extends Product with Serializable {
    * res2: Ior[String, Int] = Both(abcdef,123)
    * }}}
    */
-  final def addLeft[AA >: A](left: AA)(implicit AA: Semigroup[AA]): AA Ior B =
+  final def addLeft[AA >: A](left: AA)(using AA: Semigroup[AA]): AA Ior B =
     fold(l => Ior.left(AA.combine(l, left)), Ior.both(left, _), (l, r) => Ior.both(AA.combine(l, left), r))
 
   /**
@@ -168,7 +168,7 @@ sealed abstract class Ior[+A, +B] extends Product with Serializable {
    * res2: Ior[String, Int] = Both(abc,246)
    * }}}
    */
-  final def addRight[BB >: B](right: BB)(implicit BB: Semigroup[BB]): A Ior BB =
+  final def addRight[BB >: B](right: BB)(using BB: Semigroup[BB]): A Ior BB =
     fold(Ior.both(_, right), r => Ior.right(BB.combine(r, right)), (l, r) => Ior.both(l, BB.combine(r, right)))
 
   /**
@@ -371,7 +371,7 @@ sealed abstract class Ior[+A, +B] extends Product with Serializable {
    * res2: IorNes[String, Int] = Both(TreeSet(abc),123)
    * }}}
    */
-  final def toIorNes[AA >: A](implicit O: Order[AA]): IorNes[AA, B] = leftMap(NonEmptySet.one(_))
+  final def toIorNes[AA >: A](using O: Order[AA]): IorNes[AA, B] = leftMap(NonEmptySet.one(_))
 
   final def toIorNec[AA >: A]: IorNec[AA, B] = leftMap(NonEmptyChain.one)
 
@@ -481,7 +481,7 @@ sealed abstract class Ior[+A, +B] extends Product with Serializable {
    * res2: List[Int] = List(123)
    * }}}
    */
-  final def to[F[_], BB >: B](implicit F: Alternative[F]): F[BB] =
+  final def to[F[_], BB >: B](using F: Alternative[F]): F[BB] =
     fold(_ => F.empty, F.pure, (_, b) => F.pure(b))
 
   /**
@@ -572,7 +572,7 @@ sealed abstract class Ior[+A, +B] extends Product with Serializable {
    * res2: Int = 126
    * }}}
    */
-  final def valueOr[BB >: B](f: A => BB)(implicit BB: Semigroup[BB]): BB =
+  final def valueOr[BB >: B](f: A => BB)(using BB: Semigroup[BB]): BB =
     fold(f, identity, (a, b) => BB.combine(f(a), b))
 
   /**
@@ -655,7 +655,7 @@ sealed abstract class Ior[+A, +B] extends Product with Serializable {
    * res5: Ior[String, Int] = Both(abcerror,456)
    * }}}
    */
-  final def flatMap[AA >: A, D](f: B => AA Ior D)(implicit AA: Semigroup[AA]): AA Ior D =
+  final def flatMap[AA >: A, D](f: B => AA Ior D)(using AA: Semigroup[AA]): AA Ior D =
     this match {
       case l @ Ior.Left(_) => l
       case Ior.Right(b)    => f(b)
@@ -707,7 +707,7 @@ sealed abstract class Ior[+A, +B] extends Product with Serializable {
    * res2: List[Ior[String,Int]] = List(Both(abc,123), Both(abc,246))
    * }}}
    */
-  final def traverse[F[_], AA >: A, D](g: B => F[D])(implicit F: Applicative[F]): F[AA Ior D] =
+  final def traverse[F[_], AA >: A, D](g: B => F[D])(using F: Applicative[F]): F[AA Ior D] =
     this match {
       case Ior.Left(a)    => F.pure(Ior.left(a))
       case Ior.Right(b)   => F.map(g(b))(Ior.right)
@@ -736,13 +736,13 @@ sealed abstract class Ior[+A, +B] extends Product with Serializable {
   final def foldRight[C](lc: Eval[C])(f: (B, Eval[C]) => Eval[C]): Eval[C] =
     fold(_ => lc, f(_, lc), (_, b) => f(b, lc))
 
-  final def merge[AA >: A](implicit ev: B <:< AA, AA: Semigroup[AA]): AA =
+  final def merge[AA >: A](using ev: B <:< AA, AA: Semigroup[AA]): AA =
     fold(identity, ev, (a, b) => AA.combine(a, b))
-  final def mergeLeft[AA >: A](implicit ev: B <:< AA): AA =
+  final def mergeLeft[AA >: A](using ev: B <:< AA): AA =
     fold(identity, ev, (a, _) => a)
-  final def mergeRight[AA >: A](implicit ev: B <:< AA): AA =
+  final def mergeRight[AA >: A](using ev: B <:< AA): AA =
     fold(identity, ev, (_, b) => ev(b))
-  final def mergeWith[AA >: A](f: (A, B) => AA)(implicit ev: B <:< AA): AA =
+  final def mergeWith[AA >: A](f: (A, B) => AA)(using ev: B <:< AA): AA =
     fold(identity, ev, f)
 
   /**
@@ -770,7 +770,7 @@ sealed abstract class Ior[+A, +B] extends Product with Serializable {
    * res3: Ior[String, Int] = Both(abc,579)
    * }}}
    */
-  final def combine[AA >: A, BB >: B](that: AA Ior BB)(implicit AA: Semigroup[AA], BB: Semigroup[BB]): AA Ior BB =
+  final def combine[AA >: A, BB >: B](that: AA Ior BB)(using AA: Semigroup[AA], BB: Semigroup[BB]): AA Ior BB =
     this match {
       case Ior.Left(a1) =>
         that match {
@@ -792,7 +792,7 @@ sealed abstract class Ior[+A, +B] extends Product with Serializable {
         }
     }
 
-  final def ===[AA >: A, BB >: B](that: AA Ior BB)(implicit AA: Eq[AA], BB: Eq[BB]): Boolean =
+  final def ===[AA >: A, BB >: B](that: AA Ior BB)(using AA: Eq[AA], BB: Eq[BB]): Boolean =
     (this, that) match {
       case (Ior.Left(a), Ior.Left(aa))        => AA.eqv(a, aa)
       case (Ior.Right(b), Ior.Right(bb))      => BB.eqv(b, bb)
@@ -800,7 +800,7 @@ sealed abstract class Ior[+A, +B] extends Product with Serializable {
       case _                                  => false
     }
 
-  final def compare[AA >: A, BB >: B](that: AA Ior BB)(implicit AA: Order[AA], BB: Order[BB]): Int =
+  final def compare[AA >: A, BB >: B](that: AA Ior BB)(using AA: Order[AA], BB: Order[BB]): Int =
     (this, that) match {
       case (Ior.Left(a1), Ior.Left(a2))   => AA.compare(a1, a2)
       case (Ior.Left(_), _)               => -1
@@ -814,7 +814,7 @@ sealed abstract class Ior[+A, +B] extends Product with Serializable {
       case (Ior.Both(_, _), _) => 1
     }
 
-  final def show[AA >: A, BB >: B](implicit AA: Show[AA], BB: Show[BB]): String =
+  final def show[AA >: A, BB >: B](using AA: Show[AA], BB: Show[BB]): String =
     fold(
       a => s"Ior.Left(${AA.show(a)})",
       b => s"Ior.Right(${BB.show(b)})",
@@ -830,11 +830,11 @@ object Ior extends IorInstances with IorFunctions with IorFunctions2 {
 
 sealed abstract private[data] class IorInstances extends IorInstances0 {
 
-  implicit val catsBitraverseForIor: Bitraverse[Ior] = new Bitraverse[Ior] {
+  given catsBitraverseForIor: Bitraverse[Ior] = new Bitraverse[Ior] {
 
     def bitraverse[G[_], A, B, C, D](
       fab: Ior[A, B]
-    )(f: A => G[C], g: B => G[D])(implicit G: Applicative[G]): G[Ior[C, D]] =
+    )(f: A => G[C], g: B => G[D])(using G: Applicative[G]): G[Ior[C, D]] =
       fab match {
         case Ior.Left(a)    => G.map(f(a))(Ior.Left(_))
         case Ior.Right(b)   => G.map(g(b))(Ior.Right(_))
@@ -858,13 +858,13 @@ sealed abstract private[data] class IorInstances extends IorInstances0 {
       }
   }
 
-  implicit def catsDataOrderForIor[A: Order, B: Order]: Order[A Ior B] = _ compare _
+  given catsDataOrderForIor[A: Order, B: Order]: Order[A Ior B] = _ compare _
 
-  implicit def catsDataShowForIor[A: Show, B: Show]: Show[A Ior B] = _.show
+  given catsDataShowForIor[A: Show, B: Show]: Show[A Ior B] = _.show
 
-  implicit def catsDataSemigroupForIor[A: Semigroup, B: Semigroup]: Semigroup[Ior[A, B]] = _ combine _
+  given catsDataSemigroupForIor[A: Semigroup, B: Semigroup]: Semigroup[Ior[A, B]] = _ combine _
 
-  implicit def catsDataMonadErrorForIor[A: Semigroup]: MonadError[Ior[A, *], A] =
+  given catsDataMonadErrorForIor[A: Semigroup]: MonadError[Ior[A, *], A] =
     new MonadError[Ior[A, *], A] {
 
       def raiseError[B](e: A): Ior[A, B] = Ior.left(e)
@@ -907,12 +907,12 @@ sealed abstract private[data] class IorInstances extends IorInstances0 {
         fa.map(f)
     }
 
-  implicit def catsDataBifunctorForIor: Bifunctor[Ior] =
+  given catsDataBifunctorForIor: Bifunctor[Ior] =
     new Bifunctor[Ior] {
       override def bimap[A, B, C, D](fab: A Ior B)(f: A => C, g: B => D): C Ior D = fab.bimap(f, g)
     }
 
-  implicit def catsDataParallelForIor[E](implicit E: Semigroup[E]): Parallel.Aux[Ior[E, *], Ior[E, *]] =
+  given catsDataParallelForIor[E](using E: Semigroup[E]): Parallel.Aux[Ior[E, *], Ior[E, *]] =
     new Parallel[Ior[E, *]] {
       type F[x] = Ior[E, x]
 
@@ -953,7 +953,7 @@ sealed abstract private[data] class IorInstances extends IorInstances0 {
 
 sealed abstract private[data] class IorInstances0 {
 
-  implicit def catsDataTraverseFunctorForIor[A]: Traverse[Ior[A, *]] =
+  given catsDataTraverseFunctorForIor[A]: Traverse[Ior[A, *]] =
     new Traverse[Ior[A, *]] {
       def traverse[F[_]: Applicative, B, C](fa: A Ior B)(f: B => F[C]): F[A Ior C] =
         fa.traverse(f)
@@ -987,7 +987,7 @@ sealed abstract private[data] class IorInstances0 {
         fa.map(f)
     }
 
-  implicit def catsDataEqForIor[A: Eq, B: Eq]: Eq[A Ior B] = _ === _
+  given catsDataEqForIor[A: Eq, B: Eq]: Eq[A Ior B] = _ === _
 }
 
 sealed private[data] trait IorFunctions {

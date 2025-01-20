@@ -34,7 +34,7 @@ import org.scalacheck.Prop._
 class IdTSuite extends CatsSuite {
 
   implicit val iso: Isomorphisms[IdT[ListWrapper, *]] =
-    Isomorphisms.invariant[IdT[ListWrapper, *]](IdT.catsDataFunctorForIdT(ListWrapper.functor))
+    Isomorphisms.invariant[IdT[ListWrapper, *]](IdT.catsDataFunctorForIdT(using ListWrapper.functor))
 
   checkAll("IdT[(CSemi, *), Int]", CommutativeFlatMapTests[IdT[(CSemi, *), *]].commutativeFlatMap[Int, Int, Int])
   checkAll("CommutativeFlatMap[IdT[(CSemi, *), *]]",

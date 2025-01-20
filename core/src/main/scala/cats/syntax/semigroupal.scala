@@ -64,7 +64,7 @@ final class SemigroupalOps2[F[_], A](private val fa: F[A]) extends AnyVal {
    * res3: Option[(Int, String)] = Some((3,foo))
    * }}}
    */
-  def product[B](fb: F[B])(implicit F: Semigroupal[F]): F[(A, B)] = F.product(fa, fb)
+  def product[B](fb: F[B])(using F: Semigroupal[F]): F[(A, B)] = F.product(fa, fb)
 
   @deprecated("Replaced by an apply syntax, e.g. instead of (a |@| b).map(...) use (a, b).mapN(...)", "1.0.0-MF")
   def |@|[B](fb: F[B]): SemigroupalBuilder[F]#SemigroupalBuilder2[A, B] =

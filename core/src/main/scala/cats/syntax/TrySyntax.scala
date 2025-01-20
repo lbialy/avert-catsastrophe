@@ -49,7 +49,7 @@ final class TryOps[A](private val self: Try[A]) extends AnyVal {
    * res0: Either[Throwable, Int] = Left(java.lang.Throwable: boo)
    * }}}
    */
-  def liftTo[F[_]](implicit F: ApplicativeThrow[F]): F[A] =
+  def liftTo[F[_]](using F: ApplicativeThrow[F]): F[A] =
     F.fromTry(self)
 
   /**

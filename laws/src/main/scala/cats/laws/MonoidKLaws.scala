@@ -44,7 +44,7 @@ trait MonoidKLaws[F[_]] extends SemigroupKLaws[F] {
     F.combineAllK(xs) <-> (F.empty[A] +: xs).reduce(F.combineK[A])
 
   def isId[A](x: F[A], eqv: Eq[F[A]]): IsEq[Boolean] =
-    eqv.eqv(x, F.empty) <-> F.isEmpty(x)(eqv)
+    eqv.eqv(x, F.empty) <-> F.isEmpty(x)(using eqv)
 }
 
 object MonoidKLaws {

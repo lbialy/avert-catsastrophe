@@ -40,7 +40,7 @@ final class NonEmptyAlternativeOps[F[_], A] private[syntax] (private val fa: F[A
    * res0: List[Int] = List(1, 2, 3, 4)
    * }}}
    */
-  def prependK(a: A)(implicit F: NonEmptyAlternative[F]): F[A] = F.prependK(a, fa)
+  def prependK(a: A)(using F: NonEmptyAlternative[F]): F[A] = F.prependK(a, fa)
 
   /**
    * @see [[NonEmptyAlternative.appendK]]
@@ -53,5 +53,5 @@ final class NonEmptyAlternativeOps[F[_], A] private[syntax] (private val fa: F[A
    * res0: List[Int] = List(1, 2, 3, 4)
    * }}}
    */
-  def appendK(a: A)(implicit F: NonEmptyAlternative[F]): F[A] = F.appendK(fa, a)
+  def appendK(a: A)(using F: NonEmptyAlternative[F]): F[A] = F.appendK(fa, a)
 }

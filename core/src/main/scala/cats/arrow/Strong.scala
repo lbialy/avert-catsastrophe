@@ -63,11 +63,11 @@ object Strong {
   /**
    * Summon an instance of [[Strong]] for `F`.
    */
-  @inline def apply[F[_, _]](implicit instance: Strong[F]): Strong[F] = instance
+  @inline def apply[F[_, _]](using instance: Strong[F]): Strong[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllStrongOps[F[_, _], A, B](target: F[A, B])(implicit tc: Strong[F]): AllOps[F, A, B] {
+    implicit def toAllStrongOps[F[_, _], A, B](target: F[A, B])(using tc: Strong[F]): AllOps[F, A, B] {
       type TypeClassType = Strong[F]
     } =
       new AllOps[F, A, B] {
@@ -87,7 +87,7 @@ object Strong {
     type TypeClassType <: Strong[F]
   }
   trait ToStrongOps extends Serializable {
-    implicit def toStrongOps[F[_, _], A, B](target: F[A, B])(implicit tc: Strong[F]): Ops[F, A, B] {
+    implicit def toStrongOps[F[_, _], A, B](target: F[A, B])(using tc: Strong[F]): Ops[F, A, B] {
       type TypeClassType = Strong[F]
     } =
       new Ops[F, A, B] {

@@ -91,20 +91,20 @@ trait Profunctor[F[_, _]] extends Serializable { self =>
 }
 
 object Profunctor {
-  implicit def catsStrongForFunction1: Strong[Function1] =
+  given catsStrongForFunction1: Strong[Function1] =
     cats.instances.function.catsStdInstancesForFunction1
 
-  implicit def catsStrongForPartialFunction: Strong[PartialFunction] =
+  given catsStrongForPartialFunction: Strong[PartialFunction] =
     cats.instances.partialFunction.catsStdInstancesForPartialFunction
 
   /**
    * Summon an instance of [[Profunctor]] for `F`.
    */
-  @inline def apply[F[_, _]](implicit instance: Profunctor[F]): Profunctor[F] = instance
+  @inline def apply[F[_, _]](using instance: Profunctor[F]): Profunctor[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllProfunctorOps[F[_, _], A, B](target: F[A, B])(implicit tc: Profunctor[F]): AllOps[F, A, B] {
+    implicit def toAllProfunctorOps[F[_, _], A, B](target: F[A, B])(using tc: Profunctor[F]): AllOps[F, A, B] {
       type TypeClassType = Profunctor[F]
     } =
       new AllOps[F, A, B] {
@@ -125,7 +125,7 @@ object Profunctor {
   }
   trait AllOps[F[_, _], A, B] extends Ops[F, A, B]
   trait ToProfunctorOps extends Serializable {
-    implicit def toProfunctorOps[F[_, _], A, B](target: F[A, B])(implicit tc: Profunctor[F]): Ops[F, A, B] {
+    implicit def toProfunctorOps[F[_, _], A, B](target: F[A, B])(using tc: Profunctor[F]): Ops[F, A, B] {
       type TypeClassType = Profunctor[F]
     } =
       new Ops[F, A, B] {

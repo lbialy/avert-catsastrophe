@@ -256,7 +256,7 @@ object Apply {
    * accumulative usage of this instance, such as `combineAll`, will result in
    * `F`s with exponentially increasing sizes.
    */
-  def semigroup[F[_], A](implicit f: Apply[F], sg: Semigroup[A]): Semigroup[F[A]] =
+  def semigroup[F[_], A](using f: Apply[F], sg: Semigroup[A]): Semigroup[F[A]] =
     new ApplySemigroup[F, A](f, sg)
 
   def align[F[_]: Apply]: Align[F] =
@@ -268,11 +268,11 @@ object Apply {
   /**
    * Summon an instance of [[Apply]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: Apply[F]): Apply[F] = instance
+  @inline def apply[F[_]](using instance: Apply[F]): Apply[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllApplyOps[F[_], A](target: F[A])(implicit tc: Apply[F]): AllOps[F, A] {
+    implicit def toAllApplyOps[F[_], A](target: F[A])(using tc: Apply[F]): AllOps[F, A] {
       type TypeClassType = Apply[F]
     } =
       new AllOps[F, A] {
@@ -285,15 +285,15 @@ object Apply {
     type TypeClassType <: Apply[F]
     def self: F[A]
     val typeClassInstance: TypeClassType
-    def ap[B, C](fa: F[B])(implicit ev$1: A <:< (B => C)): F[C] =
+    def ap[B, C](fa: F[B])(using ev$1: A <:< (B => C)): F[C] =
       typeClassInstance.ap[B, C](self.asInstanceOf[F[B => C]])(fa)
     def productR[B](fb: F[B]): F[B] = typeClassInstance.productR[A, B](self)(fb)
     def productL[B](fb: F[B]): F[A] = typeClassInstance.productL[A, B](self)(fb)
-    @inline final def <*>[B, C](fa: F[B])(implicit ev$1: A <:< (B => C)): F[C] =
+    @inline final def <*>[B, C](fa: F[B])(using ev$1: A <:< (B => C)): F[C] =
       typeClassInstance.<*>[B, C](self.asInstanceOf[F[B => C]])(fa)
     @inline final def *>[B](fb: F[B]): F[B] = typeClassInstance.*>[A, B](self)(fb)
     @inline final def <*[B](fb: F[B]): F[A] = typeClassInstance.<*[A, B](self)(fb)
-    def ap2[B, C, D](fa: F[B], fb: F[C])(implicit ev$1: A <:< ((B, C) => D)): F[D] =
+    def ap2[B, C, D](fa: F[B], fb: F[C])(using ev$1: A <:< ((B, C) => D)): F[D] =
       typeClassInstance.ap2[B, C, D](self.asInstanceOf[F[(B, C) => D]])(fa, fb)
     def map2[B, C](fb: F[B])(f: (A, B) => C): F[C] = typeClassInstance.map2[A, B, C](self, fb)(f)
     def map2Eval[B, C](fb: Eval[F[B]])(f: (A, B) => C): Eval[F[C]] = typeClassInstance.map2Eval[A, B, C](self, fb)(f)
@@ -302,7 +302,7 @@ object Apply {
     type TypeClassType <: Apply[F]
   }
   trait ToApplyOps extends Serializable {
-    implicit def toApplyOps[F[_], A](target: F[A])(implicit tc: Apply[F]): Ops[F, A] {
+    implicit def toApplyOps[F[_], A](target: F[A])(using tc: Apply[F]): Ops[F, A] {
       type TypeClassType = Apply[F]
     } =
       new Ops[F, A] {

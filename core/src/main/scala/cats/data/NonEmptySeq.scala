@@ -205,7 +205,7 @@ final class NonEmptySeq[+A] private (val toSeq: Seq[A]) extends AnyVal with NonE
   /**
    * Reduce using the Semigroup of A
    */
-  def reduce[AA >: A](implicit S: Semigroup[AA]): AA =
+  def reduce[AA >: A](using S: Semigroup[AA]): AA =
     S.combineAllOption(toSeq).get
 
   /**
@@ -216,7 +216,7 @@ final class NonEmptySeq[+A] private (val toSeq: Seq[A]) extends AnyVal with NonE
    * equality provided by Eq[_] instances, rather than using the
    * universal equality provided by .equals.
    */
-  def ===[AA >: A](that: NonEmptySeq[AA])(implicit A: Eq[AA]): Boolean =
+  def ===[AA >: A](that: NonEmptySeq[AA])(using A: Eq[AA]): Boolean =
     Eq[Seq[AA]].eqv(toSeq, that.toSeq)
 
   /**
@@ -226,7 +226,7 @@ final class NonEmptySeq[+A] private (val toSeq: Seq[A]) extends AnyVal with NonE
    * values according to Show[_] instances, rather than using the
    * universal .toString method.
    */
-  def show[AA >: A](implicit AA: Show[AA]): String =
+  def show[AA >: A](using AA: Show[AA]): String =
     s"NonEmptySeq(${toSeq.iterator.map(AA.show).mkString(", ")})"
 
   def length: Int = toSeq.length
@@ -236,10 +236,10 @@ final class NonEmptySeq[+A] private (val toSeq: Seq[A]) extends AnyVal with NonE
   /**
    * Remove duplicates. Duplicates are checked using `Order[_]` instance.
    */
-  override def distinct[AA >: A](implicit O: Order[AA]): NonEmptySeq[AA] = distinctBy(identity[AA])
+  override def distinct[AA >: A](using O: Order[AA]): NonEmptySeq[AA] = distinctBy(identity[AA])
 
-  override def distinctBy[B](f: A => B)(implicit O: Order[B]): NonEmptySeq[A] = {
-    implicit val ord: Ordering[B] = O.toOrdering
+  override def distinctBy[B](f: A => B)(using O: Order[B]): NonEmptySeq[A] = {
+    given ord: Ordering[B] = O.toOrdering
 
     val buf = Seq.newBuilder[A]
     tail.foldLeft(TreeSet(f(head): B)) { (elementsSoFar, a) =>
@@ -290,10 +290,10 @@ final class NonEmptySeq[+A] private (val toSeq: Seq[A]) extends AnyVal with NonE
   def zipWithIndex: NonEmptySeq[(A, Int)] =
     new NonEmptySeq(toSeq.zipWithIndex)
 
-  def sortBy[B](f: A => B)(implicit B: Order[B]): NonEmptySeq[A] =
+  def sortBy[B](f: A => B)(using B: Order[B]): NonEmptySeq[A] =
     new NonEmptySeq(toSeq.sortBy(f)(B.toOrdering))
 
-  def sorted[AA >: A](implicit AA: Order[AA]): NonEmptySeq[AA] =
+  def sorted[AA >: A](using AA: Order[AA]): NonEmptySeq[AA] =
     new NonEmptySeq(toSeq.sorted(AA.toOrdering))
 
   /**
@@ -311,8 +311,8 @@ final class NonEmptySeq[+A] private (val toSeq: Seq[A]) extends AnyVal with NonE
    * res0: Boolean = true
    * }}}
    */
-  final def groupBy[B](f: A => B)(implicit B: Order[B]): SortedMap[B, NonEmptySeq[A]] = {
-    implicit val ordering: Ordering[B] = B.toOrdering
+  final def groupBy[B](f: A => B)(using B: Order[B]): SortedMap[B, NonEmptySeq[A]] = {
+    given ordering: Ordering[B] = B.toOrdering
     var m = TreeMap.empty[B, mutable.Builder[A, Seq[A]]]
 
     for { elem <- toSeq } {
@@ -343,7 +343,7 @@ final class NonEmptySeq[+A] private (val toSeq: Seq[A]) extends AnyVal with NonE
    * res0: Boolean = true
    * }}}
    */
-  final def groupByNem[B](f: A => B)(implicit B: Order[B]): NonEmptyMap[B, NonEmptySeq[A]] =
+  final def groupByNem[B](f: A => B)(using B: Order[B]): NonEmptyMap[B, NonEmptySeq[A]] =
     NonEmptyMap.fromMapUnsafe(groupBy(f))
 
   /**
@@ -377,7 +377,7 @@ final class NonEmptySeq[+A] private (val toSeq: Seq[A]) extends AnyVal with NonE
    * res0: Boolean = true
    * }}}
    */
-  final def toNem[T, U](implicit ev: A <:< (T, U), order: Order[T]): NonEmptyMap[T, U] =
+  final def toNem[T, U](using ev: A <:< (T, U), order: Order[T]): NonEmptyMap[T, U] =
     NonEmptyMap.fromMapUnsafe(SortedMap(toSeq.map(ev): _*)(order.toOrdering))
 
   /**
@@ -391,7 +391,7 @@ final class NonEmptySeq[+A] private (val toSeq: Seq[A]) extends AnyVal with NonE
    * res0: cats.data.NonEmptySet[Int] = TreeSet(1, 2, 3, 4)
    * }}}
    */
-  final def toNes[B >: A](implicit order: Order[B]): NonEmptySet[B] =
+  final def toNes[B >: A](using order: Order[B]): NonEmptySet[B] =
     NonEmptySet.of(head, tail: _*)
 }
 
@@ -412,8 +412,8 @@ sealed abstract private[data] class NonEmptySeqInstances {
    *
    * Also see the discussion: PR #3541 and issue #3069.
    */
-  implicit val catsDataInstancesForNonEmptySeqBinCompat1
-    : NonEmptyAlternative[NonEmptySeq] & Bimonad[NonEmptySeq] & NonEmptyTraverse[NonEmptySeq] & Align[NonEmptySeq] =
+  given catsDataInstancesForNonEmptySeqBinCompat1
+    : (NonEmptyAlternative[NonEmptySeq] & Bimonad[NonEmptySeq] & NonEmptyTraverse[NonEmptySeq] & Align[NonEmptySeq]) =
     new NonEmptyReducible[NonEmptySeq, Seq]
       with NonEmptyAlternative[NonEmptySeq]
       with Bimonad[NonEmptySeq]
@@ -436,7 +436,7 @@ sealed abstract private[data] class NonEmptySeqInstances {
       override def reduceLeft[A](fa: NonEmptySeq[A])(f: (A, A) => A): A =
         fa.reduceLeft(f)
 
-      override def reduce[A](fa: NonEmptySeq[A])(implicit A: Semigroup[A]): A =
+      override def reduce[A](fa: NonEmptySeq[A])(using A: Semigroup[A]): A =
         fa.reduce
 
       override def map[A, B](fa: NonEmptySeq[A])(f: A => B): NonEmptySeq[B] =
@@ -461,7 +461,7 @@ sealed abstract private[data] class NonEmptySeqInstances {
 
       def nonEmptyTraverse[G[_], A, B](
         nev: NonEmptySeq[A]
-      )(f: A => G[B])(implicit G: Apply[G]): G[NonEmptySeq[B]] = {
+      )(f: A => G[B])(using G: Apply[G]): G[NonEmptySeq[B]] = {
         def loop(head: A, tail: Seq[A]): Eval[G[NonEmptySeq[B]]] =
           tail.headOption.fold(Eval.now(G.map(f(head))(NonEmptySeq(_, Seq.empty[B]))))(h =>
             G.map2Eval(f(head), Eval.defer(loop(h, tail.tail)))((b, acc) => b +: acc)
@@ -472,7 +472,7 @@ sealed abstract private[data] class NonEmptySeqInstances {
 
       override def traverse[G[_], A, B](
         fa: NonEmptySeq[A]
-      )(f: (A) => G[B])(implicit G: Applicative[G]): G[NonEmptySeq[B]] =
+      )(f: (A) => G[B])(using G: Applicative[G]): G[NonEmptySeq[B]] =
         G.map2Eval(f(fa.head), Always(Traverse[Seq].traverse(fa.tail)(f)))(NonEmptySeq(_, _)).value
 
       override def mapWithIndex[A, B](fa: NonEmptySeq[A])(f: (A, Int) => B): NonEmptySeq[B] =
@@ -487,7 +487,7 @@ sealed abstract private[data] class NonEmptySeqInstances {
       override def foldRight[A, B](fa: NonEmptySeq[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
         fa.foldRight(lb)(f)
 
-      override def foldMap[A, B](fa: NonEmptySeq[A])(f: A => B)(implicit B: Monoid[B]): B =
+      override def foldMap[A, B](fa: NonEmptySeq[A])(f: A => B)(using B: Monoid[B]): B =
         B.combineAll(fa.toSeq.iterator.map(f))
 
       override def nonEmptyPartition[A, B, C](
@@ -528,7 +528,7 @@ sealed abstract private[data] class NonEmptySeqInstances {
         NonEmptySeq.fromSeqUnsafe(buf.result())
       }
 
-      override def fold[A](fa: NonEmptySeq[A])(implicit A: Monoid[A]): A =
+      override def fold[A](fa: NonEmptySeq[A])(using A: Monoid[A]): A =
         fa.reduce
 
       override def find[A](fa: NonEmptySeq[A])(f: A => Boolean): Option[A] =
@@ -558,14 +558,14 @@ sealed abstract private[data] class NonEmptySeqInstances {
         NonEmptySeq.fromSeqUnsafe(Align[Seq].alignWith(fa.toSeq, fb.toSeq)(f))
     }
 
-  implicit def catsDataEqForNonEmptySeq[A: Eq]: Eq[NonEmptySeq[A]] = _ === _
+  given catsDataEqForNonEmptySeq[A: Eq]: Eq[NonEmptySeq[A]] = _ === _
 
-  implicit def catsDataShowForNonEmptySeq[A: Show]: Show[NonEmptySeq[A]] = _.show
+  given catsDataShowForNonEmptySeq[A: Show]: Show[NonEmptySeq[A]] = _.show
 
-  implicit def catsDataSemigroupForNonEmptySeq[A]: Semigroup[NonEmptySeq[A]] =
+  given catsDataSemigroupForNonEmptySeq[A]: Semigroup[NonEmptySeq[A]] =
     catsDataInstancesForNonEmptySeqBinCompat1.algebra
 
-  implicit def catsDataParallelForNonEmptySeq: NonEmptyParallel.Aux[NonEmptySeq, ZipNonEmptySeq] =
+  given catsDataParallelForNonEmptySeq: NonEmptyParallel.Aux[NonEmptySeq, ZipNonEmptySeq] =
     new NonEmptyParallel[NonEmptySeq] {
       type F[x] = ZipNonEmptySeq[x]
 
@@ -613,7 +613,7 @@ object NonEmptySeq extends NonEmptySeqInstances with Serializable {
     def apply[A](nev: NonEmptySeq[A]): ZipNonEmptySeq[A] =
       new ZipNonEmptySeq(nev)
 
-    implicit val catsDataCommutativeApplyForZipNonEmptySeq: CommutativeApply[ZipNonEmptySeq] =
+    given catsDataCommutativeApplyForZipNonEmptySeq: CommutativeApply[ZipNonEmptySeq] =
       new CommutativeApply[ZipNonEmptySeq] {
         def ap[A, B](ff: ZipNonEmptySeq[A => B])(fa: ZipNonEmptySeq[A]): ZipNonEmptySeq[B] =
           ZipNonEmptySeq(ff.value.zipWith(fa.value)(_.apply(_)))
@@ -628,6 +628,6 @@ object NonEmptySeq extends NonEmptySeqInstances with Serializable {
     @deprecated("Use catsDataEqForZipNonEmptySeq", "2.0.0-RC2")
     private[data] def zipNevEq[A: Eq]: Eq[ZipNonEmptySeq[A]] = catsDataEqForZipNonEmptySeq[A]
 
-    implicit def catsDataEqForZipNonEmptySeq[A: Eq]: Eq[ZipNonEmptySeq[A]] = Eq.by(_.value)
+    given catsDataEqForZipNonEmptySeq[A: Eq]: Eq[ZipNonEmptySeq[A]] = Eq.by(_.value)
   }
 }

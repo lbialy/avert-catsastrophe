@@ -80,7 +80,7 @@ trait NonEmptyTraverse[F[_]] extends Traverse[F] with Reducible[F] { self =>
    * res0: Map[String,cats.data.NonEmptyList[String]] = Map(do -> NonEmptyList(do, do, do), you -> NonEmptyList(you, you))
    * }}}
    */
-  def nonEmptyFlatTraverse[G[_], A, B](fa: F[A])(f: A => G[F[B]])(implicit G: Apply[G], F: FlatMap[F]): G[F[B]] =
+  def nonEmptyFlatTraverse[G[_], A, B](fa: F[A])(f: A => G[F[B]])(using G: Apply[G], F: FlatMap[F]): G[F[B]] =
     G.map(nonEmptyTraverse(fa)(f))(F.flatten)
 
   /**
@@ -99,7 +99,7 @@ trait NonEmptyTraverse[F[_]] extends Traverse[F] with Reducible[F] { self =>
    * res1: Map[Int,cats.data.NonEmptyList[Int]] = Map()
    * }}}
    */
-  def nonEmptyFlatSequence[G[_], A](fgfa: F[G[F[A]]])(implicit G: Apply[G], F: FlatMap[F]): G[F[A]] =
+  def nonEmptyFlatSequence[G[_], A](fgfa: F[G[F[A]]])(using G: Apply[G], F: FlatMap[F]): G[F[A]] =
     G.map(nonEmptyTraverse(fgfa)(identity))(F.flatten)
 
   override def traverse[G[_]: Applicative, A, B](fa: F[A])(f: (A) => G[B]): G[F[B]] =
@@ -118,11 +118,11 @@ object NonEmptyTraverse {
   /**
    * Summon an instance of [[NonEmptyTraverse]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: NonEmptyTraverse[F]): NonEmptyTraverse[F] = instance
+  @inline def apply[F[_]](using instance: NonEmptyTraverse[F]): NonEmptyTraverse[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllNonEmptyTraverseOps[F[_], A](target: F[A])(implicit tc: NonEmptyTraverse[F]): AllOps[F, A] {
+    implicit def toAllNonEmptyTraverseOps[F[_], A](target: F[A])(using tc: NonEmptyTraverse[F]): AllOps[F, A] {
       type TypeClassType = NonEmptyTraverse[F]
     } =
       new AllOps[F, A] {
@@ -135,20 +135,20 @@ object NonEmptyTraverse {
     type TypeClassType <: NonEmptyTraverse[F]
     def self: F[A]
     val typeClassInstance: TypeClassType
-    def nonEmptyTraverse[G[_], B](f: A => G[B])(implicit ev$1: Apply[G]): G[F[B]] =
+    def nonEmptyTraverse[G[_], B](f: A => G[B])(using ev$1: Apply[G]): G[F[B]] =
       typeClassInstance.nonEmptyTraverse[G, A, B](self)(f)
-    def nonEmptySequence[G[_], B](implicit ev$1: A <:< G[B], ev$2: Apply[G]): G[F[B]] =
+    def nonEmptySequence[G[_], B](using ev$1: A <:< G[B], ev$2: Apply[G]): G[F[B]] =
       typeClassInstance.nonEmptySequence[G, B](self.asInstanceOf[F[G[B]]])
-    def nonEmptyFlatTraverse[G[_], B](f: A => G[F[B]])(implicit G: Apply[G], F: FlatMap[F]): G[F[B]] =
-      typeClassInstance.nonEmptyFlatTraverse[G, A, B](self)(f)(G, F)
-    def nonEmptyFlatSequence[G[_], B](implicit ev$1: A <:< G[F[B]], G: Apply[G], F: FlatMap[F]): G[F[B]] =
-      typeClassInstance.nonEmptyFlatSequence[G, B](self.asInstanceOf[F[G[F[B]]]])(G, F)
+    def nonEmptyFlatTraverse[G[_], B](f: A => G[F[B]])(using G: Apply[G], F: FlatMap[F]): G[F[B]] =
+      typeClassInstance.nonEmptyFlatTraverse[G, A, B](self)(f)(using G, F)
+    def nonEmptyFlatSequence[G[_], B](using ev$1: A <:< G[F[B]], G: Apply[G], F: FlatMap[F]): G[F[B]] =
+      typeClassInstance.nonEmptyFlatSequence[G, B](self.asInstanceOf[F[G[F[B]]]])(using G, F)
   }
   trait AllOps[F[_], A] extends Ops[F, A] with Traverse.AllOps[F, A] with Reducible.AllOps[F, A] {
     type TypeClassType <: NonEmptyTraverse[F]
   }
   trait ToNonEmptyTraverseOps extends Serializable {
-    implicit def toNonEmptyTraverseOps[F[_], A](target: F[A])(implicit tc: NonEmptyTraverse[F]): Ops[F, A] {
+    implicit def toNonEmptyTraverseOps[F[_], A](target: F[A])(using tc: NonEmptyTraverse[F]): Ops[F, A] {
       type TypeClassType = NonEmptyTraverse[F]
     } =
       new Ops[F, A] {

@@ -97,26 +97,26 @@ trait FunctorFilter[F[_]] extends Serializable {
 }
 
 object FunctorFilter extends ScalaVersionSpecificTraverseFilterInstances with FunctorFilterInstances0 {
-  implicit def catsTraverseFilterForOption: TraverseFilter[Option] =
+  given catsTraverseFilterForOption: TraverseFilter[Option] =
     cats.instances.option.catsStdTraverseFilterForOption
-  implicit def catsTraverseFilterForList: TraverseFilter[List] = cats.instances.list.catsStdTraverseFilterForList
-  implicit def catsTraverseFilterForVector: TraverseFilter[Vector] =
+  given catsTraverseFilterForList: TraverseFilter[List] = cats.instances.list.catsStdTraverseFilterForList
+  given catsTraverseFilterForVector: TraverseFilter[Vector] =
     cats.instances.vector.catsStdTraverseFilterForVector
-  implicit def catsFunctorFilterForMap[K]: FunctorFilter[Map[K, *]] =
+  given catsFunctorFilterForMap[K]: FunctorFilter[Map[K, *]] =
     cats.instances.map.catsStdFunctorFilterForMap[K]
-  implicit def catsTraverseFilterForSortedMap[K]: TraverseFilter[SortedMap[K, *]] =
+  given catsTraverseFilterForSortedMap[K]: TraverseFilter[SortedMap[K, *]] =
     cats.instances.sortedMap.catsStdTraverseFilterForSortedMap[K]
-  implicit def catsTraverseFilterForQueue: TraverseFilter[Queue] =
+  given catsTraverseFilterForQueue: TraverseFilter[Queue] =
     cats.instances.queue.catsStdTraverseFilterForQueue
 
   /**
    * Summon an instance of [[FunctorFilter]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: FunctorFilter[F]): FunctorFilter[F] = instance
+  @inline def apply[F[_]](using instance: FunctorFilter[F]): FunctorFilter[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllFunctorFilterOps[F[_], A](target: F[A])(implicit tc: FunctorFilter[F]): AllOps[F, A] {
+    implicit def toAllFunctorFilterOps[F[_], A](target: F[A])(using tc: FunctorFilter[F]): AllOps[F, A] {
       type TypeClassType = FunctorFilter[F]
     } =
       new AllOps[F, A] {
@@ -131,14 +131,14 @@ object FunctorFilter extends ScalaVersionSpecificTraverseFilterInstances with Fu
     val typeClassInstance: TypeClassType
     def mapFilter[B](f: A => Option[B]): F[B] = typeClassInstance.mapFilter[A, B](self)(f)
     def collect[B](f: PartialFunction[A, B]): F[B] = typeClassInstance.collect[A, B](self)(f)
-    def flattenOption[B](implicit ev$1: A <:< Option[B]): F[B] =
+    def flattenOption[B](using ev$1: A <:< Option[B]): F[B] =
       typeClassInstance.flattenOption[B](self.asInstanceOf[F[Option[B]]])
     def filter(f: A => Boolean): F[A] = typeClassInstance.filter[A](self)(f)
     def filterNot(f: A => Boolean): F[A] = typeClassInstance.filterNot[A](self)(f)
   }
   trait AllOps[F[_], A] extends Ops[F, A]
   trait ToFunctorFilterOps extends Serializable {
-    implicit def toFunctorFilterOps[F[_], A](target: F[A])(implicit tc: FunctorFilter[F]): Ops[F, A] {
+    implicit def toFunctorFilterOps[F[_], A](target: F[A])(using tc: FunctorFilter[F]): Ops[F, A] {
       type TypeClassType = FunctorFilter[F]
     } =
       new Ops[F, A] {
@@ -154,6 +154,6 @@ object FunctorFilter extends ScalaVersionSpecificTraverseFilterInstances with Fu
 
 trait FunctorFilterInstances0 {
 
-  implicit def catsTraverseFilterForSeq: TraverseFilter[Seq] = cats.instances.seq.catsStdTraverseFilterForSeq
+  given catsTraverseFilterForSeq: TraverseFilter[Seq] = cats.instances.seq.catsStdTraverseFilterForSeq
 
 }

@@ -25,7 +25,7 @@ package instances
 import scala.annotation.tailrec
 
 trait EqInstances extends kernel.instances.EqInstances {
-  implicit val catsContravariantMonoidalForEq: ContravariantMonoidal[Eq] =
+  given catsContravariantMonoidalForEq: ContravariantMonoidal[Eq] =
     new ContravariantMonoidal[Eq] {
 
       /**
@@ -46,7 +46,7 @@ trait EqInstances extends kernel.instances.EqInstances {
         (left, right) => fa.eqv(left._1, right._1) && fb.eqv(left._2, right._2)
     }
 
-  implicit def catsDeferForEq: Defer[Eq] = EqInstances.catsDeferForEqCache
+  given catsDeferForEq: Defer[Eq] = EqInstances.catsDeferForEqCache
 }
 object EqInstances {
   private val catsDeferForEqCache: Defer[Eq] =

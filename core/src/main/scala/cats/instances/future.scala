@@ -36,9 +36,9 @@ import scala.util.{Failure, Success}
  */
 trait FutureInstances extends FutureInstances1 {
 
-  implicit def catsStdInstancesForFuture(implicit
+  given catsStdInstancesForFuture(using
     ec: ExecutionContext
-  ): MonadThrow[Future] & CoflatMap[Future] & Monad[Future] =
+  ): (MonadThrow[Future] & CoflatMap[Future] & Monad[Future]) =
     new FutureCoflatMap with MonadThrow[Future] with Monad[Future] with StackSafeMonad[Future] {
       override def pure[A](x: A): Future[A] =
         Future.successful(x)
@@ -70,30 +70,30 @@ trait FutureInstances extends FutureInstances1 {
         fa.recoverWith(pf)
       override def map[A, B](fa: Future[A])(f: A => B): Future[B] =
         fa.map(f)
-      override def catchNonFatal[A](a: => A)(implicit ev: Throwable <:< Throwable): Future[A] =
+      override def catchNonFatal[A](a: => A)(using ev: Throwable <:< Throwable): Future[A] =
         Future(a)
-      override def catchNonFatalEval[A](a: Eval[A])(implicit ev: Throwable <:< Throwable): Future[A] =
+      override def catchNonFatalEval[A](a: Eval[A])(using ev: Throwable <:< Throwable): Future[A] =
         Future(a.value)
     }
 }
 
 sealed private[instances] trait FutureInstances1 extends FutureInstances2 {
-  implicit def catsStdMonoidForFuture[A: Monoid](implicit ec: ExecutionContext): Monoid[Future[A]] =
+  given catsStdMonoidForFuture[A: Monoid](using ec: ExecutionContext): Monoid[Future[A]] =
     new FutureMonoid[A]
 }
 
 sealed private[instances] trait FutureInstances2 {
-  implicit def catsStdSemigroupForFuture[A: Semigroup](implicit ec: ExecutionContext): Semigroup[Future[A]] =
+  given catsStdSemigroupForFuture[A: Semigroup](using ec: ExecutionContext): Semigroup[Future[A]] =
     new FutureSemigroup[A]
 }
 
-abstract private[cats] class FutureCoflatMap(implicit ec: ExecutionContext) extends CoflatMap[Future] {
+abstract private[cats] class FutureCoflatMap(using ec: ExecutionContext) extends CoflatMap[Future] {
   def map[A, B](fa: Future[A])(f: A => B): Future[B] = fa.map(f)
   def coflatMap[A, B](fa: Future[A])(f: Future[A] => B): Future[B] = Future(f(fa))
 }
 
-private[cats] class FutureSemigroup[A: Semigroup](implicit ec: ExecutionContext)
+private[cats] class FutureSemigroup[A: Semigroup](using ec: ExecutionContext)
     extends ApplySemigroup[Future, A](future.catsStdInstancesForFuture, implicitly)
 
-private[cats] class FutureMonoid[A](implicit A: Monoid[A], ec: ExecutionContext)
+private[cats] class FutureMonoid[A](using A: Monoid[A], ec: ExecutionContext)
     extends ApplicativeMonoid[Future, A](future.catsStdInstancesForFuture, implicitly)

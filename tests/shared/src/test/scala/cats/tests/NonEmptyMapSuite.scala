@@ -166,7 +166,7 @@ class NonEmptyMapSuite extends CatsSuite {
 
   test("reduce consistent with reduceK") {
     forAll { (nem: NonEmptyMap[String, Option[Int]]) =>
-      assert(nem.reduce(SemigroupK[Option].algebra[Int]) === (nem.reduceK))
+      assert(nem.reduce(using SemigroupK[Option].algebra[Int]) === (nem.reduceK))
     }
   }
 

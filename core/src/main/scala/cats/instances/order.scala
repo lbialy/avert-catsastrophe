@@ -28,7 +28,7 @@ import scala.annotation.tailrec
 
 trait OrderInstances extends kernel.instances.OrderInstances {
 
-  implicit val catsContravariantMonoidalForOrder: ContravariantMonoidal[Order] =
+  given catsContravariantMonoidalForOrder: ContravariantMonoidal[Order] =
     new ContravariantMonoidal[Order] {
 
       /**
@@ -50,7 +50,7 @@ trait OrderInstances extends kernel.instances.OrderInstances {
       }
     }
 
-  implicit def catsDeferForOrder: Defer[Order] = OrderInstances.catsDeferForOrderCache
+  given catsDeferForOrder: Defer[Order] = OrderInstances.catsDeferForOrderCache
 }
 object OrderInstances {
   private val catsDeferForOrderCache: Defer[Order] =

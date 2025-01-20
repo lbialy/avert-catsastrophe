@@ -27,7 +27,7 @@ import scala.collection.mutable.Builder
 
 abstract private[data] class OneAndLowPriority4 {
   @deprecated("Use catsDataComonadForNonEmptyLazyList", "2.0.0-RC2")
-  implicit def catsDataComonadForNonEmptyStream: Comonad[OneAnd[Stream, *]] =
+  given catsDataComonadForNonEmptyStream: Comonad[OneAnd[Stream, *]] =
     new Comonad[OneAnd[Stream, *]] {
       def coflatMap[A, B](fa: OneAnd[Stream, A])(f: OneAnd[Stream, A] => B): OneAnd[Stream, B] = {
         @tailrec def consume(as: Stream[A], buf: Builder[B, Stream[B]]): Stream[B] =
@@ -43,10 +43,10 @@ abstract private[data] class OneAndLowPriority4 {
         fa.head
 
       def map[A, B](fa: OneAnd[Stream, A])(f: A => B): OneAnd[Stream, B] =
-        fa.map(f)(cats.instances.stream.catsStdInstancesForStream)
+        fa.map(f)(using cats.instances.stream.catsStdInstancesForStream)
     }
 
-  implicit val catsDataComonadForNonEmptyLazyList: Comonad[OneAnd[LazyList, *]] =
+  given catsDataComonadForNonEmptyLazyList: Comonad[OneAnd[LazyList, *]] =
     new Comonad[OneAnd[LazyList, *]] {
       def coflatMap[A, B](fa: OneAnd[LazyList, A])(f: OneAnd[LazyList, A] => B): OneAnd[LazyList, B] = {
         @tailrec def consume(as: LazyList[A], buf: Builder[B, LazyList[B]]): LazyList[B] =
@@ -62,6 +62,6 @@ abstract private[data] class OneAndLowPriority4 {
         fa.head
 
       def map[A, B](fa: OneAnd[LazyList, A])(f: A => B): OneAnd[LazyList, B] =
-        fa.map(f)(cats.instances.lazyList.catsStdInstancesForLazyList)
+        fa.map(f)(using cats.instances.lazyList.catsStdInstancesForLazyList)
     }
 }

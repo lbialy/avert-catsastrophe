@@ -383,13 +383,13 @@ object Eval extends EvalInstances {
           }
       }
 
-    loop(e, Ident(implicitly[A <:< A]))
+    loop(e, Ident(summon[A <:< A]))
   }
 }
 
 sealed abstract private[cats] class EvalInstances extends EvalInstances0 {
 
-  implicit val catsBimonadForEval: Bimonad[Eval] & CommutativeMonad[Eval] =
+  given catsBimonadForEval: (Bimonad[Eval] & CommutativeMonad[Eval]) =
     new Bimonad[Eval] with StackSafeMonad[Eval] with CommutativeMonad[Eval] {
       override def map[A, B](fa: Eval[A])(f: A => B): Eval[B] = fa.map(f)
       def pure[A](a: A): Eval[A] = Now(a)
@@ -400,20 +400,20 @@ sealed abstract private[cats] class EvalInstances extends EvalInstances0 {
       override def void[A](a: Eval[A]): Eval[Unit] = Eval.Unit
     }
 
-  implicit val catsDeferForEval: Defer[Eval] =
+  given catsDeferForEval: Defer[Eval] =
     new Defer[Eval] {
       def defer[A](e: => Eval[A]): Eval[A] =
         Eval.defer(e)
     }
 
-  implicit val catsReducibleForEval: Reducible[Eval] =
+  given catsReducibleForEval: Reducible[Eval] =
     new Reducible[Eval] {
       def foldLeft[A, B](fa: Eval[A], b: B)(f: (B, A) => B): B =
         f(b, fa.value)
       def foldRight[A, B](fa: Eval[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
         fa.flatMap(f(_, lb))
 
-      override def reduce[A](fa: Eval[A])(implicit A: Semigroup[A]): A =
+      override def reduce[A](fa: Eval[A])(using A: Semigroup[A]): A =
         fa.value
       override def reduceLeft[A](fa: Eval[A])(f: (A, A) => A): A =
         fa.value
@@ -432,13 +432,13 @@ sealed abstract private[cats] class EvalInstances extends EvalInstances0 {
       override def size[A](f: Eval[A]): Long = 1L
     }
 
-  implicit def catsOrderForEval[A: Order]: Order[Eval[A]] =
+  given catsOrderForEval[A: Order]: Order[Eval[A]] =
     Order.by(_.value)
 
-  implicit def catsGroupForEval[A: Group]: Group[Eval[A]] =
+  given catsGroupForEval[A: Group]: Group[Eval[A]] =
     new EvalGroup[A] { val algebra: Group[A] = Group[A] }
 
-  implicit val catsRepresentableForEval: Representable.Aux[Eval, Unit] = new Representable[Eval] {
+  given catsRepresentableForEval: Representable.Aux[Eval, Unit] = new Representable[Eval] {
     override type Representation = Unit
 
     override val F: Functor[Eval] = Functor[Eval]
@@ -456,34 +456,34 @@ sealed abstract private[cats] class EvalInstances extends EvalInstances0 {
 }
 
 sealed abstract private[cats] class EvalInstances0 extends EvalInstances1 {
-  implicit def catsPartialOrderForEval[A: PartialOrder]: PartialOrder[Eval[A]] =
+  given catsPartialOrderForEval[A: PartialOrder]: PartialOrder[Eval[A]] =
     PartialOrder.by(_.value)
 
-  implicit def catsMonoidForEval[A: Monoid]: Monoid[Eval[A]] =
+  given catsMonoidForEval[A: Monoid]: Monoid[Eval[A]] =
     new EvalMonoid[A] { val algebra = Monoid[A] }
 }
 
 sealed abstract private[cats] class EvalInstances1 {
-  implicit def catsEqForEval[A: Eq]: Eq[Eval[A]] =
+  given catsEqForEval[A: Eq]: Eq[Eval[A]] =
     Eq.by(_.value)
 
-  implicit def catsSemigroupForEval[A: Semigroup]: Semigroup[Eval[A]] =
+  given catsSemigroupForEval[A: Semigroup]: Semigroup[Eval[A]] =
     new EvalSemigroup[A] { val algebra = Semigroup[A] }
 }
 
 trait EvalSemigroup[A] extends Semigroup[Eval[A]] {
-  implicit def algebra: Semigroup[A]
+  given algebra: Semigroup[A]
   def combine(lx: Eval[A], ly: Eval[A]): Eval[A] =
     for { x <- lx; y <- ly } yield algebra.combine(x, y)
 }
 
 trait EvalMonoid[A] extends Monoid[Eval[A]] with EvalSemigroup[A] {
-  implicit def algebra: Monoid[A]
+  given algebra: Monoid[A]
   lazy val empty: Eval[A] = Eval.later(algebra.empty)
 }
 
 trait EvalGroup[A] extends Group[Eval[A]] with EvalMonoid[A] {
-  implicit def algebra: Group[A]
+  given algebra: Group[A]
   def inverse(lx: Eval[A]): Eval[A] =
     lx.map(algebra.inverse)
   override def remove(lx: Eval[A], ly: Eval[A]): Eval[A] =

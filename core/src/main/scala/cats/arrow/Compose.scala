@@ -53,21 +53,21 @@ trait Compose[F[_, _]] extends Serializable { self =>
 }
 
 object Compose {
-  implicit def catsInstancesForFunction1: ArrowChoice[Function1] & CommutativeArrow[Function1] =
+  given catsInstancesForFunction1: (ArrowChoice[Function1] & CommutativeArrow[Function1]) =
     cats.instances.function.catsStdInstancesForFunction1
-  implicit def catsComposeForMap: Compose[Map] = cats.instances.map.catsStdComposeForMap
+  given catsComposeForMap: Compose[Map] = cats.instances.map.catsStdComposeForMap
 
-  implicit def catsInstancesForPartialFunction: ArrowChoice[PartialFunction] & CommutativeArrow[PartialFunction] =
+  given catsInstancesForPartialFunction: (ArrowChoice[PartialFunction] & CommutativeArrow[PartialFunction]) =
     cats.instances.partialFunction.catsStdInstancesForPartialFunction
 
   /**
    * Summon an instance of [[Compose]] for `F`.
    */
-  @inline def apply[F[_, _]](implicit instance: Compose[F]): Compose[F] = instance
+  @inline def apply[F[_, _]](using instance: Compose[F]): Compose[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllComposeOps[F[_, _], A, B](target: F[A, B])(implicit tc: Compose[F]): AllOps[F, A, B] {
+    implicit def toAllComposeOps[F[_, _], A, B](target: F[A, B])(using tc: Compose[F]): AllOps[F, A, B] {
       type TypeClassType = Compose[F]
     } =
       new AllOps[F, A, B] {
@@ -87,7 +87,7 @@ object Compose {
   }
   trait AllOps[F[_, _], A, B] extends Ops[F, A, B]
   trait ToComposeOps extends Serializable {
-    implicit def toComposeOps[F[_, _], A, B](target: F[A, B])(implicit tc: Compose[F]): Ops[F, A, B] {
+    implicit def toComposeOps[F[_, _], A, B](target: F[A, B])(using tc: Compose[F]): Ops[F, A, B] {
       type TypeClassType = Compose[F]
     } =
       new Ops[F, A, B] {

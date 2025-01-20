@@ -41,19 +41,19 @@ trait ContravariantMonoidal[F[_]] extends ContravariantSemigroupal[F] with Invar
 
 }
 object ContravariantMonoidal extends SemigroupalArityFunctions {
-  def monoid[F[_], A](implicit f: ContravariantMonoidal[F]): Monoid[F[A]] =
+  def monoid[F[_], A](using f: ContravariantMonoidal[F]): Monoid[F[A]] =
     new ContravariantMonoidalMonoid[F, A](f)
 
   /**
    * Summon an instance of [[ContravariantMonoidal]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: ContravariantMonoidal[F]): ContravariantMonoidal[F] = instance
+  @inline def apply[F[_]](using instance: ContravariantMonoidal[F]): ContravariantMonoidal[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
     implicit def toAllContravariantMonoidalOps[F[_], A](
       target: F[A]
-    )(implicit tc: ContravariantMonoidal[F]): AllOps[F, A] {
+    )(using tc: ContravariantMonoidal[F]): AllOps[F, A] {
       type TypeClassType = ContravariantMonoidal[F]
     } =
       new AllOps[F, A] {
@@ -74,7 +74,7 @@ object ContravariantMonoidal extends SemigroupalArityFunctions {
     type TypeClassType <: ContravariantMonoidal[F]
   }
   trait ToContravariantMonoidalOps extends Serializable {
-    implicit def toContravariantMonoidalOps[F[_], A](target: F[A])(implicit tc: ContravariantMonoidal[F]): Ops[F, A] {
+    implicit def toContravariantMonoidalOps[F[_], A](target: F[A])(using tc: ContravariantMonoidal[F]): Ops[F, A] {
       type TypeClassType = ContravariantMonoidal[F]
     } =
       new Ops[F, A] {

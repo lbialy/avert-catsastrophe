@@ -21,7 +21,7 @@
 
 package cats.tests
 
-import cats._
+import cats.{given, _}
 import cats.data.NonEmptyList.ZipNonEmptyList
 import cats.data._
 import cats.kernel.compat.scalaVersionSpecific._
@@ -490,9 +490,9 @@ class ParallelSuite
       def monad: Monad[Effect] = monadInstance
     }
 
-    val iorts: List[IorT[Effect, String, Int]] = List(IorT.leftT("hello")(monadInstance),
-                                                      IorT.bothT(" world", 404)(monadInstance),
-                                                      IorT.rightT(123)(monadInstance)
+    val iorts: List[IorT[Effect, String, Int]] = List(IorT.leftT("hello")(using monadInstance),
+                                                      IorT.bothT(" world", 404)(using monadInstance),
+                                                      IorT.rightT(123)(using monadInstance)
     )
 
     val resultSansInstance = {

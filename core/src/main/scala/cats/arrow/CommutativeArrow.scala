@@ -35,13 +35,13 @@ object CommutativeArrow {
   /**
    * Summon an instance of [[CommutativeArrow]] for `F`.
    */
-  @inline def apply[F[_, _]](implicit instance: CommutativeArrow[F]): CommutativeArrow[F] = instance
+  @inline def apply[F[_, _]](using instance: CommutativeArrow[F]): CommutativeArrow[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
     implicit def toAllCommutativeArrowOps[F[_, _], A, B](
       target: F[A, B]
-    )(implicit tc: CommutativeArrow[F]): AllOps[F, A, B] {
+    )(using tc: CommutativeArrow[F]): AllOps[F, A, B] {
       type TypeClassType = CommutativeArrow[F]
     } =
       new AllOps[F, A, B] {
@@ -59,7 +59,7 @@ object CommutativeArrow {
     type TypeClassType <: CommutativeArrow[F]
   }
   trait ToCommutativeArrowOps extends Serializable {
-    implicit def toCommutativeArrowOps[F[_, _], A, B](target: F[A, B])(implicit tc: CommutativeArrow[F]): Ops[F, A, B] {
+    implicit def toCommutativeArrowOps[F[_, _], A, B](target: F[A, B])(using tc: CommutativeArrow[F]): Ops[F, A, B] {
       type TypeClassType = CommutativeArrow[F]
     } =
       new Ops[F, A, B] {

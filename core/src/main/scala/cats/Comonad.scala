@@ -52,11 +52,11 @@ object Comonad {
   /**
    * Summon an instance of [[Comonad]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: Comonad[F]): Comonad[F] = instance
+  @inline def apply[F[_]](using instance: Comonad[F]): Comonad[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllComonadOps[F[_], A](target: F[A])(implicit tc: Comonad[F]): AllOps[F, A] {
+    implicit def toAllComonadOps[F[_], A](target: F[A])(using tc: Comonad[F]): AllOps[F, A] {
       type TypeClassType = Comonad[F]
     } =
       new AllOps[F, A] {
@@ -75,7 +75,7 @@ object Comonad {
     type TypeClassType <: Comonad[F]
   }
   trait ToComonadOps extends Serializable {
-    implicit def toComonadOps[F[_], A](target: F[A])(implicit tc: Comonad[F]): Ops[F, A] {
+    implicit def toComonadOps[F[_], A](target: F[A])(using tc: Comonad[F]): Ops[F, A] {
       type TypeClassType = Comonad[F]
     } =
       new Ops[F, A] {

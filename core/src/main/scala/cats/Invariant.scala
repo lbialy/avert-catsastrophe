@@ -124,34 +124,34 @@ trait Invariant[F[_]] extends Serializable { self =>
 
 @suppressUnusedImportWarningForScalaVersionSpecific
 object Invariant extends ScalaVersionSpecificInvariantInstances with InvariantInstances0 {
-  implicit def catsInstancesForId: Distributive[Id] & Bimonad[Id] & CommutativeMonad[Id] & NonEmptyTraverse[Id] =
+  given catsInstancesForId: (Distributive[Id] & Bimonad[Id] & CommutativeMonad[Id] & NonEmptyTraverse[Id]) =
     cats.catsInstancesForId
   @deprecated("Added for bincompat", "2.8.0")
   @targetName3("catsInstancesForId")
   private[cats] def catsInstancesForIdCompat2_6_1: Comonad[Id] =
     cats.catsInstancesForId
-  implicit def catsMonadErrorForEither[A]: MonadError[Either[A, *], A] =
+  given catsMonadErrorForEither[A]: MonadError[Either[A, *], A] =
     cats.instances.either.catsStdInstancesForEither[A]
-  implicit def catsInstancesForOption
-    : MonadError[Option, Unit] & Alternative[Option] & CoflatMap[Option] & CommutativeMonad[Option] =
+  given catsInstancesForOption
+    : (MonadError[Option, Unit] & Alternative[Option] & CoflatMap[Option] & CommutativeMonad[Option]) =
     cats.instances.option.catsStdInstancesForOption
-  implicit def catsInstancesForList: Monad[List] & Alternative[List] & CoflatMap[List] =
+  given catsInstancesForList: (Monad[List] & Alternative[List] & CoflatMap[List]) =
     cats.instances.list.catsStdInstancesForList
-  implicit def catsInstancesForVector: Monad[Vector] & Alternative[Vector] & CoflatMap[Vector] =
+  given catsInstancesForVector: (Monad[Vector] & Alternative[Vector] & CoflatMap[Vector]) =
     cats.instances.vector.catsStdInstancesForVector
-  implicit def catsInstancesForQueue: Monad[Queue] & Alternative[Queue] & CoflatMap[Queue] =
+  given catsInstancesForQueue: (Monad[Queue] & Alternative[Queue] & CoflatMap[Queue]) =
     cats.instances.queue.catsStdInstancesForQueue
-  implicit def catsMonadForTailRec: Monad[TailRec] = cats.instances.tailRec.catsInstancesForTailRec
+  given catsMonadForTailRec: Monad[TailRec] = cats.instances.tailRec.catsInstancesForTailRec
 
-  implicit def catsFlatMapForMap[K]: FlatMap[Map[K, *]] = cats.instances.map.catsStdInstancesForMap[K]
-  implicit def catsFlatMapForSortedMap[K]: FlatMap[SortedMap[K, *]] =
+  given catsFlatMapForMap[K]: FlatMap[Map[K, *]] = cats.instances.map.catsStdInstancesForMap[K]
+  given catsFlatMapForSortedMap[K]: FlatMap[SortedMap[K, *]] =
     cats.instances.sortedMap.catsStdInstancesForSortedMap[K]
-  implicit def catsBimonadForFunction0: Bimonad[Function0] = cats.instances.function.catsStdBimonadForFunction0
-  implicit def catsContravariantMonoidalForFunction1[R: Monoid]: ContravariantMonoidal[* => R] =
+  given catsBimonadForFunction0: Bimonad[Function0] = cats.instances.function.catsStdBimonadForFunction0
+  given catsContravariantMonoidalForFunction1[R: Monoid]: ContravariantMonoidal[* => R] =
     cats.instances.function.catsStdContravariantMonoidalForFunction1[R]
-  implicit def catsFunctorForPair: Functor[λ[P => (P, P)]] = cats.instances.tuple.catsDataFunctorForPair
+  given catsFunctorForPair: Functor[λ[P => (P, P)]] = cats.instances.tuple.catsDataFunctorForPair
 
-  implicit def catsInstancesForTry: MonadThrow[Try] & CoflatMap[Try] =
+  given catsInstancesForTry: (MonadThrow[Try] & CoflatMap[Try]) =
     cats.instances.try_.catsStdInstancesForTry
 
   /**
@@ -163,39 +163,39 @@ object Invariant extends ScalaVersionSpecificInvariantInstances with InvariantIn
    *
    * @see [[https://github.com/typelevel/cats/issues/4176 Changes in Future traverse behavior between 2.6 and 2.7]]
    */
-  implicit def catsInstancesForFuture(implicit
+  given catsInstancesForFuture(using
     ec: ExecutionContext
-  ): MonadThrow[Future] & CoflatMap[Future] =
-    cats.instances.future.catsStdInstancesForFuture(ec)
+  ): (MonadThrow[Future] & CoflatMap[Future]) =
+    cats.instances.future.catsStdInstancesForFuture(using ec)
 
-  implicit def catsContravariantMonoidalForOrder: ContravariantMonoidal[Order] =
+  given catsContravariantMonoidalForOrder: ContravariantMonoidal[Order] =
     cats.instances.order.catsContravariantMonoidalForOrder
-  implicit def catsContravariantMonoidalForPartialOrder: ContravariantMonoidal[PartialOrder] =
+  given catsContravariantMonoidalForPartialOrder: ContravariantMonoidal[PartialOrder] =
     cats.instances.partialOrder.catsContravariantMonoidalForPartialOrder
-  implicit def catsContravariantMonoidalForOrdering: ContravariantMonoidal[Ordering] =
+  given catsContravariantMonoidalForOrdering: ContravariantMonoidal[Ordering] =
     cats.instances.ordering.catsContravariantMonoidalForOrdering
-  implicit def catsContravariantMonoidalForPartialOrdering: ContravariantMonoidal[PartialOrdering] =
+  given catsContravariantMonoidalForPartialOrdering: ContravariantMonoidal[PartialOrdering] =
     cats.instances.partialOrdering.catsContravariantMonoidalForPartialOrdering
-  implicit def catsContravariantMonoidalForEq: ContravariantMonoidal[Eq] =
+  given catsContravariantMonoidalForEq: ContravariantMonoidal[Eq] =
     cats.instances.eq.catsContravariantMonoidalForEq
-  implicit def catsContravariantMonoidalForEquiv: ContravariantMonoidal[Equiv] =
+  given catsContravariantMonoidalForEquiv: ContravariantMonoidal[Equiv] =
     cats.instances.equiv.catsContravariantMonoidalForEquiv
-  implicit def catsContravariantForHash: Contravariant[Hash] =
+  given catsContravariantForHash: Contravariant[Hash] =
     cats.instances.all.catsContravariantForHash
-  implicit def catsInvariantMonoidalForSemigroup: InvariantMonoidal[Semigroup] =
+  given catsInvariantMonoidalForSemigroup: InvariantMonoidal[Semigroup] =
     cats.instances.invariant.catsInvariantMonoidalSemigroup
-  implicit def catsInvariantMonoidalForCommutativeSemigroup: InvariantMonoidal[CommutativeSemigroup] =
+  given catsInvariantMonoidalForCommutativeSemigroup: InvariantMonoidal[CommutativeSemigroup] =
     cats.instances.invariant.catsInvariantMonoidalCommutativeSemigroup
-  implicit def catsInvariantSemigroupalForMonoid: InvariantSemigroupal[Monoid] =
+  given catsInvariantSemigroupalForMonoid: InvariantSemigroupal[Monoid] =
     cats.instances.invariant.catsSemigroupalForMonoid
-  implicit def catsInvariantForNumeric: Invariant[Numeric] =
+  given catsInvariantForNumeric: Invariant[Numeric] =
     cats.instances.invariant.catsInvariantForNumeric
-  implicit def catsInvariantForIntegral: Invariant[Integral] =
+  given catsInvariantForIntegral: Invariant[Integral] =
     cats.instances.invariant.catsInvariantForIntegral
-  implicit def catsInvariantForFractional: Invariant[Fractional] =
+  given catsInvariantForFractional: Invariant[Fractional] =
     cats.instances.invariant.catsInvariantForFractional
 
-  implicit val catsInvariantMonoid: Invariant[Monoid] = new Invariant[Monoid] {
+  given catsInvariantMonoid: Invariant[Monoid] = new Invariant[Monoid] {
 
     def imap[A, B](fa: Monoid[A])(f: A => B)(g: B => A): Monoid[B] =
       new Monoid[B] {
@@ -207,7 +207,7 @@ object Invariant extends ScalaVersionSpecificInvariantInstances with InvariantIn
 
   }
 
-  implicit val catsInvariantBand: Invariant[Band] = new Invariant[Band] {
+  given catsInvariantBand: Invariant[Band] = new Invariant[Band] {
 
     def imap[A, B](fa: Band[A])(f: A => B)(g: B => A): Band[B] =
       new Band[B] {
@@ -217,7 +217,7 @@ object Invariant extends ScalaVersionSpecificInvariantInstances with InvariantIn
       }
   }
 
-  implicit val catsInvariantSemilattice: Invariant[Semilattice] = new Invariant[Semilattice] {
+  given catsInvariantSemilattice: Invariant[Semilattice] = new Invariant[Semilattice] {
 
     def imap[A, B](fa: Semilattice[A])(f: A => B)(g: B => A): Semilattice[B] =
       new Semilattice[B] {
@@ -228,7 +228,7 @@ object Invariant extends ScalaVersionSpecificInvariantInstances with InvariantIn
 
   }
 
-  implicit val catsInvariantCommutativeMonoid: Invariant[CommutativeMonoid] = new Invariant[CommutativeMonoid] {
+  given catsInvariantCommutativeMonoid: Invariant[CommutativeMonoid] = new Invariant[CommutativeMonoid] {
 
     def imap[A, B](fa: CommutativeMonoid[A])(f: A => B)(g: B => A): CommutativeMonoid[B] =
       new CommutativeMonoid[B] {
@@ -240,7 +240,7 @@ object Invariant extends ScalaVersionSpecificInvariantInstances with InvariantIn
 
   }
 
-  implicit val catsInvariantBoundedSemilattice: Invariant[BoundedSemilattice] = new Invariant[BoundedSemilattice] {
+  given catsInvariantBoundedSemilattice: Invariant[BoundedSemilattice] = new Invariant[BoundedSemilattice] {
 
     def imap[A, B](fa: BoundedSemilattice[A])(f: A => B)(g: B => A): BoundedSemilattice[B] =
       new BoundedSemilattice[B] {
@@ -252,7 +252,7 @@ object Invariant extends ScalaVersionSpecificInvariantInstances with InvariantIn
 
   }
 
-  implicit val catsInvariantGroup: Invariant[Group] = new Invariant[Group] {
+  given catsInvariantGroup: Invariant[Group] = new Invariant[Group] {
 
     def imap[A, B](fa: Group[A])(f: A => B)(g: B => A): Group[B] =
       new Group[B] {
@@ -265,7 +265,7 @@ object Invariant extends ScalaVersionSpecificInvariantInstances with InvariantIn
 
   }
 
-  implicit val catsInvariantCommutativeGroup: Invariant[CommutativeGroup] = new Invariant[CommutativeGroup] {
+  given catsInvariantCommutativeGroup: Invariant[CommutativeGroup] = new Invariant[CommutativeGroup] {
 
     def imap[A, B](fa: CommutativeGroup[A])(f: A => B)(g: B => A): CommutativeGroup[B] =
       new CommutativeGroup[B] {
@@ -284,11 +284,11 @@ object Invariant extends ScalaVersionSpecificInvariantInstances with InvariantIn
   /**
    * Summon an instance of [[Invariant]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: Invariant[F]): Invariant[F] = instance
+  @inline def apply[F[_]](using instance: Invariant[F]): Invariant[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllInvariantOps[F[_], A](target: F[A])(implicit tc: Invariant[F]): AllOps[F, A] {
+    implicit def toAllInvariantOps[F[_], A](target: F[A])(using tc: Invariant[F]): AllOps[F, A] {
       type TypeClassType = Invariant[F]
     } =
       new AllOps[F, A] {
@@ -305,7 +305,7 @@ object Invariant extends ScalaVersionSpecificInvariantInstances with InvariantIn
   }
   trait AllOps[F[_], A] extends Ops[F, A]
   trait ToInvariantOps extends Serializable {
-    implicit def toInvariantOps[F[_], A](target: F[A])(implicit tc: Invariant[F]): Ops[F, A] {
+    implicit def toInvariantOps[F[_], A](target: F[A])(using tc: Invariant[F]): Ops[F, A] {
       type TypeClassType = Invariant[F]
     } =
       new Ops[F, A] {
@@ -320,42 +320,42 @@ object Invariant extends ScalaVersionSpecificInvariantInstances with InvariantIn
 }
 
 private[cats] trait InvariantInstances0 extends InvariantInstances1 {
-  implicit def catsContravariantForFunction1[R]: Contravariant[* => R] =
+  given catsContravariantForFunction1[R]: Contravariant[* => R] =
     cats.instances.function.catsStdContravariantForFunction1[R]
-  implicit def catsDistributiveForFunction0: Distributive[Function0] = cats.instances.function.function0Distributive
-  implicit def catsDistributiveForFunction1[I]: Distributive[I => *] =
+  given catsDistributiveForFunction0: Distributive[Function0] = cats.instances.function.function0Distributive
+  given catsDistributiveForFunction1[I]: Distributive[I => *] =
     cats.instances.function.catsStdDistributiveForFunction1[I]
 
   @deprecated("Use catsStdCommutativeMonadForTuple2 in cats.instances.NTupleMonadInstances", "2.4.0")
-  def catsCommutativeMonadForTuple2[X](implicit X: CommutativeMonoid[X]): CommutativeMonad[(X, *)] =
+  def catsCommutativeMonadForTuple2[X](using X: CommutativeMonoid[X]): CommutativeMonad[(X, *)] =
     cats.instances.tuple.catsStdCommutativeMonadForTuple2[X]
 }
 
 private trait InvariantInstances1 extends InvariantInstances2 {
-  implicit def catsMonadForFunction1[I]: Monad[I => *] = cats.instances.function.catsStdMonadForFunction1[I]
+  given catsMonadForFunction1[I]: Monad[I => *] = cats.instances.function.catsStdMonadForFunction1[I]
 }
 
 private[cats] trait InvariantInstances2 extends cats.instances.NTupleMonadInstances with TupleInstances0 {
-  implicit def catsApplicativeForArrow[F[_, _], A](implicit F: Arrow[F]): Applicative[F[A, *]] =
+  given catsApplicativeForArrow[F[_, _], A](using F: Arrow[F]): Applicative[F[A, *]] =
     new ArrowApplicative[F, A](F)
-  implicit def catsInstancesForSeq: Monad[Seq] & Alternative[Seq] & CoflatMap[Seq] =
+  given catsInstancesForSeq: (Monad[Seq] & Alternative[Seq] & CoflatMap[Seq]) =
     cats.instances.seq.catsStdInstancesForSeq
 }
 
 private[cats] trait TupleInstances0 extends TupleInstances1 {
   @deprecated("Use catsStdCommutativeFlatMapForTuple2 in cats.instances.NTupleMonadInstances", "2.4.0")
-  def catsCommutativeFlatMapForTuple2[X](implicit X: CommutativeSemigroup[X]): CommutativeFlatMap[(X, *)] =
+  def catsCommutativeFlatMapForTuple2[X](using X: CommutativeSemigroup[X]): CommutativeFlatMap[(X, *)] =
     cats.instances.tuple.catsStdCommutativeFlatMapForTuple2[X]
 }
 
 private trait TupleInstances1 extends TupleInstances2 {
   @deprecated("Use catsStdMonadForTuple2 in cats.instances.NTupleMonadInstances", "2.4.0")
-  def catsMonadForTuple2[X](implicit X: Monoid[X]): Monad[(X, *)] =
+  def catsMonadForTuple2[X](using X: Monoid[X]): Monad[(X, *)] =
     cats.instances.tuple.catsStdMonadForTuple2[X]
 }
 
 private trait TupleInstances2 {
   @deprecated("Use catsStdFlatMapForTuple2 on cats.instances.NTupleMonadInstances", "2.4.0")
-  def catsFlatMapForTuple2[X](implicit X: Semigroup[X]): FlatMap[(X, *)] =
+  def catsFlatMapForTuple2[X](using X: Semigroup[X]): FlatMap[(X, *)] =
     cats.instances.tuple.catsStdFlatMapForTuple2[X]
 }

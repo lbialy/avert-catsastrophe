@@ -31,17 +31,17 @@ import cats.data.{Chain, Ior}
 
 trait MapInstances extends cats.kernel.instances.MapInstances {
 
-  implicit def catsStdShowForMap[A, B](implicit showA: Show[A], showB: Show[B]): Show[Map[A, B]] =
+  given catsStdShowForMap[A, B](using showA: Show[A], showB: Show[B]): Show[Map[A, B]] =
     _.iterator
       .map { case (a, b) => showA.show(a) + " -> " + showB.show(b) }
       .mkString("Map(", ", ", ")")
 
-  implicit def catsStdInstancesForMap[K]: UnorderedTraverse[Map[K, *]] & FlatMap[Map[K, *]] & Align[Map[K, *]] =
+  given catsStdInstancesForMap[K]: (UnorderedTraverse[Map[K, *]] & FlatMap[Map[K, *]] & Align[Map[K, *]]) =
     new UnorderedTraverse[Map[K, *]] with FlatMap[Map[K, *]] with Align[Map[K, *]] {
 
       def unorderedTraverse[G[_], A, B](
         fa: Map[K, A]
-      )(f: A => G[B])(implicit G: CommutativeApplicative[G]): G[Map[K, B]] = {
+      )(f: A => G[B])(using G: CommutativeApplicative[G]): G[Map[K, B]] = {
         if (fa.isEmpty) G.pure(Map.empty[K, B])
         else
           G match {
@@ -102,7 +102,7 @@ trait MapInstances extends cats.kernel.instances.MapInstances {
 
       override def isEmpty[A](fa: Map[K, A]): Boolean = fa.isEmpty
 
-      override def unorderedFold[A](fa: Map[K, A])(implicit A: CommutativeMonoid[A]): A =
+      override def unorderedFold[A](fa: Map[K, A])(using A: CommutativeMonoid[A]): A =
         A.combineAll(fa.values)
 
       override def forall[A](fa: Map[K, A])(p: A => Boolean): Boolean = fa.forall(pair => p(pair._2))
@@ -135,7 +135,7 @@ trait MapInstances extends cats.kernel.instances.MapInstances {
 
 private[instances] trait MapInstancesBinCompat0 {
 
-  implicit val catsStdComposeForMap: Compose[Map] = new Compose[Map] {
+  given catsStdComposeForMap: Compose[Map] = new Compose[Map] {
 
     /**
      * Compose two maps `g` and `f` by using the values in `f` as keys for `g`.
@@ -157,7 +157,7 @@ private[instances] trait MapInstancesBinCompat0 {
       }
   }
 
-  implicit def catsStdFunctorFilterForMap[K]: FunctorFilter[Map[K, *]] =
+  given catsStdFunctorFilterForMap[K]: FunctorFilter[Map[K, *]] =
     new FunctorFilter[Map[K, *]] {
 
       val functor: Functor[Map[K, *]] = cats.instances.map.catsStdInstancesForMap[K]
@@ -182,7 +182,7 @@ private[instances] trait MapInstancesBinCompat0 {
 }
 
 private[instances] trait MapInstancesBinCompat1 {
-  implicit def catsStdMonoidKForMap[K]: MonoidK[Map[K, *]] =
+  given catsStdMonoidKForMap[K]: MonoidK[Map[K, *]] =
     new MonoidK[Map[K, *]] {
       override def empty[A]: Map[K, A] = Map.empty
 

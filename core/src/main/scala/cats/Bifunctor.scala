@@ -57,7 +57,7 @@ trait Bifunctor[F[_, _]] extends Serializable { self =>
   /**
    * The composition of two Bifunctors is itself a Bifunctor
    */
-  def compose[G[_, _]](implicit G0: Bifunctor[G]): Bifunctor[λ[(α, β) => F[G[α, β], G[α, β]]]] =
+  def compose[G[_, _]](using G0: Bifunctor[G]): Bifunctor[λ[(α, β) => F[G[α, β], G[α, β]]]] =
     new ComposedBifunctor[F, G] {
       val F = self
       val G = G0
@@ -86,13 +86,13 @@ trait Bifunctor[F[_, _]] extends Serializable { self =>
    * }}}
    *
    */
-  def leftLiftTo[A, B, C[_]](fab: F[A, B])(implicit C: Applicative[C]): F[C[A], B] =
+  def leftLiftTo[A, B, C[_]](fab: F[A, B])(using C: Applicative[C]): F[C[A], B] =
     leftMap[A, B, C[A]](fab)(C.pure[A])
 
 }
 
 object Bifunctor extends cats.instances.NTupleBifunctorInstances {
-  implicit def catsBifunctorForEither: Bifunctor[Either] = cats.instances.either.catsStdBitraverseForEither
+  given catsBifunctorForEither: Bifunctor[Either] = cats.instances.either.catsStdBitraverseForEither
 
   @deprecated("Use catsStdBitraverseForTuple2 in cats.instances.NTupleBitraverseInstances", "2.4.0")
   def catsBifunctorForTuple2: Bifunctor[Tuple2] = cats.instances.tuple.catsStdBitraverseForTuple2
@@ -100,7 +100,7 @@ object Bifunctor extends cats.instances.NTupleBifunctorInstances {
   /**
    * Summon an instance of [[Bifunctor]] for `F`.
    */
-  @inline def apply[F[_, _]](implicit instance: Bifunctor[F]): Bifunctor[F] = instance
+  @inline def apply[F[_, _]](using instance: Bifunctor[F]): Bifunctor[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
@@ -120,7 +120,7 @@ object Bifunctor extends cats.instances.NTupleBifunctorInstances {
     def bimap[C, D](f: A => C, g: B => D): F[C, D] = typeClassInstance.bimap[A, B, C, D](self)(f, g)
     def leftMap[C](f: A => C): F[C, B] = typeClassInstance.leftMap[A, B, C](self)(f)
     def leftWiden[C >: A]: F[C, B] = typeClassInstance.leftWiden[A, B, C](self)
-    def leftLiftTo[C[_]](implicit C: Applicative[C]): F[C[A], B] =
+    def leftLiftTo[C[_]](using C: Applicative[C]): F[C[A], B] =
       leftMap[C[A]](C.pure[A])
 
   }
@@ -151,14 +151,14 @@ private[cats] trait ComposedBifunctor[F[_, _], G[_, _]] extends Bifunctor[λ[(A,
 }
 
 abstract private class LeftFunctor[F[_, _], X] extends Functor[F[*, X]] {
-  implicit val F: Bifunctor[F]
+  given F: Bifunctor[F]
 
   override def map[A, C](fax: F[A, X])(f: A => C): F[C, X] =
     F.bimap(fax)(f, identity)
 }
 
 abstract private class RightFunctor[F[_, _], X] extends Functor[F[X, *]] {
-  implicit val F: Bifunctor[F]
+  given F: Bifunctor[F]
 
   override def map[A, C](fxa: F[X, A])(f: A => C): F[X, C] =
     F.bimap(fxa)(identity, f)

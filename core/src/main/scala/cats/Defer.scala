@@ -98,18 +98,18 @@ trait Defer[F[_]] extends Serializable {
 }
 
 object Defer {
-  def apply[F[_]](implicit defer: Defer[F]): Defer[F] = defer
+  def apply[F[_]](using defer: Defer[F]): Defer[F] = defer
 
-  implicit def catsDeferForEq: Defer[Eq] = cats.implicits.catsDeferForEq
-  implicit def catsDeferForEquiv: Defer[Equiv] = cats.implicits.catsDeferForEquiv
-  implicit def catsDeferForFunction0: Defer[Function0] = cats.instances.function.catsSddDeferForFunction0
-  implicit def catsDeferForFunction1[A]: Defer[Function1[A, *]] = cats.instances.function.catsStdDeferForFunction1[A]
-  implicit def catsDeferForHash: Defer[Hash] = cats.implicits.catsDeferForHash
-  implicit def catsDeferForOrder: Defer[Order] = cats.instances.order.catsDeferForOrder
-  implicit def catsStdDeferForOrdering: Defer[Ordering] = cats.instances.ordering.catsStdDeferForOrdering
-  implicit def catsDeferForPartialOrder: Defer[PartialOrder] = cats.instances.partialOrder.catsDeferForPartialOrder
-  implicit def catsStdDeferForPartialOrdering: Defer[PartialOrdering] =
+  given catsDeferForEq: Defer[Eq] = cats.implicits.catsDeferForEq
+  given catsDeferForEquiv: Defer[Equiv] = cats.implicits.catsDeferForEquiv
+  given catsDeferForFunction0: Defer[Function0] = cats.instances.function.catsSddDeferForFunction0
+  given catsDeferForFunction1[A]: Defer[Function1[A, *]] = cats.instances.function.catsStdDeferForFunction1[A]
+  given catsDeferForHash: Defer[Hash] = cats.implicits.catsDeferForHash
+  given catsDeferForOrder: Defer[Order] = cats.instances.order.catsDeferForOrder
+  given catsStdDeferForOrdering: Defer[Ordering] = cats.instances.ordering.catsStdDeferForOrdering
+  given catsDeferForPartialOrder: Defer[PartialOrder] = cats.instances.partialOrder.catsDeferForPartialOrder
+  given catsStdDeferForPartialOrdering: Defer[PartialOrdering] =
     cats.instances.partialOrdering.catsStdDeferForPartialOrdering
-  implicit def catsDeferForShow: Defer[Show] = cats.implicits.catsDeferForShow
-  implicit def catsDeferForTailRec: Defer[TailRec] = cats.instances.tailRec.catsInstancesForTailRec
+  given catsDeferForShow: Defer[Show] = cats.implicits.catsDeferForShow
+  given catsDeferForTailRec: Defer[TailRec] = cats.instances.tailRec.catsInstancesForTailRec
 }

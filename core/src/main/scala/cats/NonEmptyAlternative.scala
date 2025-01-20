@@ -57,11 +57,11 @@ object NonEmptyAlternative {
   /**
    * Summon an instance of [[NonEmptyAlternative]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: NonEmptyAlternative[F]): NonEmptyAlternative[F] = instance
+  @inline def apply[F[_]](using instance: NonEmptyAlternative[F]): NonEmptyAlternative[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllNonEmptyAlternativeOps[F[_], A](target: F[A])(implicit tc: NonEmptyAlternative[F]): AllOps[F, A] {
+    implicit def toAllNonEmptyAlternativeOps[F[_], A](target: F[A])(using tc: NonEmptyAlternative[F]): AllOps[F, A] {
       type TypeClassType = NonEmptyAlternative[F]
     } = new AllOps[F, A] {
       type TypeClassType = NonEmptyAlternative[F]
@@ -80,7 +80,7 @@ object NonEmptyAlternative {
     type TypeClassType <: NonEmptyAlternative[F]
   }
   trait ToNonEmptyAlternativeOps extends Serializable {
-    implicit def toNonEmptyAlternativeOps[F[_], A](target: F[A])(implicit tc: NonEmptyAlternative[F]): Ops[F, A] {
+    implicit def toNonEmptyAlternativeOps[F[_], A](target: F[A])(using tc: NonEmptyAlternative[F]): Ops[F, A] {
       type TypeClassType = NonEmptyAlternative[F]
     } = new Ops[F, A] {
       type TypeClassType = NonEmptyAlternative[F]

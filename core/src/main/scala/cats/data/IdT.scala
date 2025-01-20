@@ -37,7 +37,7 @@ final case class IdT[F[_], A](value: F[A]) {
    *  res0: IdT[List, Int] = IdT(List(2, 3, 4))
    * }}}
    */
-  def map[B](f: A => B)(implicit F: Functor[F]): IdT[F, B] =
+  def map[B](f: A => B)(using F: Functor[F]): IdT[F, B] =
     IdT(F.map(value)(f))
 
   /**
@@ -67,7 +67,7 @@ final case class IdT[F[_], A](value: F[A]) {
    *  res0: IdT[List, Int] = IdT(List(2, 3, 4))
    * }}}
    */
-  def flatMap[B](f: A => IdT[F, B])(implicit F: FlatMap[F]): IdT[F, B] =
+  def flatMap[B](f: A => IdT[F, B])(using F: FlatMap[F]): IdT[F, B] =
     IdT(F.flatMap(value)(a => f(a).value))
 
   /**
@@ -80,7 +80,7 @@ final case class IdT[F[_], A](value: F[A]) {
    *  res0: IdT[List, Option[Int]] = IdT(List(None, Some(2), None))
    * }}}
    */
-  def flatMapF[B](f: A => F[B])(implicit F: FlatMap[F]): IdT[F, B] =
+  def flatMapF[B](f: A => F[B])(using F: FlatMap[F]): IdT[F, B] =
     IdT(F.flatMap(value)(f))
 
   /**
@@ -93,7 +93,7 @@ final case class IdT[F[_], A](value: F[A]) {
    *  res0: Int = 6
    * }}}
    */
-  def foldLeft[B](b: B)(f: (B, A) => B)(implicit F: Foldable[F]): B =
+  def foldLeft[B](b: B)(f: (B, A) => B)(using F: Foldable[F]): B =
     F.foldLeft(value, b)(f)
 
   /**
@@ -107,13 +107,13 @@ final case class IdT[F[_], A](value: F[A]) {
    *  res0: Int = 6
    * }}}
    */
-  def foldRight[B](lb: Eval[B])(f: (A, Eval[B]) => Eval[B])(implicit F: Foldable[F]): Eval[B] =
+  def foldRight[B](lb: Eval[B])(f: (A, Eval[B]) => Eval[B])(using F: Foldable[F]): Eval[B] =
     F.foldRight(value, lb)(f)
 
-  def reduceLeftTo[B](f: A => B)(g: (B, A) => B)(implicit F: Reducible[F]): B =
+  def reduceLeftTo[B](f: A => B)(g: (B, A) => B)(using F: Reducible[F]): B =
     F.reduceLeftTo(value)(f)(g)
 
-  def reduceRightTo[B](f: A => B)(g: (A, Eval[B]) => Eval[B])(implicit F: Reducible[F]): Eval[B] =
+  def reduceRightTo[B](f: A => B)(g: (A, Eval[B]) => Eval[B])(using F: Reducible[F]): Eval[B] =
     F.reduceRightTo(value)(f)(g)
 
   /**
@@ -126,32 +126,32 @@ final case class IdT[F[_], A](value: F[A]) {
    *  res0: Option[IdT[List, Int]] = Some(IdT(List(2, 3, 4)))
    * }}}
    */
-  def traverse[G[_], B](f: A => G[B])(implicit F: Traverse[F], G: Applicative[G]): G[IdT[F, B]] =
+  def traverse[G[_], B](f: A => G[B])(using F: Traverse[F], G: Applicative[G]): G[IdT[F, B]] =
     G.map(F.traverse(value)(f))(IdT(_))
 
-  def nonEmptyTraverse[G[_], B](f: A => G[B])(implicit F: NonEmptyTraverse[F], G: Apply[G]): G[IdT[F, B]] =
+  def nonEmptyTraverse[G[_], B](f: A => G[B])(using F: NonEmptyTraverse[F], G: Apply[G]): G[IdT[F, B]] =
     G.map(F.nonEmptyTraverse(value)(f))(IdT(_))
 
-  def ap[B](f: IdT[F, A => B])(implicit F: Apply[F]): IdT[F, B] =
+  def ap[B](f: IdT[F, A => B])(using F: Apply[F]): IdT[F, B] =
     IdT(F.ap(f.value)(value))
 
 }
 
 object IdT extends IdTInstances {
 
-  def pure[F[_], A](a: A)(implicit F: Applicative[F]): IdT[F, A] =
+  def pure[F[_], A](a: A)(using F: Applicative[F]): IdT[F, A] =
     IdT(F.pure(a))
 }
 
 sealed private[data] trait IdTFunctor[F[_]] extends Functor[IdT[F, *]] {
-  implicit val F0: Functor[F]
+  given F0: Functor[F]
 
   override def map[A, B](fa: IdT[F, A])(f: A => B): IdT[F, B] =
     fa.map(f)
 }
 
 sealed private[data] trait IdTApply[F[_]] extends Apply[IdT[F, *]] with IdTFunctor[F] {
-  implicit val F0: Apply[F]
+  given F0: Apply[F]
 
   override def ap[A, B](ff: IdT[F, A => B])(fa: IdT[F, A]): IdT[F, B] = fa.ap(ff)
 
@@ -161,13 +161,13 @@ sealed private[data] trait IdTApply[F[_]] extends Apply[IdT[F, *]] with IdTFunct
 }
 
 sealed private[data] trait IdTApplicative[F[_]] extends Applicative[IdT[F, *]] with IdTApply[F] {
-  implicit val F0: Applicative[F]
+  given F0: Applicative[F]
 
   def pure[A](a: A): IdT[F, A] = IdT.pure(a)
 }
 
 sealed private[data] trait IdTContravariantMonoidal[F[_]] extends ContravariantMonoidal[IdT[F, *]] {
-  implicit val F0: ContravariantMonoidal[F]
+  given F0: ContravariantMonoidal[F]
 
   override def unit: IdT[F, Unit] = IdT(F0.unit)
 
@@ -179,7 +179,7 @@ sealed private[data] trait IdTContravariantMonoidal[F[_]] extends ContravariantM
 }
 
 sealed private[data] trait IdTFlatMap[F[_]] extends FlatMap[IdT[F, *]] with IdTApply[F] {
-  implicit val F0: FlatMap[F]
+  given F0: FlatMap[F]
 
   def flatMap[A, B](fa: IdT[F, A])(f: A => IdT[F, B]): IdT[F, B] =
     fa.flatMap(f)
@@ -189,11 +189,11 @@ sealed private[data] trait IdTFlatMap[F[_]] extends FlatMap[IdT[F, *]] with IdTA
 }
 
 sealed private[data] trait IdTMonad[F[_]] extends Monad[IdT[F, *]] with IdTApplicative[F] with IdTFlatMap[F] {
-  implicit val F0: Monad[F]
+  given F0: Monad[F]
 }
 
 sealed private[data] trait IdTFoldable[F[_]] extends Foldable[IdT[F, *]] {
-  implicit val F0: Foldable[F]
+  given F0: Foldable[F]
 
   def foldLeft[A, B](fa: IdT[F, A], b: B)(f: (B, A) => B): B =
     fa.foldLeft(b)(f)
@@ -209,7 +209,7 @@ sealed private[data] trait IdTFoldable[F[_]] extends Foldable[IdT[F, *]] {
 }
 
 sealed private[data] trait IdTTraverse[F[_]] extends Traverse[IdT[F, *]] with IdTFoldable[F] with IdTFunctor[F] {
-  implicit val F0: Traverse[F]
+  given F0: Traverse[F]
 
   def traverse[G[_]: Applicative, A, B](fa: IdT[F, A])(f: A => G[B]): G[IdT[F, B]] =
     fa.traverse(f)
@@ -224,7 +224,7 @@ sealed private[data] trait IdTNonEmptyTraverse[F[_]]
     extends IdTTraverse[F]
     with NonEmptyTraverse[IdT[F, *]]
     with IdTFunctor[F] {
-  implicit val F0: NonEmptyTraverse[F]
+  given F0: NonEmptyTraverse[F]
 
   def nonEmptyTraverse[G[_]: Apply, A, B](fa: IdT[F, A])(f: A => G[B]): G[IdT[F, B]] =
     fa.nonEmptyTraverse(f)
@@ -237,70 +237,70 @@ sealed private[data] trait IdTNonEmptyTraverse[F[_]]
 }
 
 sealed abstract private[data] class IdTInstances8 {
-  implicit def catsDataCommutativeFlatMapForIdT[F[_]](implicit
+  given catsDataCommutativeFlatMapForIdT[F[_]](using
     F: CommutativeFlatMap[F]
   ): CommutativeFlatMap[IdT[F, *]] =
-    new IdTFlatMap[F] with CommutativeFlatMap[IdT[F, *]] { implicit val F0: CommutativeFlatMap[F] = F }
+    new IdTFlatMap[F] with CommutativeFlatMap[IdT[F, *]] { given F0: CommutativeFlatMap[F] = F }
 }
 
 sealed abstract private[data] class IdTInstances7 extends IdTInstances8 {
-  implicit def catsDataCommutativeMonadForIdT[F[_]](implicit F: CommutativeMonad[F]): CommutativeMonad[IdT[F, *]] =
-    new IdTMonad[F] with CommutativeMonad[IdT[F, *]] { implicit val F0: CommutativeMonad[F] = F }
+  given catsDataCommutativeMonadForIdT[F[_]](using F: CommutativeMonad[F]): CommutativeMonad[IdT[F, *]] =
+    new IdTMonad[F] with CommutativeMonad[IdT[F, *]] { given F0: CommutativeMonad[F] = F }
 }
 
 sealed abstract private[data] class IdTInstances6 extends IdTInstances7 {
-  implicit def catsDataContravariantMonoidalForIdT[F[_]](implicit
+  given catsDataContravariantMonoidalForIdT[F[_]](using
     F: ContravariantMonoidal[F]
   ): ContravariantMonoidal[IdT[F, *]] =
-    new IdTContravariantMonoidal[F] { implicit val F0: ContravariantMonoidal[F] = F }
+    new IdTContravariantMonoidal[F] { given F0: ContravariantMonoidal[F] = F }
 }
 
 sealed abstract private[data] class IdTInstances5 extends IdTInstances6 {
-  implicit def catsDataFunctorForIdT[F[_]](implicit F: Functor[F]): Functor[IdT[F, *]] =
-    new IdTFunctor[F] { implicit val F0: Functor[F] = F }
+  given catsDataFunctorForIdT[F[_]](using F: Functor[F]): Functor[IdT[F, *]] =
+    new IdTFunctor[F] { given F0: Functor[F] = F }
 }
 
 sealed abstract private[data] class IdTInstances4 extends IdTInstances5 {
-  implicit def catsDataApplyForIdT[F[_]](implicit F: Apply[F]): Apply[IdT[F, *]] =
-    new IdTApply[F] { implicit val F0: Apply[F] = F }
+  given catsDataApplyForIdT[F[_]](using F: Apply[F]): Apply[IdT[F, *]] =
+    new IdTApply[F] { given F0: Apply[F] = F }
 }
 
 sealed abstract private[data] class IdTInstances3 extends IdTInstances4 {
-  implicit def catsDataApplicativeForIdT[F[_]](implicit F: Applicative[F]): Applicative[IdT[F, *]] =
-    new IdTApplicative[F] { implicit val F0: Applicative[F] = F }
+  given catsDataApplicativeForIdT[F[_]](using F: Applicative[F]): Applicative[IdT[F, *]] =
+    new IdTApplicative[F] { given F0: Applicative[F] = F }
 }
 
 sealed abstract private[data] class IdTInstances2 extends IdTInstances3 {
-  implicit def catsDataFlatMapForIdT[F[_]](implicit F: FlatMap[F]): FlatMap[IdT[F, *]] =
-    new IdTFlatMap[F] { implicit val F0: FlatMap[F] = F }
+  given catsDataFlatMapForIdT[F[_]](using F: FlatMap[F]): FlatMap[IdT[F, *]] =
+    new IdTFlatMap[F] { given F0: FlatMap[F] = F }
 }
 
 sealed abstract private[data] class IdTInstances1 extends IdTInstances2 {
-  implicit def catsDataMonadForIdT[F[_]](implicit F: Monad[F]): Monad[IdT[F, *]] =
-    new IdTMonad[F] { implicit val F0: Monad[F] = F }
+  given catsDataMonadForIdT[F[_]](using F: Monad[F]): Monad[IdT[F, *]] =
+    new IdTMonad[F] { given F0: Monad[F] = F }
 
-  implicit def catsDataFoldableForIdT[F[_]](implicit F: Foldable[F]): Foldable[IdT[F, *]] =
-    new IdTFoldable[F] { implicit val F0: Foldable[F] = F }
+  given catsDataFoldableForIdT[F[_]](using F: Foldable[F]): Foldable[IdT[F, *]] =
+    new IdTFoldable[F] { given F0: Foldable[F] = F }
 }
 
 sealed abstract private[data] class IdTInstances0 extends IdTInstances1 {
 
-  implicit def catsDataTraverseForIdT[F[_]](implicit F: Traverse[F]): Traverse[IdT[F, *]] =
-    new IdTTraverse[F] { implicit val F0: Traverse[F] = F }
+  given catsDataTraverseForIdT[F[_]](using F: Traverse[F]): Traverse[IdT[F, *]] =
+    new IdTTraverse[F] { given F0: Traverse[F] = F }
 
-  implicit def catsDataEqForIdT[F[_], A](implicit F: Eq[F[A]]): Eq[IdT[F, A]] =
+  given catsDataEqForIdT[F[_], A](using F: Eq[F[A]]): Eq[IdT[F, A]] =
     Eq.by[IdT[F, A], F[A]](_.value)
 }
 
 sealed abstract private[data] class IdTInstances extends IdTInstances0 {
 
-  implicit def catsDataNonEmptyTraverseForIdT[F[_]](implicit F: NonEmptyTraverse[F]): NonEmptyTraverse[IdT[F, *]] =
-    new IdTNonEmptyTraverse[F] { implicit val F0: NonEmptyTraverse[F] = F }
+  given catsDataNonEmptyTraverseForIdT[F[_]](using F: NonEmptyTraverse[F]): NonEmptyTraverse[IdT[F, *]] =
+    new IdTNonEmptyTraverse[F] { given F0: NonEmptyTraverse[F] = F }
 
-  implicit def catsDataOrderForIdT[F[_], A](implicit F: Order[F[A]]): Order[IdT[F, A]] =
+  given catsDataOrderForIdT[F[_], A](using F: Order[F[A]]): Order[IdT[F, A]] =
     Order.by[IdT[F, A], F[A]](_.value)
 
-  implicit def catsDataShowForIdT[F[_], A](implicit F: Show[F[A]]): Show[IdT[F, A]] =
+  given catsDataShowForIdT[F[_], A](using F: Show[F[A]]): Show[IdT[F, A]] =
     Contravariant[Show].contramap(F)(_.value)
 
 }

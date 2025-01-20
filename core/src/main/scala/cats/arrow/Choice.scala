@@ -70,11 +70,11 @@ object Choice {
   /**
    * Summon an instance of [[Choice]] for `F`.
    */
-  @inline def apply[F[_, _]](implicit instance: Choice[F]): Choice[F] = instance
+  @inline def apply[F[_, _]](using instance: Choice[F]): Choice[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllChoiceOps[F[_, _], A, B](target: F[A, B])(implicit tc: Choice[F]): AllOps[F, A, B] {
+    implicit def toAllChoiceOps[F[_, _], A, B](target: F[A, B])(using tc: Choice[F]): AllOps[F, A, B] {
       type TypeClassType = Choice[F]
     } =
       new AllOps[F, A, B] {
@@ -94,7 +94,7 @@ object Choice {
     type TypeClassType <: Choice[F]
   }
   trait ToChoiceOps extends Serializable {
-    implicit def toChoiceOps[F[_, _], A, B](target: F[A, B])(implicit tc: Choice[F]): Ops[F, A, B] {
+    implicit def toChoiceOps[F[_, _], A, B](target: F[A, B])(using tc: Choice[F]): Ops[F, A, B] {
       type TypeClassType = Choice[F]
     } =
       new Ops[F, A, B] {

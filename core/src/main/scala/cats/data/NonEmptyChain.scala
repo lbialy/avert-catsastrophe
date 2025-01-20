@@ -245,7 +245,7 @@ class NonEmptyChainOps[A](private val value: NonEmptyChain[A])
    * res0: Boolean = true
    * }}}
    */
-  final def contains(a: A)(implicit A: Eq[A]): Boolean = toChain.contains(a)
+  final def contains(a: A)(using A: Eq[A]): Boolean = toChain.contains(a)
 
   /**
    * Tests whether a predicate holds for all elements of this chain.
@@ -377,7 +377,7 @@ class NonEmptyChainOps[A](private val value: NonEmptyChain[A])
   /**
    * Reduce using the Semigroup of A
    */
-  final def reduce[AA >: A](implicit S: Semigroup[AA]): AA =
+  final def reduce[AA >: A](using S: Semigroup[AA]): AA =
     S.combineAllOption(iterator).get
 
   /**
@@ -425,7 +425,7 @@ class NonEmptyChainOps[A](private val value: NonEmptyChain[A])
    * res0: Boolean = true
    * }}}
    */
-  final def groupBy[B](f: A => B)(implicit B: Order[B]): NonEmptyMap[B, NonEmptyChain[A]] =
+  final def groupBy[B](f: A => B)(using B: Order[B]): NonEmptyMap[B, NonEmptyChain[A]] =
     toChain.groupBy(f).asInstanceOf[NonEmptyMap[B, NonEmptyChain[A]]]
 
   /**
@@ -460,7 +460,7 @@ class NonEmptyChainOps[A](private val value: NonEmptyChain[A])
    * res0: Boolean = true
    * }}}
    */
-  final def groupByNem[B](f: A => B)(implicit B: Order[B]): NonEmptyMap[B, NonEmptyChain[A]] =
+  final def groupByNem[B](f: A => B)(using B: Order[B]): NonEmptyMap[B, NonEmptyChain[A]] =
     groupBy(f)
 
   /**
@@ -479,7 +479,7 @@ class NonEmptyChainOps[A](private val value: NonEmptyChain[A])
    * res0: Boolean = true
    * }}}
    */
-  final def groupMap[K, B](key: A => K)(f: A => B)(implicit K: Order[K]): NonEmptyMap[K, NonEmptyChain[B]] =
+  final def groupMap[K, B](key: A => K)(f: A => B)(using K: Order[K]): NonEmptyMap[K, NonEmptyChain[B]] =
     toChain.groupMap(key)(f).asInstanceOf[NonEmptyMap[K, NonEmptyChain[B]]]
 
   /**
@@ -498,7 +498,7 @@ class NonEmptyChainOps[A](private val value: NonEmptyChain[A])
    * res0: Boolean = true
    * }}}
    */
-  final def groupMapNem[K, B](key: A => K)(f: A => B)(implicit K: Order[K]): NonEmptyMap[K, NonEmptyChain[B]] =
+  final def groupMapNem[K, B](key: A => K)(f: A => B)(using K: Order[K]): NonEmptyMap[K, NonEmptyChain[B]] =
     groupMap(key)(f)
 
   /**
@@ -519,7 +519,7 @@ class NonEmptyChainOps[A](private val value: NonEmptyChain[A])
    * res0: Boolean = true
    * }}}
    */
-  final def groupMapReduce[K, B](key: A => K)(f: A => B)(implicit K: Order[K], B: Semigroup[B]): NonEmptyMap[K, B] =
+  final def groupMapReduce[K, B](key: A => K)(f: A => B)(using K: Order[K], B: Semigroup[B]): NonEmptyMap[K, B] =
     toChain.groupMapReduce(key)(f).asInstanceOf[NonEmptyMap[K, B]]
 
   /**
@@ -540,7 +540,7 @@ class NonEmptyChainOps[A](private val value: NonEmptyChain[A])
    * res0: Boolean = true
    * }}}
    */
-  final def groupMapReduceNem[K, B](key: A => K)(f: A => B)(implicit K: Order[K], B: Semigroup[B]): NonEmptyMap[K, B] =
+  final def groupMapReduceNem[K, B](key: A => K)(f: A => B)(using K: Order[K], B: Semigroup[B]): NonEmptyMap[K, B] =
     groupMapReduce(key)(f)
 
   /**
@@ -561,7 +561,7 @@ class NonEmptyChainOps[A](private val value: NonEmptyChain[A])
    * res0: Boolean = true
    * }}}
    */
-  final def groupMapReduceWith[K, B](key: A => K)(f: A => B)(combine: (B, B) => B)(implicit
+  final def groupMapReduceWith[K, B](key: A => K)(f: A => B)(combine: (B, B) => B)(using
     K: Order[K]
   ): NonEmptyMap[K, B] =
     toChain.groupMapReduceWith(key)(f)(combine).asInstanceOf[NonEmptyMap[K, B]]
@@ -584,7 +584,7 @@ class NonEmptyChainOps[A](private val value: NonEmptyChain[A])
    * res0: Boolean = true
    * }}}
    */
-  final def groupMapReduceWithNem[K, B](key: A => K)(f: A => B)(combine: (B, B) => B)(implicit
+  final def groupMapReduceWithNem[K, B](key: A => K)(f: A => B)(combine: (B, B) => B)(using
     K: Order[K]
   ): NonEmptyMap[K, B] =
     groupMapReduceWith(key)(f)(combine)
@@ -602,20 +602,20 @@ class NonEmptyChainOps[A](private val value: NonEmptyChain[A])
   /**
    * Remove duplicates. Duplicates are checked using `Order[_]` instance.
    */
-  final def distinct[AA >: A](implicit O: Order[AA]): NonEmptyChain[AA] =
+  final def distinct[AA >: A](using O: Order[AA]): NonEmptyChain[AA] =
     distinctBy(identity[AA])
 
-  final def distinctBy[B](f: A => B)(implicit O: Order[B]): NonEmptyChain[A] =
+  final def distinctBy[B](f: A => B)(using O: Order[B]): NonEmptyChain[A] =
     create(toChain.distinctBy[B](f))
 
-  final def sortBy[B](f: A => B)(implicit B: Order[B]): NonEmptyChain[A] = create(toChain.sortBy(f))
-  final def sorted[AA >: A](implicit AA: Order[AA]): NonEmptyChain[AA] = create(toChain.sorted[AA])
-  final def toNem[T, V](implicit ev: A <:< (T, V), order: Order[T]): NonEmptyMap[T, V] =
+  final def sortBy[B](f: A => B)(using B: Order[B]): NonEmptyChain[A] = create(toChain.sortBy(f))
+  final def sorted[AA >: A](using AA: Order[AA]): NonEmptyChain[AA] = create(toChain.sorted[AA])
+  final def toNem[T, V](using ev: A <:< (T, V), order: Order[T]): NonEmptyMap[T, V] =
     NonEmptyMap.fromMapUnsafe(SortedMap(toChain.toVector.map(ev): _*)(order.toOrdering))
-  final def toNes[B >: A](implicit order: Order[B]): NonEmptySet[B] = NonEmptySet.of(head, tail.toVector: _*)
+  final def toNes[B >: A](using order: Order[B]): NonEmptySet[B] = NonEmptySet.of(head, tail.toVector: _*)
   final def zipWithIndex: NonEmptyChain[(A, Int)] = create(toChain.zipWithIndex)
 
-  final def show[AA >: A](implicit AA: Show[AA]): String = s"NonEmpty${Show[Chain[AA]].show(toChain)}"
+  final def show[AA >: A](using AA: Show[AA]): String = s"NonEmpty${Show[Chain[AA]].show(toChain)}"
 }
 
 sealed abstract private[data] class NonEmptyChainInstances extends NonEmptyChainInstances1 {
@@ -630,10 +630,10 @@ sealed abstract private[data] class NonEmptyChainInstances extends NonEmptyChain
     ] =
     catsDataInstancesForNonEmptyChainBinCompat1
 
-  implicit val catsDataInstancesForNonEmptyChainBinCompat1
-    : Align[NonEmptyChain] & Bimonad[NonEmptyChain] & NonEmptyAlternative[NonEmptyChain] & NonEmptyTraverse[
+  given catsDataInstancesForNonEmptyChainBinCompat1
+    : (Align[NonEmptyChain] & Bimonad[NonEmptyChain] & NonEmptyAlternative[NonEmptyChain] & NonEmptyTraverse[
       NonEmptyChain
-    ] =
+    ]) =
     new AbstractNonEmptyInstances[Chain, NonEmptyChain] with Align[NonEmptyChain] {
       def extract[A](fa: NonEmptyChain[A]): A = fa.head
 
@@ -647,13 +647,13 @@ sealed abstract private[data] class NonEmptyChainInstances extends NonEmptyChain
       }
 
       override def mapAccumulate[S, A, B](init: S, fa: NonEmptyChain[A])(f: (S, A) => (S, B)): (S, NonEmptyChain[B]) =
-        StaticMethods.mapAccumulateFromStrictFunctor(init, fa, f)(this)
+        StaticMethods.mapAccumulateFromStrictFunctor(init, fa, f)(using this)
 
       override def mapWithIndex[A, B](fa: NonEmptyChain[A])(f: (A, Int) => B): NonEmptyChain[B] =
-        StaticMethods.mapWithIndexFromStrictFunctor(fa, f)(this)
+        StaticMethods.mapWithIndexFromStrictFunctor(fa, f)(using this)
 
       override def mapWithLongIndex[A, B](fa: NonEmptyChain[A])(f: (A, Long) => B): NonEmptyChain[B] =
-        StaticMethods.mapWithLongIndexFromStrictFunctor(fa, f)(this)
+        StaticMethods.mapWithLongIndexFromStrictFunctor(fa, f)(using this)
 
       override def zipWithIndex[A](fa: NonEmptyChain[A]): NonEmptyChain[(A, Int)] =
         fa.zipWithIndex
@@ -663,7 +663,7 @@ sealed abstract private[data] class NonEmptyChainInstances extends NonEmptyChain
       override def reduceLeft[A](fa: NonEmptyChain[A])(f: (A, A) => A): A =
         fa.reduceLeft(f)
 
-      override def reduce[A](fa: NonEmptyChain[A])(implicit A: Semigroup[A]): A =
+      override def reduce[A](fa: NonEmptyChain[A])(using A: Semigroup[A]): A =
         fa.reduce
 
       def reduceLeftTo[A, B](fa: NonEmptyChain[A])(f: A => B)(g: (B, A) => B): B = fa.reduceLeftTo(f)(g)
@@ -689,26 +689,26 @@ sealed abstract private[data] class NonEmptyChainInstances extends NonEmptyChain
       override def toNonEmptyList[A](fa: NonEmptyChain[A]): NonEmptyList[A] = fa.toNonEmptyList
     }
 
-  implicit def catsDataOrderForNonEmptyChain[A: Order]: Order[NonEmptyChain[A]] =
+  given catsDataOrderForNonEmptyChain[A: Order]: Order[NonEmptyChain[A]] =
     Order[Chain[A]].asInstanceOf[Order[NonEmptyChain[A]]]
 
-  implicit def catsDataSemigroupForNonEmptyChain[A]: Semigroup[NonEmptyChain[A]] =
+  given catsDataSemigroupForNonEmptyChain[A]: Semigroup[NonEmptyChain[A]] =
     Semigroup[Chain[A]].asInstanceOf[Semigroup[NonEmptyChain[A]]]
 
-  implicit def catsDataShowForNonEmptyChain[A: Show]: Show[NonEmptyChain[A]] = _.show
+  given catsDataShowForNonEmptyChain[A: Show]: Show[NonEmptyChain[A]] = _.show
 }
 
 sealed abstract private[data] class NonEmptyChainInstances1 extends NonEmptyChainInstances2 {
-  implicit def catsDataHashForNonEmptyChain[A: Hash]: Hash[NonEmptyChain[A]] =
+  given catsDataHashForNonEmptyChain[A: Hash]: Hash[NonEmptyChain[A]] =
     Hash[Chain[A]].asInstanceOf[Hash[NonEmptyChain[A]]]
 }
 
 sealed abstract private[data] class NonEmptyChainInstances2 extends NonEmptyChainInstances3 {
-  implicit def catsDataPartialOrderForNonEmptyChain[A: PartialOrder]: PartialOrder[NonEmptyChain[A]] =
+  given catsDataPartialOrderForNonEmptyChain[A: PartialOrder]: PartialOrder[NonEmptyChain[A]] =
     PartialOrder[Chain[A]].asInstanceOf[PartialOrder[NonEmptyChain[A]]]
 }
 
 sealed abstract private[data] class NonEmptyChainInstances3 {
-  implicit def catsDataEqForNonEmptyChain[A: Eq]: Eq[NonEmptyChain[A]] =
+  given catsDataEqForNonEmptyChain[A: Eq]: Eq[NonEmptyChain[A]] =
     Eq[Chain[A]].asInstanceOf[Eq[NonEmptyChain[A]]]
 }

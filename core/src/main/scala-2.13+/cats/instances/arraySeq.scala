@@ -28,20 +28,20 @@ import scala.collection.immutable.ArraySeq
 import scala.collection.mutable.Builder
 
 trait ArraySeqInstances extends cats.kernel.instances.ArraySeqInstances {
-  implicit def catsStdInstancesForArraySeq
-    : Traverse[ArraySeq] & Monad[ArraySeq] & Alternative[ArraySeq] & CoflatMap[ArraySeq] & Align[ArraySeq] =
+  given catsStdInstancesForArraySeq
+    : (Traverse[ArraySeq] & Monad[ArraySeq] & Alternative[ArraySeq] & CoflatMap[ArraySeq] & Align[ArraySeq]) =
     ArraySeqInstances.stdInstances
 
-  implicit def catsStdTraverseFilterForArraySeq: TraverseFilter[ArraySeq] =
+  given catsStdTraverseFilterForArraySeq: TraverseFilter[ArraySeq] =
     ArraySeqInstances.stdTraverseFilterInstance
 
-  implicit def catsStdShowForArraySeq[A](implicit ev: Show[A]): Show[ArraySeq[A]] =
+  given catsStdShowForArraySeq[A](using ev: Show[A]): Show[ArraySeq[A]] =
     _.iterator.map(ev.show).mkString("ArraySeq(", ", ", ")")
 }
 
 private[cats] object ArraySeqInstances {
   final private val stdInstances
-    : Traverse[ArraySeq] & Monad[ArraySeq] & Alternative[ArraySeq] & CoflatMap[ArraySeq] & Align[ArraySeq] =
+    : (Traverse[ArraySeq] & Monad[ArraySeq] & Alternative[ArraySeq] & CoflatMap[ArraySeq] & Align[ArraySeq]) =
     new Traverse[ArraySeq]
       with Monad[ArraySeq]
       with Alternative[ArraySeq]
@@ -98,21 +98,21 @@ private[cats] object ArraySeqInstances {
         Eval.defer(loop(0))
       }
 
-      override def foldMap[A, B](fa: ArraySeq[A])(f: A => B)(implicit B: Monoid[B]): B =
+      override def foldMap[A, B](fa: ArraySeq[A])(f: A => B)(using B: Monoid[B]): B =
         B.combineAll(fa.iterator.map(f))
 
-      def traverse[G[_], A, B](fa: ArraySeq[A])(f: A => G[B])(implicit G: Applicative[G]): G[ArraySeq[B]] =
+      def traverse[G[_], A, B](fa: ArraySeq[A])(f: A => G[B])(using G: Applicative[G]): G[ArraySeq[B]] =
         G match {
           case x: StackSafeMonad[G] =>
-            x.map(Traverse.traverseDirectly(fa.iterator)(f)(x))(_.iterator.to(ArraySeq.untagged))
+            x.map(Traverse.traverseDirectly(fa.iterator)(f)(using x))(_.iterator.to(ArraySeq.untagged))
           case _ =>
             G.map(Chain.traverseViaChain(fa)(f))(_.iterator.to(ArraySeq.untagged))
 
         }
 
-      override def traverseVoid[G[_], A, B](fa: ArraySeq[A])(f: A => G[B])(implicit G: Applicative[G]): G[Unit] =
+      override def traverseVoid[G[_], A, B](fa: ArraySeq[A])(f: A => G[B])(using G: Applicative[G]): G[Unit] =
         G match {
-          case x: StackSafeMonad[G] => Traverse.traverseVoidDirectly(fa)(f)(x)
+          case x: StackSafeMonad[G] => Traverse.traverseVoidDirectly(fa)(f)(using x)
           case _ =>
             foldRight(fa, Eval.now(G.unit)) { (a, acc) =>
               G.map2Eval(f(a), acc) { (_, _) =>
@@ -122,7 +122,7 @@ private[cats] object ArraySeqInstances {
         }
 
       override def mapAccumulate[S, A, B](init: S, fa: ArraySeq[A])(f: (S, A) => (S, B)): (S, ArraySeq[B]) =
-        StaticMethods.mapAccumulateFromStrictFunctor(init, fa, f)(this)
+        StaticMethods.mapAccumulateFromStrictFunctor(init, fa, f)(using this)
 
       override def mapWithIndex[A, B](fa: ArraySeq[A])(f: (A, Int) => B): ArraySeq[B] =
         ArraySeq.untagged.tabulate(n = fa.length) { i =>
@@ -169,13 +169,13 @@ private[cats] object ArraySeqInstances {
       override def isEmpty[A](fa: ArraySeq[A]): Boolean =
         fa.isEmpty
 
-      override def foldM[G[_], A, B](fa: ArraySeq[A], z: B)(f: (B, A) => G[B])(implicit G: Monad[G]): G[B] =
+      override def foldM[G[_], A, B](fa: ArraySeq[A], z: B)(f: (B, A) => G[B])(using G: Monad[G]): G[B] =
         G.tailRecM((z, 0)) { case (b, i) =>
           if (i < fa.length) G.map(f(b, fa(i)))(b => Left((b, i + 1)))
           else G.pure(Right(b))
         }
 
-      override def fold[A](fa: ArraySeq[A])(implicit A: Monoid[A]): A =
+      override def fold[A](fa: ArraySeq[A])(using A: Monoid[A]): A =
         A.combineAll(fa)
 
       override def toList[A](fa: ArraySeq[A]): List[A] =
@@ -230,10 +230,10 @@ private[cats] object ArraySeqInstances {
 
       def traverseFilter[G[_], A, B](
         fa: ArraySeq[A]
-      )(f: (A) => G[Option[B]])(implicit G: Applicative[G]): G[ArraySeq[B]] =
+      )(f: (A) => G[Option[B]])(using G: Applicative[G]): G[ArraySeq[B]] =
         G match {
           case x: StackSafeMonad[G] =>
-            x.map(TraverseFilter.traverseFilterDirectly(fa.iterator)(f)(x))(
+            x.map(TraverseFilter.traverseFilterDirectly(fa.iterator)(f)(using x))(
               _.iterator.to(ArraySeq.untagged)
             )
           case _ =>
@@ -243,7 +243,7 @@ private[cats] object ArraySeqInstances {
 
         }
 
-      override def filterA[G[_], A](fa: ArraySeq[A])(f: (A) => G[Boolean])(implicit G: Applicative[G]): G[ArraySeq[A]] =
+      override def filterA[G[_], A](fa: ArraySeq[A])(f: (A) => G[Boolean])(using G: Applicative[G]): G[ArraySeq[A]] =
         fa.foldRight(Eval.now(G.pure(ArraySeq.untagged.empty[A]))) { case (x, xse) =>
           G.map2Eval(f(x), xse)((b, vec) => if (b) x +: vec else vec)
         }.value

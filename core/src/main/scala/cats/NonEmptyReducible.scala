@@ -34,7 +34,7 @@ import cats.data.NonEmptyList
  * This class is only a helper, does not define a typeclass and should not be used outside of Cats.
  * Also see the discussion: PR #3541 and issue #3069.
  */
-abstract class NonEmptyReducible[F[_], G[_]](implicit G: Foldable[G]) extends Reducible[F] {
+abstract class NonEmptyReducible[F[_], G[_]](using G: Foldable[G]) extends Reducible[F] {
   def split[A](fa: F[A]): (A, G[A])
 
   def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B = {
@@ -72,12 +72,12 @@ abstract class NonEmptyReducible[F[_], G[_]](implicit G: Foldable[G]) extends Re
   override def get[A](fa: F[A])(idx: Long): Option[A] =
     if (idx == 0L) Some(split(fa)._1) else G.get(split(fa)._2)(idx - 1L)
 
-  override def fold[A](fa: F[A])(implicit A: Monoid[A]): A = {
+  override def fold[A](fa: F[A])(using A: Monoid[A]): A = {
     val (a, ga) = split(fa)
     A.combine(a, G.fold(ga))
   }
 
-  override def foldM[H[_], A, B](fa: F[A], z: B)(f: (B, A) => H[B])(implicit H: Monad[H]): H[B] = {
+  override def foldM[H[_], A, B](fa: F[A], z: B)(f: (B, A) => H[B])(using H: Monad[H]): H[B] = {
     val (a, ga) = split(fa)
     H.flatMap(f(z, a))(G.foldM(ga, _)(f))
   }

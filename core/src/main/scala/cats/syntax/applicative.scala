@@ -35,22 +35,22 @@ trait ApplicativeSyntax {
 }
 
 final class ApplicativeIdOps[A](private val a: A) extends AnyVal {
-  def pure[F[_]](implicit F: Applicative[F]): F[A] = F.pure(a)
+  def pure[F[_]](using F: Applicative[F]): F[A] = F.pure(a)
 }
 
 @deprecated("Use by-value or by-name version", "2.8.0")
 final class ApplicativeOps[F[_], A](private val fa: F[A]) extends AnyVal {
-  def replicateA(n: Int)(implicit F: Applicative[F]): F[List[A]] = F.replicateA(n, fa)
-  def unlessA(cond: Boolean)(implicit F: Applicative[F]): F[Unit] = F.unlessA(cond)(fa)
-  def whenA(cond: Boolean)(implicit F: Applicative[F]): F[Unit] = F.whenA(cond)(fa)
+  def replicateA(n: Int)(using F: Applicative[F]): F[List[A]] = F.replicateA(n, fa)
+  def unlessA(cond: Boolean)(using F: Applicative[F]): F[Unit] = F.unlessA(cond)(fa)
+  def whenA(cond: Boolean)(using F: Applicative[F]): F[Unit] = F.whenA(cond)(fa)
 }
 
 final class ApplicativeByValueOps[F[_], A](private val fa: F[A]) extends AnyVal {
-  def replicateA(n: Int)(implicit F: Applicative[F]): F[List[A]] = F.replicateA(n, fa)
-  def replicateA_(n: Int)(implicit F: Applicative[F]): F[Unit] = F.replicateA_(n, fa)
+  def replicateA(n: Int)(using F: Applicative[F]): F[List[A]] = F.replicateA(n, fa)
+  def replicateA_(n: Int)(using F: Applicative[F]): F[Unit] = F.replicateA_(n, fa)
 }
 
 final class ApplicativeByNameOps[F[_], A](private val fa: () => F[A]) extends AnyVal {
-  def unlessA(cond: Boolean)(implicit F: Applicative[F]): F[Unit] = F.unlessA(cond)(fa())
-  def whenA(cond: Boolean)(implicit F: Applicative[F]): F[Unit] = F.whenA(cond)(fa())
+  def unlessA(cond: Boolean)(using F: Applicative[F]): F[Unit] = F.unlessA(cond)(fa())
+  def whenA(cond: Boolean)(using F: Applicative[F]): F[Unit] = F.whenA(cond)(fa())
 }

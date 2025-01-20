@@ -28,9 +28,9 @@ import cats.kernel.compat.scalaVersionSpecific._
 
 trait OptionInstances extends cats.kernel.instances.OptionInstances {
 
-  implicit val catsStdInstancesForOption: Traverse[Option] & MonadError[Option, Unit] & Alternative[
+  given catsStdInstancesForOption: (Traverse[Option] & MonadError[Option, Unit] & Alternative[
     Option
-  ] & CommutativeMonad[Option] & CoflatMap[Option] & Align[Option] =
+  ] & CommutativeMonad[Option] & CoflatMap[Option] & Align[Option]) =
     new Traverse[Option]
       with MonadError[Option, Unit]
       with Alternative[Option]
@@ -192,16 +192,16 @@ trait OptionInstances extends cats.kernel.instances.OptionInstances {
       override def reduceRightOption[A](fa: Option[A])(f: (A, Eval[A]) => Eval[A]): Eval[Option[A]] =
         Now(fa)
 
-      override def minimumOption[A](fa: Option[A])(implicit A: Order[A]): Option[A] = fa
+      override def minimumOption[A](fa: Option[A])(using A: Order[A]): Option[A] = fa
 
-      override def maximumOption[A](fa: Option[A])(implicit A: Order[A]): Option[A] = fa
+      override def maximumOption[A](fa: Option[A])(using A: Order[A]): Option[A] = fa
 
       override def get[A](fa: Option[A])(idx: Long): Option[A] =
         if (idx == 0L) fa else None
 
       override def size[A](fa: Option[A]): Long = fa.fold(0L)(_ => 1L)
 
-      override def foldMap[A, B](fa: Option[A])(f: A => B)(implicit B: Monoid[B]): B =
+      override def foldMap[A, B](fa: Option[A])(f: A => B)(using B: Monoid[B]): B =
         fa.fold(B.empty)(f)
 
       override def find[A](fa: Option[A])(f: A => Boolean): Option[A] =
@@ -249,7 +249,7 @@ trait OptionInstances extends cats.kernel.instances.OptionInstances {
         if (oa.isDefined) someUnit else None
     }
 
-  implicit def catsStdShowForOption[A](implicit A: Show[A]): Show[Option[A]] = {
+  given catsStdShowForOption[A](using A: Show[A]): Show[Option[A]] = {
     case Some(a) => s"Some(${A.show(a)})"
     case None    => "None"
   }
@@ -257,7 +257,7 @@ trait OptionInstances extends cats.kernel.instances.OptionInstances {
 
 @suppressUnusedImportWarningForScalaVersionSpecific
 private[instances] trait OptionInstancesBinCompat0 {
-  implicit val catsStdTraverseFilterForOption: TraverseFilter[Option] = new TraverseFilter[Option] {
+  given catsStdTraverseFilterForOption: TraverseFilter[Option] = new TraverseFilter[Option] {
     val traverse: Traverse[Option] = cats.instances.option.catsStdInstancesForOption
 
     override def mapFilter[A, B](fa: Option[A])(f: (A) => Option[B]): Option[B] = fa.flatMap(f)
@@ -270,13 +270,13 @@ private[instances] trait OptionInstancesBinCompat0 {
 
     override def flattenOption[A](fa: Option[Option[A]]): Option[A] = fa.flatten
 
-    def traverseFilter[G[_], A, B](fa: Option[A])(f: (A) => G[Option[B]])(implicit G: Applicative[G]): G[Option[B]] =
+    def traverseFilter[G[_], A, B](fa: Option[A])(f: (A) => G[Option[B]])(using G: Applicative[G]): G[Option[B]] =
       fa match {
         case None    => G.pure(Option.empty[B])
         case Some(a) => f(a)
       }
 
-    override def filterA[G[_], A](fa: Option[A])(f: (A) => G[Boolean])(implicit G: Applicative[G]): G[Option[A]] =
+    override def filterA[G[_], A](fa: Option[A])(f: (A) => G[Boolean])(using G: Applicative[G]): G[Option[A]] =
       fa match {
         case None    => G.pure(Option.empty[A])
         case Some(a) => G.map(f(a))(b => if (b) Some(a) else None)

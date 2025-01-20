@@ -24,37 +24,37 @@ package cats
 import cats.data.ZipStream
 
 private[cats] trait ScalaVersionSpecificTraverseInstances {
-  implicit def catsTraverseForStream: Traverse[Stream] = cats.instances.stream.catsStdInstancesForStream
+  given catsTraverseForStream: Traverse[Stream] = cats.instances.stream.catsStdInstancesForStream
 }
 
 private[cats] trait ScalaVersionSpecificShowInstances {
-  implicit def catsShowForStream[A: Show]: Show[Stream[A]] = cats.instances.stream.catsStdShowForStream[A]
+  given catsShowForStream[A: Show]: Show[Stream[A]] = cats.instances.stream.catsStdShowForStream[A]
 }
 
 private[cats] trait ScalaVersionSpecificSemigroupalInstances {
-  implicit def catsSemigroupalForStream: Semigroupal[Stream] = cats.instances.stream.catsStdInstancesForStream
+  given catsSemigroupalForStream: Semigroupal[Stream] = cats.instances.stream.catsStdInstancesForStream
 }
 
 private[cats] trait ScalaVersionSpecificMonoidKInstances {
-  implicit def catsMonoidKForStream: MonoidK[Stream] = cats.instances.stream.catsStdInstancesForStream
+  given catsMonoidKForStream: MonoidK[Stream] = cats.instances.stream.catsStdInstancesForStream
 }
 
 private[cats] trait ScalaVersionSpecificParallelInstances {
-  implicit def catsStdParallelForZipStream: Parallel.Aux[Stream, ZipStream] =
+  given catsStdParallelForZipStream: Parallel.Aux[Stream, ZipStream] =
     cats.instances.stream.catsStdParallelForStreamZipStream
 }
 
 private[cats] trait ScalaVersionSpecificInvariantInstances {
-  implicit def catsInstancesForStream: Monad[Stream] with Alternative[Stream] with CoflatMap[Stream] =
+  given catsInstancesForStream: (Monad[Stream] & Alternative[Stream] & CoflatMap[Stream]) =
     cats.instances.stream.catsStdInstancesForStream
 }
 
 private[cats] trait ScalaVersionSpecificTraverseFilterInstances {
-  implicit def catsTraverseFilterForStream: TraverseFilter[Stream] =
+  given catsTraverseFilterForStream: TraverseFilter[Stream] =
     cats.instances.stream.catsStdTraverseFilterForStream
 }
 
 private[cats] trait ScalaVersionSpecificAlignInstances {
-  implicit def catsAlignForStream: Align[Stream] =
+  given catsAlignForStream: Align[Stream] =
     cats.instances.stream.catsStdInstancesForStream
 }

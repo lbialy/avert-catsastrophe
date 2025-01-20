@@ -27,7 +27,7 @@ import cats.{Comonad, Functor, Representable}
  * A generalization of `StoreT`, where the underlying functor `F` has a `Representable` instance.
  * `Store` is the dual of `State`
  */
-final case class RepresentableStore[F[_], S, A](fa: F[A], index: S)(implicit R: Representable.Aux[F, S]) {
+final case class RepresentableStore[F[_], S, A](fa: F[A], index: S)(using R: Representable.Aux[F, S]) {
 
   /**
    * Peek at what the focus would be for a given focus s.
@@ -89,13 +89,13 @@ final case class RepresentableStore[F[_], S, A](fa: F[A], index: S)(implicit R: 
    *   require(adjacent == List("", "a", "b"))
    * }}}
    */
-  def experiment[G[_]](fn: S => G[S])(implicit G: Functor[G]): G[A] =
+  def experiment[G[_]](fn: S => G[S])(using G: Functor[G]): G[A] =
     G.map(fn(index))(peek)
 }
 
 object RepresentableStore {
 
-  implicit def catsDataRepresentableStoreComonad[F[_], S](implicit
+  given catsDataRepresentableStoreComonad[F[_], S](using
     R: Representable[F]
   ): Comonad[RepresentableStore[F, S, *]] =
     new Comonad[RepresentableStore[F, S, *]] {

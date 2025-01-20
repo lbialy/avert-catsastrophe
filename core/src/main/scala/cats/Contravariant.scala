@@ -54,11 +54,11 @@ object Contravariant {
   /**
    * Summon an instance of [[Contravariant]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: Contravariant[F]): Contravariant[F] = instance
+  @inline def apply[F[_]](using instance: Contravariant[F]): Contravariant[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllContravariantOps[F[_], A](target: F[A])(implicit tc: Contravariant[F]): AllOps[F, A] {
+    implicit def toAllContravariantOps[F[_], A](target: F[A])(using tc: Contravariant[F]): AllOps[F, A] {
       type TypeClassType = Contravariant[F]
     } =
       new AllOps[F, A] {
@@ -78,7 +78,7 @@ object Contravariant {
     type TypeClassType <: Contravariant[F]
   }
   trait ToContravariantOps extends Serializable {
-    implicit def toContravariantOps[F[_], A](target: F[A])(implicit tc: Contravariant[F]): Ops[F, A] {
+    implicit def toContravariantOps[F[_], A](target: F[A])(using tc: Contravariant[F]): Ops[F, A] {
       type TypeClassType = Contravariant[F]
     } =
       new Ops[F, A] {

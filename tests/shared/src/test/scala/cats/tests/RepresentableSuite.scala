@@ -21,7 +21,7 @@
 
 package cats.tests
 
-import cats._
+import cats.{given, _}
 import cats.data.Kleisli
 import cats.kernel.Monoid
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
@@ -101,19 +101,19 @@ class RepresentableSuite extends CatsSuite {
     }
 
     implicit val isoPairInstance: Isomorphisms[Pair] = isoPair
-    implicit val bimonadInstance: Bimonad[Pair] = Representable.bimonad[Pair, Boolean](reprPair, Monoid[Boolean])
+    implicit val bimonadInstance: Bimonad[Pair] = Representable.bimonad[Pair, Boolean](using reprPair, Monoid[Boolean])
     checkAll("Pair[Int]", BimonadTests[Pair].bimonad[Int, Int, Int])
     checkAll("Bimonad[Pair]", SerializableTests.serializable(Bimonad[Pair]))
   }
 
   {
     implicit val isoFun1: Isomorphisms[MiniInt => *] = isoMiniIntFunc
-    implicit val monadInstance: Monad[MiniInt => *] = Representable.monad[MiniInt => *](reprMiniIntFunc)
+    implicit val monadInstance: Monad[MiniInt => *] = Representable.monad[MiniInt => *](using reprMiniIntFunc)
     checkAll("MiniInt => *", MonadTests[MiniInt => *].monad[String, String, String])
   }
 
   {
-    implicit val distributiveInstance: Distributive[Pair] = Representable.distributive[Pair](reprPair)
+    implicit val distributiveInstance: Distributive[Pair] = Representable.distributive[Pair](using reprPair)
     checkAll("Pair[Int]", DistributiveTests[Pair].distributive[Int, Int, Int, Option, MiniInt => *])
   }
 

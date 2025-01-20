@@ -35,7 +35,7 @@ private[instances] trait FunctionInstancesBinCompat0 {
   /**
    * Witness for: E => A <-> E => A
    */
-  implicit def catsStdRepresentableForFunction1[E](implicit EF: Functor[E => *]): Representable.Aux[E => *, E] =
+  given catsStdRepresentableForFunction1[E](using EF: Functor[E => *]): Representable.Aux[E => *, E] =
     new Representable[E => *] {
       override type Representation = E
       override val F: Functor[E => *] = EF
@@ -43,7 +43,7 @@ private[instances] trait FunctionInstancesBinCompat0 {
       override def index[A](f: E => A): E => A = f
     }
 
-  implicit val catsSddDeferForFunction0: Defer[Function0] =
+  given catsSddDeferForFunction0: Defer[Function0] =
     new Defer[Function0] {
       case class Deferred[A](fa: () => Function0[A]) extends Function0[A] {
         private lazy val resolved: Function0[A] = {
@@ -64,7 +64,7 @@ private[instances] trait FunctionInstancesBinCompat0 {
       }
     }
 
-  implicit def catsStdDeferForFunction1[A]: Defer[A => *] =
+  given catsStdDeferForFunction1[A]: Defer[A => *] =
     new Defer[A => *] {
       case class Deferred[B](fa: () => A => B) extends (A => B) {
         private lazy val resolved: A => B = {
@@ -87,7 +87,7 @@ private[instances] trait FunctionInstancesBinCompat0 {
 }
 
 sealed private[instances] trait Function0Instances extends Function0Instances0 {
-  implicit val catsStdBimonadForFunction0: Bimonad[Function0] =
+  given catsStdBimonadForFunction0: Bimonad[Function0] =
     new Bimonad[Function0] {
       def extract[A](x: () => A): A = x()
 
@@ -126,7 +126,7 @@ sealed private[instances] trait Function0Instances extends Function0Instances0 {
 }
 
 sealed private[instances] trait Function0Instances0 {
-  implicit def function0Distributive: Distributive[Function0] =
+  given function0Distributive: Distributive[Function0] =
     new Distributive[Function0] {
       def distribute[F[_]: Functor, A, B](fa: F[A])(f: A => Function0[B]): Function0[F[B]] = { () =>
         Functor[F].map(fa)(a => f(a)())
@@ -137,7 +137,7 @@ sealed private[instances] trait Function0Instances0 {
 }
 
 sealed private[instances] trait Function1Instances extends Function1Instances0 {
-  implicit def catsStdContravariantMonoidalForFunction1[R: Monoid]: ContravariantMonoidal[* => R] =
+  given catsStdContravariantMonoidalForFunction1[R: Monoid]: ContravariantMonoidal[* => R] =
     new ContravariantMonoidal[* => R] {
       def unit: Unit => R = Function.const(Monoid[R].empty)
       def contramap[A, B](fa: A => R)(f: B => A): B => R =
@@ -147,7 +147,7 @@ sealed private[instances] trait Function1Instances extends Function1Instances0 {
       }
     }
 
-  implicit def catsStdMonadForFunction1[T1]: Monad[T1 => *] =
+  given catsStdMonadForFunction1[T1]: Monad[T1 => *] =
     new Monad[T1 => *] {
       def pure[R](r: R): T1 => R = _ => r
 
@@ -178,7 +178,7 @@ sealed private[instances] trait Function1Instances extends Function1Instances0 {
         }
     }
 
-  implicit val catsStdInstancesForFunction1: ArrowChoice[Function1] & CommutativeArrow[Function1] =
+  given catsStdInstancesForFunction1: (ArrowChoice[Function1] & CommutativeArrow[Function1]) =
     new ArrowChoice[Function1] with CommutativeArrow[Function1] {
       def choose[A, B, C, D](f: A => C)(g: B => D): Either[A, B] => Either[C, D] = {
         case Left(a)  => Left(f(a))
@@ -198,7 +198,7 @@ sealed private[instances] trait Function1Instances extends Function1Instances0 {
       def compose[A, B, C](f: B => C, g: A => B): A => C = f.compose(g)
     }
 
-  implicit val catsStdMonoidKForFunction1: MonoidK[Endo] = new MonoidK[Endo] {
+  given catsStdMonoidKForFunction1: MonoidK[Endo] = new MonoidK[Endo] {
 
     val category: Category[Function] = Category[Function1]
 
@@ -211,13 +211,13 @@ sealed private[instances] trait Function1Instances extends Function1Instances0 {
 }
 
 sealed private[instances] trait Function1Instances0 {
-  implicit def catsStdContravariantForFunction1[R]: Contravariant[* => R] =
+  given catsStdContravariantForFunction1[R]: Contravariant[* => R] =
     new Contravariant[* => R] {
       def contramap[T1, T0](fa: T1 => R)(f: T0 => T1): T0 => R =
         fa.compose(f)
     }
 
-  implicit def catsStdDistributiveForFunction1[T1]: Distributive[T1 => *] =
+  given catsStdDistributiveForFunction1[T1]: Distributive[T1 => *] =
     new Distributive[T1 => *] {
       def distribute[F[_]: Functor, A, B](fa: F[A])(f: A => (T1 => B)): T1 => F[B] = { t1 =>
         Functor[F].map(fa)(a => f(a)(t1))

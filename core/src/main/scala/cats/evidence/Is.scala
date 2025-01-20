@@ -85,14 +85,14 @@ abstract class Is[A, B] extends Serializable {
    */
   @deprecated("Use toPredef for consistency with As", "2.2.0")
   @inline final def predefEq: A =:= B =
-    substitute[=:=[A, *]](implicitly[A =:= A])
+    substitute[=:=[A, *]](summon[A =:= A])
 
   /**
    * A value `A Is B` is always sufficient to produce a similar `Predef.=:=`
    * value.
    */
   @inline final def toPredef: A =:= B =
-    substitute[=:=[A, *]](implicitly[A =:= A])
+    substitute[=:=[A, *]](summon[A =:= A])
 }
 
 sealed abstract class IsInstances {
@@ -101,7 +101,7 @@ sealed abstract class IsInstances {
   /**
    * The category instance on Leibniz categories.
    */
-  implicit val leibniz: Category[Is] = new Category[Is] {
+  given leibniz: Category[Is] = new Category[Is] {
     def id[A]: A Is A = refl[A]
     def compose[A, B, C](bc: B Is C, ab: A Is B): A Is C = bc.compose(ab)
   }
@@ -136,5 +136,5 @@ object Is extends IsInstances with IsSupport {
    */
   @deprecated("use Is.isFromPredef", "2.2.0")
   @inline def unsafeFromPredef[A, B](eq: A =:= B): A Is B =
-    Is.isFromPredef(eq)
+    Is.isFromPredef(using eq)
 }

@@ -25,7 +25,7 @@ package instances
 import scala.annotation.tailrec
 
 trait PartialOrderingInstances {
-  implicit val catsContravariantMonoidalForPartialOrdering: ContravariantMonoidal[PartialOrdering] =
+  given catsContravariantMonoidalForPartialOrdering: ContravariantMonoidal[PartialOrdering] =
     new ContravariantMonoidal[PartialOrdering] {
 
       /**
@@ -53,7 +53,7 @@ trait PartialOrderingInstances {
       def unit: PartialOrdering[Unit] = cats.instances.unit.catsKernelStdOrderForUnit.toOrdering
     }
 
-  implicit def catsStdDeferForPartialOrdering: Defer[PartialOrdering] =
+  given catsStdDeferForPartialOrdering: Defer[PartialOrdering] =
     PartialOrderingInstances.catsStdDeferForPartialOrderingCache
 }
 object PartialOrderingInstances {

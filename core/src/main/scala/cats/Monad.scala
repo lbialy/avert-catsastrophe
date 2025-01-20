@@ -42,7 +42,7 @@ trait Monad[F[_]] extends FlatMap[F] with Applicative[F] {
    * so avoid data structures with non-constant append performance, e.g. `List`.
    */
 
-  def whileM[G[_], A](p: F[Boolean])(body: => F[A])(implicit G: Alternative[G]): F[G[A]] = {
+  def whileM[G[_], A](p: F[Boolean])(body: => F[A])(using G: Alternative[G]): F[G[A]] = {
     val b = Eval.later(body)
     tailRecM[G[A], G[A]](G.empty)(xs =>
       ifM(p)(
@@ -81,7 +81,7 @@ trait Monad[F[_]] extends FlatMap[F] with Applicative[F] {
    * This implementation uses append on each evaluation result,
    * so avoid data structures with non-constant append performance, e.g. `List`.
    */
-  def untilM[G[_], A](f: F[A])(cond: => F[Boolean])(implicit G: Alternative[G]): F[G[A]] = {
+  def untilM[G[_], A](f: F[A])(cond: => F[Boolean])(using G: Alternative[G]): F[G[A]] = {
     val p = Eval.later(cond)
     flatMap(f)(x => map(whileM(map(p.value)(!_))(f))(xs => G.prependK(x, xs)))
   }
@@ -182,11 +182,11 @@ object Monad {
   /**
    * Summon an instance of [[Monad]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: Monad[F]): Monad[F] = instance
+  @inline def apply[F[_]](using instance: Monad[F]): Monad[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllMonadOps[F[_], A](target: F[A])(implicit tc: Monad[F]): AllOps[F, A] {
+    implicit def toAllMonadOps[F[_], A](target: F[A])(using tc: Monad[F]): AllOps[F, A] {
       type TypeClassType = Monad[F]
     } =
       new AllOps[F, A] {
@@ -199,8 +199,8 @@ object Monad {
     type TypeClassType <: Monad[F]
     def self: F[A]
     val typeClassInstance: TypeClassType
-    def untilM[G[_]](cond: => F[Boolean])(implicit G: Alternative[G]): F[G[A]] =
-      typeClassInstance.untilM[G, A](self)(cond)(G)
+    def untilM[G[_]](cond: => F[Boolean])(using G: Alternative[G]): F[G[A]] =
+      typeClassInstance.untilM[G, A](self)(cond)(using G)
     def untilM_(cond: => F[Boolean]): F[Unit] = typeClassInstance.untilM_[A](self)(cond)
     def iterateWhile(p: A => Boolean): F[A] = typeClassInstance.iterateWhile[A](self)(p)
     def iterateUntil(p: A => Boolean): F[A] = typeClassInstance.iterateUntil[A](self)(p)
@@ -209,7 +209,7 @@ object Monad {
     type TypeClassType <: Monad[F]
   }
   trait ToMonadOps extends Serializable {
-    implicit def toMonadOps[F[_], A](target: F[A])(implicit tc: Monad[F]): Ops[F, A] {
+    implicit def toMonadOps[F[_], A](target: F[A])(using tc: Monad[F]): Ops[F, A] {
       type TypeClassType = Monad[F]
     } =
       new Ops[F, A] {

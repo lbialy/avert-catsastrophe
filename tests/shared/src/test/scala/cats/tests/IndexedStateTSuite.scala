@@ -360,7 +360,7 @@ class IndexedStateTSuite extends CatsSuite {
 
   implicit val iso: Isomorphisms[IndexedStateT[ListWrapper, String, Int, *]] =
     Isomorphisms.invariant[IndexedStateT[ListWrapper, String, Int, *]](
-      IndexedStateT.catsDataFunctorForIndexedStateT(ListWrapper.monad)
+      IndexedStateT.catsDataFunctorForIndexedStateT(using ListWrapper.monad)
     )
 
   {
@@ -516,7 +516,7 @@ class IndexedStateTSuite extends CatsSuite {
     implicit val F: Alternative[ListWrapper] = ListWrapper.alternative
     val SA =
       IndexedStateT
-        .catsDataAlternativeForIndexedStateT[ListWrapper, MiniInt](ListWrapper.monad, ListWrapper.alternative)
+        .catsDataAlternativeForIndexedStateT[ListWrapper, MiniInt](using ListWrapper.monad, ListWrapper.alternative)
 
     implicit val f: Isomorphisms[IndexedStateT[ListWrapper, MiniInt, MiniInt, *]] = Isomorphisms.invariant(SA)
 

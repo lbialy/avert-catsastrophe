@@ -134,18 +134,18 @@ trait Align[F[_]] extends Serializable {
 }
 
 object Align extends ScalaVersionSpecificAlignInstances {
-  def semigroup[F[_], A](implicit F: Align[F], A: Semigroup[A]): Semigroup[F[A]] =
+  def semigroup[F[_], A](using F: Align[F], A: Semigroup[A]): Semigroup[F[A]] =
     F.alignCombine(_, _)
 
-  implicit def catsAlignForList: Align[List] = cats.instances.list.catsStdInstancesForList
-  implicit def catsAlignForOption: Align[Option] = cats.instances.option.catsStdInstancesForOption
-  implicit def catsAlignForSeq: Align[Seq] = cats.instances.seq.catsStdInstancesForSeq
-  implicit def catsAlignForVector: Align[Vector] = cats.instances.vector.catsStdInstancesForVector
-  implicit def catsAlignForMap[K]: Align[Map[K, *]] = cats.instances.map.catsStdInstancesForMap[K]
-  implicit def catsAlignForSortedMap[K]: Align[SortedMap[K, *]] =
+  given catsAlignForList: Align[List] = cats.instances.list.catsStdInstancesForList
+  given catsAlignForOption: Align[Option] = cats.instances.option.catsStdInstancesForOption
+  given catsAlignForSeq: Align[Seq] = cats.instances.seq.catsStdInstancesForSeq
+  given catsAlignForVector: Align[Vector] = cats.instances.vector.catsStdInstancesForVector
+  given catsAlignForMap[K]: Align[Map[K, *]] = cats.instances.map.catsStdInstancesForMap[K]
+  given catsAlignForSortedMap[K]: Align[SortedMap[K, *]] =
     cats.instances.sortedMap.catsStdInstancesForSortedMap[K]
-  implicit def catsAlignForEither[A]: Align[Either[A, *]] = cats.instances.either.catsStdInstancesForEither[A]
-  implicit def catsAlignForId: Align[Id] = cats.catsAlignForId
+  given catsAlignForEither[A]: Align[Either[A, *]] = cats.instances.either.catsStdInstancesForEither[A]
+  given catsAlignForId: Align[Id] = cats.catsAlignForId
 
   private[cats] def alignWithIterator[A, B, C](fa: Iterable[A], fb: Iterable[B])(f: Ior[A, B] => C): Iterator[C] =
     new Iterator[C] {
@@ -163,11 +163,11 @@ object Align extends ScalaVersionSpecificAlignInstances {
   /**
    * Summon an instance of [[Align]] for `F`.
    */
-  @inline def apply[F[_]](implicit instance: Align[F]): Align[F] = instance
+  @inline def apply[F[_]](using instance: Align[F]): Align[F] = instance
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllAlignOps[F[_], A](target: F[A])(implicit tc: Align[F]): AllOps[F, A] {
+    implicit def toAllAlignOps[F[_], A](target: F[A])(using tc: Align[F]): AllOps[F, A] {
       type TypeClassType = Align[F]
     } =
       new AllOps[F, A] {
@@ -182,7 +182,7 @@ object Align extends ScalaVersionSpecificAlignInstances {
     val typeClassInstance: TypeClassType
     def align[B](fb: F[B]): F[Ior[A, B]] = typeClassInstance.align[A, B](self, fb)
     def alignWith[B, C](fb: F[B])(f: Ior[A, B] => C): F[C] = typeClassInstance.alignWith[A, B, C](self, fb)(f)
-    def alignCombine(fa2: F[A])(implicit ev$1: Semigroup[A]): F[A] = typeClassInstance.alignCombine[A](self, fa2)
+    def alignCombine(fa2: F[A])(using ev$1: Semigroup[A]): F[A] = typeClassInstance.alignCombine[A](self, fa2)
     def alignMergeWith(fa2: F[A])(f: (A, A) => A): F[A] = typeClassInstance.alignMergeWith[A](self, fa2)(f)
     def padZip[B](fb: F[B]): F[(Option[A], Option[B])] = typeClassInstance.padZip[A, B](self, fb)
     def padZipWith[B, C](fb: F[B])(f: (Option[A], Option[B]) => C): F[C] =
@@ -191,7 +191,7 @@ object Align extends ScalaVersionSpecificAlignInstances {
   }
   trait AllOps[F[_], A] extends Ops[F, A]
   trait ToAlignOps extends Serializable {
-    implicit def toAlignOps[F[_], A](target: F[A])(implicit tc: Align[F]): Ops[F, A] {
+    implicit def toAlignOps[F[_], A](target: F[A])(using tc: Align[F]): Ops[F, A] {
       type TypeClassType = Align[F]
     } =
       new Ops[F, A] {
