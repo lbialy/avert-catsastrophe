@@ -34,13 +34,13 @@ import org.scalacheck.Prop._
 class ContravariantCoyonedaSuite extends CatsSuite {
 
   // If we can generate functions we can generate an interesting ContravariantCoyoneda.
-  implicit def contravariantCoyonedaArbitrary[F[_], A, T](implicit
+  given contravariantCoyonedaArbitrary[F[_], A, T](using
     F: Arbitrary[A => T]
   ): Arbitrary[ContravariantCoyoneda[* => T, A]] =
     Arbitrary(F.arbitrary.map(ContravariantCoyoneda.lift[* => T, A](_)))
 
   // We can't really test that functions are equal but we can try it with a bunch of test data.
-  implicit def contravariantCoyonedaEq[A: Arbitrary, T](implicit eqft: Eq[T]): Eq[ContravariantCoyoneda[* => T, A]] =
+  given contravariantCoyonedaEq[A: Arbitrary, T](using eqft: Eq[T]): Eq[ContravariantCoyoneda[* => T, A]] =
     (cca, ccb) =>
       Arbitrary.arbitrary[List[A]].sample.get.forall { a =>
         eqft.eqv(cca.run.apply(a), ccb.run.apply(a))
@@ -48,7 +48,7 @@ class ContravariantCoyonedaSuite extends CatsSuite {
 
   // This instance cannot be summoned implicitly. This is not specific to contravariant coyoneda;
   // it doesn't work for Functor[Coyoneda[* => String, *]] either.
-  implicit val contravariantContravariantCoyonedaToString: Contravariant[ContravariantCoyoneda[* => String, *]] =
+  given contravariantContravariantCoyonedaToString: Contravariant[ContravariantCoyoneda[* => String, *]] =
     ContravariantCoyoneda.catsFreeContravariantFunctorForContravariantCoyoneda[* => String]
 
   checkAll("ContravariantCoyoneda[* => String, Int]",

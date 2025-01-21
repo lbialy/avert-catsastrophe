@@ -175,12 +175,12 @@ object PartialOrder extends PartialOrderFunctions[PartialOrder] with PartialOrde
    */
   def from[@sp A](f: (A, A) => Double): PartialOrder[A] = f(_, _)
 
-  def fromPartialOrdering[A](implicit ev: PartialOrdering[A]): PartialOrder[A] =
+  def fromPartialOrdering[A](using ev: PartialOrdering[A]): PartialOrder[A] =
     ev.tryCompare(_, _).fold(Double.NaN)(_.toDouble)
 }
 
 trait PartialOrderToPartialOrderingConversion {
-  implicit def catsKernelPartialOrderingForPartialOrder[A](implicit ev: PartialOrder[A]): PartialOrdering[A] =
+  given catsKernelPartialOrderingForPartialOrder[A](using ev: PartialOrder[A]): PartialOrdering[A] =
     new PartialOrdering[A] {
       def tryCompare(x: A, y: A): Option[Int] = ev.tryCompare(x, y)
       def lteq(x: A, y: A): Boolean = ev.lteqv(x, y)

@@ -43,7 +43,7 @@ import org.scalacheck.Prop._
 import scala.collection.immutable.SortedMap
 
 class SortedMapSuite extends CatsSuite {
-  implicit val iso: Isomorphisms[SortedMap[Int, *]] = Isomorphisms.invariant[SortedMap[Int, *]]
+  given iso: Isomorphisms[SortedMap[Int, *]] = Isomorphisms.invariant[SortedMap[Int, *]]
 
   checkAll("SortedMap[Int, Int]", SemigroupalTests[SortedMap[Int, *]].semigroupal[Int, Int, Int])
   checkAll("Semigroupal[SortedMap[Int, *]]", SerializableTests.serializable(Semigroupal[SortedMap[Int, *]]))

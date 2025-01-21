@@ -27,7 +27,7 @@ package laws
  */
 trait RepresentableLaws[F[_], R] {
 
-  implicit val R: Representable.Aux[F, R]
+  given R: Representable.Aux[F, R]
 
   def indexTabulateIsId[B](fb: F[B]): IsEq[F[B]] =
     R.tabulate(R.index(fb)) <-> fb

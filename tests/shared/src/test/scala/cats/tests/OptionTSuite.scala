@@ -37,7 +37,7 @@ import cats.syntax.eq._
 import org.scalacheck.Prop._
 
 class OptionTSuite extends CatsSuite {
-  implicit val iso: Isomorphisms[OptionT[ListWrapper, *]] = Isomorphisms
+  given iso: Isomorphisms[OptionT[ListWrapper, *]] = Isomorphisms
     .invariant[OptionT[ListWrapper, *]](OptionT.catsDataFunctorForOptionT(using ListWrapper.functor))
 
   checkAll("OptionT[Eval, *]", DeferTests[OptionT[Eval, *]].defer[Int])
@@ -45,7 +45,7 @@ class OptionTSuite extends CatsSuite {
 
   {
     // if a Functor for F is defined
-    implicit val F: Functor[ListWrapper] = ListWrapper.functor
+    given F: Functor[ListWrapper] = ListWrapper.functor
 
     checkAll("OptionT[ListWrapper, *]", FunctorFilterTests[OptionT[ListWrapper, *]].functorFilter[Int, Int, Int])
     checkAll("FunctorFilter[OptionT[ListWrapper, *]]",
@@ -56,7 +56,7 @@ class OptionTSuite extends CatsSuite {
 
   {
     // if a Traverse for F is defined
-    implicit val F: Traverse[ListWrapper] = ListWrapper.traverse
+    given F: Traverse[ListWrapper] = ListWrapper.traverse
 
     checkAll("OptionT[ListWrapper, *]", TraverseFilterTests[OptionT[ListWrapper, *]].traverseFilter[Int, Int, Int])
     checkAll("TraverseFilter[OptionT[ListWrapper, *]]",
@@ -66,14 +66,14 @@ class OptionTSuite extends CatsSuite {
   }
 
   {
-    implicit val F: Eq[ListWrapper[Option[Int]]] = ListWrapper.eqv[Option[Int]]
+    given F: Eq[ListWrapper[Option[Int]]] = ListWrapper.eqv[Option[Int]]
 
     checkAll("OptionT[ListWrapper, Int]", EqTests[OptionT[ListWrapper, Int]].eqv)
     checkAll("Eq[OptionT[ListWrapper, Int]]", SerializableTests.serializable(Eq[OptionT[ListWrapper, Int]]))
   }
 
   {
-    implicit val F: PartialOrder[ListWrapper[Option[Int]]] = ListWrapper.partialOrder[Option[Int]]
+    given F: PartialOrder[ListWrapper[Option[Int]]] = ListWrapper.partialOrder[Option[Int]]
 
     checkAll("OptionT[ListWrapper, Int]", PartialOrderTests[OptionT[ListWrapper, Int]].partialOrder)
     checkAll("PartialOrder[OptionT[ListWrapper, Int]]",
@@ -84,7 +84,7 @@ class OptionTSuite extends CatsSuite {
   }
 
   {
-    implicit val F: Order[ListWrapper[Option[Int]]] = ListWrapper.order[Option[Int]]
+    given F: Order[ListWrapper[Option[Int]]] = ListWrapper.order[Option[Int]]
 
     checkAll("OptionT[ListWrapper, Int]", OrderTests[OptionT[ListWrapper, Int]].order)
     checkAll("Order[OptionT[ListWrapper, Int]]", SerializableTests.serializable(Order[OptionT[ListWrapper, Int]]))

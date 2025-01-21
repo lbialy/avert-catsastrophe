@@ -32,9 +32,9 @@ import cats.data.Ior.{Both, Left, Right}
  * Laws that must be obeyed by any `Align`.
  */
 trait AlignLaws[F[_]] {
-  implicit def F: Align[F]
+  given F: Align[F]
 
-  implicit val functor: Functor[F] = F.functor
+  given functor: Functor[F] = F.functor
 
   def alignAssociativity[A, B, C](fa: F[A], fb: F[B], fc: F[C]): IsEq[F[Ior[Ior[A, B], C]]] =
     fa.align(fb).align(fc) <-> fa.align(fb.align(fc)).map(assoc)

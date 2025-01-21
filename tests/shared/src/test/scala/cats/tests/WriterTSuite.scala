@@ -145,7 +145,7 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F has a SemigroupK
-    implicit val F: SemigroupK[ListWrapper] = ListWrapper.semigroupK
+    given F: SemigroupK[ListWrapper] = ListWrapper.semigroupK
 
     checkAll("WriterT[ListWrapper, ListWrapper[Int], *]",
              SemigroupKTests[WriterT[ListWrapper, ListWrapper[Int], *]].semigroupK[Int]
@@ -157,7 +157,7 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F has a MonoidK
-    implicit val F: MonoidK[ListWrapper] = ListWrapper.monoidK
+    given F: MonoidK[ListWrapper] = ListWrapper.monoidK
 
     SemigroupK[WriterT[ListWrapper, ListWrapper[Int], *]]
 
@@ -171,7 +171,7 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F has a Functor and L has no Semigroup
-    implicit val F: Functor[ListWrapper] = ListWrapper.functor
+    given F: Functor[ListWrapper] = ListWrapper.functor
 
     checkAll("WriterT[ListWrapper, ListWrapper[Int], *]",
              FunctorTests[WriterT[ListWrapper, ListWrapper[Int], *]].functor[Int, Int, Int]
@@ -198,7 +198,7 @@ class WriterTSuite extends CatsSuite {
     )
   }
 
-  implicit val iso: Isomorphisms[WriterT[ListWrapper, ListWrapper[Int], *]] = Isomorphisms
+  given iso: Isomorphisms[WriterT[ListWrapper, ListWrapper[Int], *]] = Isomorphisms
     .invariant[WriterT[ListWrapper, ListWrapper[Int], *]](
       WriterT.catsDataCoflatMapForWriterT(using ListWrapper.functor)
     )
@@ -209,8 +209,8 @@ class WriterTSuite extends CatsSuite {
   // resolution and the laws of these various instances.
   {
     // F has an Apply and L has a Semigroup
-    implicit val F: Apply[ListWrapper] = ListWrapper.applyInstance
-    implicit val L: Semigroup[ListWrapper[Int]] = ListWrapper.semigroup[Int]
+    given F: Apply[ListWrapper] = ListWrapper.applyInstance
+    given L: Semigroup[ListWrapper[Int]] = ListWrapper.semigroup[Int]
 
     Functor[WriterT[ListWrapper, ListWrapper[Int], *]]
     checkAll("WriterT[ListWrapper, ListWrapper[Int], *]",
@@ -235,8 +235,8 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F has a Monad and L has a Semigroup
-    implicit val F: Monad[ListWrapper] = ListWrapper.monad
-    implicit val L: Semigroup[ListWrapper[Int]] = ListWrapper.semigroup[Int]
+    given F: Monad[ListWrapper] = ListWrapper.monad
+    given L: Semigroup[ListWrapper[Int]] = ListWrapper.semigroup[Int]
 
     Functor[WriterT[ListWrapper, ListWrapper[Int], *]]
     Apply[WriterT[ListWrapper, ListWrapper[Int], *]]
@@ -265,8 +265,8 @@ class WriterTSuite extends CatsSuite {
   }
   {
     // F has a FlatMap and L has a Monoid
-    implicit val F: FlatMap[ListWrapper] = ListWrapper.flatMap
-    implicit val L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
+    given F: FlatMap[ListWrapper] = ListWrapper.flatMap
+    given L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
 
     Functor[WriterT[ListWrapper, ListWrapper[Int], *]]
     Apply[WriterT[ListWrapper, ListWrapper[Int], *]]
@@ -296,8 +296,8 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F has an Applicative and L has a Monoid
-    implicit val F: Applicative[ListWrapper] = ListWrapper.applicative
-    implicit val L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
+    given F: Applicative[ListWrapper] = ListWrapper.applicative
+    given L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
 
     Functor[WriterT[ListWrapper, ListWrapper[Int], *]]
     Apply[WriterT[ListWrapper, ListWrapper[Int], *]]
@@ -327,8 +327,8 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F has a Monad and L has a Monoid
-    implicit val F: Monad[ListWrapper] = ListWrapper.monad
-    implicit val L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
+    given F: Monad[ListWrapper] = ListWrapper.monad
+    given L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
 
     Functor[WriterT[ListWrapper, ListWrapper[Int], *]]
     Apply[WriterT[ListWrapper, ListWrapper[Int], *]]
@@ -366,8 +366,8 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F has an Alternative and L has a Monoid
-    implicit val F: Alternative[ListWrapper] = ListWrapper.alternative
-    implicit val L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
+    given F: Alternative[ListWrapper] = ListWrapper.alternative
+    given L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
 
     Functor[WriterT[ListWrapper, ListWrapper[Int], *]]
     Apply[WriterT[ListWrapper, ListWrapper[Int], *]]
@@ -384,7 +384,7 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F[(L, V)] has a monoid
-    implicit val FLV: Monoid[ListWrapper[(Int, Int)]] = ListWrapper.monoid[(Int, Int)]
+    given FLV: Monoid[ListWrapper[(Int, Int)]] = ListWrapper.monoid[(Int, Int)]
 
     Monoid[WriterT[ListWrapper, Int, Int]]
     checkAll("WriterT[ListWrapper, Int, Int]", MonoidTests[WriterT[ListWrapper, Int, Int]].monoid)
@@ -398,7 +398,7 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F[(L, V)] has a semigroup
-    implicit val FLV: Semigroup[ListWrapper[(Int, Int)]] = ListWrapper.semigroup[(Int, Int)]
+    given FLV: Semigroup[ListWrapper[(Int, Int)]] = ListWrapper.semigroup[(Int, Int)]
 
     Semigroup[WriterT[ListWrapper, Int, Int]]
     checkAll("WriterT[ListWrapper, Int, Int]", SemigroupTests[WriterT[ListWrapper, Int, Int]].semigroup)
@@ -412,7 +412,7 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F[(L, V)] has a semigroup
-    implicit val FLV: Order[ListWrapper[(Int, Int)]] = ListWrapper.order[(Int, Int)]
+    given FLV: Order[ListWrapper[(Int, Int)]] = ListWrapper.order[(Int, Int)]
 
     Order[WriterT[ListWrapper, Int, Int]]
     checkAll("WriterT[ListWrapper, Int, Int]", OrderTests[WriterT[ListWrapper, Int, Int]].order)
@@ -426,14 +426,14 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F has an Applicative and L has a Monoid
-    implicit val L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
-    implicit val app: Applicative[WriterT[Validated[String, *], ListWrapper[Int], *]] =
+    given L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
+    given app: Applicative[WriterT[Validated[String, *], ListWrapper[Int], *]] =
       WriterT.catsDataApplicativeForWriterT[Validated[String, *], ListWrapper[Int]]
-    implicit val iso: Isomorphisms[WriterT[Validated[String, *], ListWrapper[Int], *]] =
+    given iso: Isomorphisms[WriterT[Validated[String, *], ListWrapper[Int], *]] =
       Isomorphisms.invariant[WriterT[Validated[String, *], ListWrapper[Int], *]]
-    implicit def eq1[A: Eq]: Eq[WriterT[Validated[String, *], ListWrapper[Int], A]] =
+    given eq1[A: Eq]: Eq[WriterT[Validated[String, *], ListWrapper[Int], A]] =
       WriterT.catsDataEqForWriterT[Validated[String, *], ListWrapper[Int], A]
-    implicit val eq2: Eq[EitherT[WriterT[Validated[String, *], ListWrapper[Int], *], String, Int]] =
+    given eq2: Eq[EitherT[WriterT[Validated[String, *], ListWrapper[Int], *], String, Int]] =
       EitherT.catsDataEqForEitherT[WriterT[Validated[String, *], ListWrapper[Int], *], String, Int]
 
     Functor[WriterT[Validated[String, *], ListWrapper[Int], *]]
@@ -451,10 +451,10 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F has an ApplicativeError and L has a Monoid
-    implicit val L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
-    implicit val appErr: ApplicativeError[WriterT[Validated[String, *], ListWrapper[Int], *], String] =
+    given L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
+    given appErr: ApplicativeError[WriterT[Validated[String, *], ListWrapper[Int], *], String] =
       WriterT.catsDataApplicativeErrorForWriterT[Validated[String, *], ListWrapper[Int], String]
-    implicit val iso: Isomorphisms[WriterT[Validated[String, *], ListWrapper[Int], *]] =
+    given iso: Isomorphisms[WriterT[Validated[String, *], ListWrapper[Int], *]] =
       Isomorphisms.invariant[WriterT[Validated[String, *], ListWrapper[Int], *]]
     checkAll(
       "WriterT[Validated[String, *], ListWrapper[Int], *]",
@@ -468,10 +468,10 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F has a MonadError and L has a Monoid
-    implicit val L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
-    implicit val iso: Isomorphisms[WriterT[Option, ListWrapper[Int], *]] =
+    given L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
+    given iso: Isomorphisms[WriterT[Option, ListWrapper[Int], *]] =
       Isomorphisms.invariant[WriterT[Option, ListWrapper[Int], *]]
-    implicit val eq0: Eq[EitherT[WriterT[Option, ListWrapper[Int], *], Unit, Int]] =
+    given eq0: Eq[EitherT[WriterT[Option, ListWrapper[Int], *], Unit, Int]] =
       EitherT.catsDataEqForEitherT[WriterT[Option, ListWrapper[Int], *], Unit, Int]
 
     Functor[WriterT[Option, ListWrapper[Int], *]]
@@ -504,7 +504,7 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F has an Invariant
-    implicit val evidence: Invariant[ListWrapper] = ListWrapper.invariant
+    given evidence: Invariant[ListWrapper] = ListWrapper.invariant
     Invariant[ListWrapper]
     Invariant[WriterT[ListWrapper, Int, *]]
 
@@ -516,7 +516,7 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F has a Foldable and L has a Monoid
-    implicit val L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
+    given L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
     Foldable[Const[String, *]]
     Foldable[WriterT[Const[String, *], ListWrapper[Int], *]]
 
@@ -536,7 +536,7 @@ class WriterTSuite extends CatsSuite {
 
   {
     // F has a Traverse and L has a Monoid
-    implicit val L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
+    given L: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
     Traverse[Const[String, *]]
     Traverse[WriterT[Const[String, *], ListWrapper[Int], *]]
 

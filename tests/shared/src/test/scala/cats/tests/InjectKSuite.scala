@@ -36,7 +36,7 @@ class InjectKSuite extends CatsSuite {
   case class Test1[A](value: Int, f: Int => A) extends Test1Algebra[A]
 
   object Test1Algebra {
-    implicit def test1AlgebraAFunctor: Functor[Test1Algebra] =
+    given test1AlgebraAFunctor: Functor[Test1Algebra] =
       new Functor[Test1Algebra] {
         def map[A, B](a: Test1Algebra[A])(f: A => B): Test1Algebra[B] =
           a match {
@@ -44,13 +44,13 @@ class InjectKSuite extends CatsSuite {
           }
       }
 
-    implicit def test1AlgebraArbitrary[A](implicit
+    given test1AlgebraArbitrary[A](using
       seqArb: Arbitrary[Int],
       intAArb: Arbitrary[Int => A]
     ): Arbitrary[Test1Algebra[A]] =
       Arbitrary(for { s <- seqArb.arbitrary; f <- intAArb.arbitrary } yield Test1(s, f))
 
-    implicit def test1AlgebraEq[A](implicit ev: Eq[A]): Eq[Test1Algebra[A]] = Eq.fromUniversalEquals
+    given test1AlgebraEq[A](using ev: Eq[A]): Eq[Test1Algebra[A]] = Eq.fromUniversalEquals
   }
 
   sealed trait Test2Algebra[A]
@@ -58,7 +58,7 @@ class InjectKSuite extends CatsSuite {
   case class Test2[A](value: Int, f: Int => A) extends Test2Algebra[A]
 
   object Test2Algebra {
-    implicit def test2AlgebraAFunctor: Functor[Test2Algebra] =
+    given test2AlgebraAFunctor: Functor[Test2Algebra] =
       new Functor[Test2Algebra] {
         def map[A, B](a: Test2Algebra[A])(f: A => B): Test2Algebra[B] =
           a match {
@@ -66,18 +66,18 @@ class InjectKSuite extends CatsSuite {
           }
       }
 
-    implicit def test2AlgebraArbitrary[A](implicit
+    given test2AlgebraArbitrary[A](using
       seqArb: Arbitrary[Int],
       intAArb: Arbitrary[Int => A]
     ): Arbitrary[Test2Algebra[A]] =
       Arbitrary(for { s <- seqArb.arbitrary; f <- intAArb.arbitrary } yield Test2(s, f))
 
-    implicit def test2AlgebraEq[A](implicit ev: Eq[A]): Eq[Test2Algebra[A]] = Eq.fromUniversalEquals
+    given test2AlgebraEq[A](using ev: Eq[A]): Eq[Test2Algebra[A]] = Eq.fromUniversalEquals
   }
 
   type T[A] = EitherK[Test1Algebra, Test2Algebra, A]
 
-  implicit def tArbitrary[A](implicit
+  given tArbitrary[A](using
     arb1: Arbitrary[Test1Algebra[A]],
     arb2: Arbitrary[Test2Algebra[A]]
   ): Arbitrary[T[A]] =

@@ -47,8 +47,8 @@ trait FlatMapTests[F[_]] extends ApplyTests[F] {
     EqFABC: Eq[F[(A, B, C)]],
     iso: Isomorphisms[F]
   ): RuleSet = {
-    implicit def functorF: Functor[F] = laws.F
-    implicit val EqFAB: Eq[F[(A, B)]] =
+    given functorF: Functor[F] = laws.F
+    given EqFAB: Eq[F[(A, B)]] =
       ContravariantSemigroupal[Eq].composeFunctor[F].product(EqFA, EqFB)
 
     new DefaultRuleSet(

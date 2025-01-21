@@ -69,8 +69,8 @@ trait RingLaws[A] extends GroupLaws[A] { self =>
       props = props.props: _*
     )
 
-  implicit def Arb: Arbitrary[A]
-  implicit def Equ: Eq[A] = nonZeroLaws.Equ
+  given Arb: Arbitrary[A]
+  given Equ: Eq[A] = nonZeroLaws.Equ
 
   // additive groups
 

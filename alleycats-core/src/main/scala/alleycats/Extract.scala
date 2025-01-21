@@ -29,13 +29,13 @@ trait Extract[F[_]] extends Serializable {
 
 object Extract {
   // Ideally this would be an exported subclass instance provided by Comonad
-  implicit def comonadIsExtract[F[_]](implicit ev: Comonad[F]): Extract[F] =
+  given comonadIsExtract[F[_]](using ev: Comonad[F]): Extract[F] =
     new Extract[F] {
       def extract[A](fa: F[A]): A = ev.extract(fa)
     }
 
   // Ideally this would be an instance exported to Comonad
-  implicit def extractCoflatMapIsComonad[F[_]](implicit e: Extract[F], cf: CoflatMap[F]): Comonad[F] =
+  given extractCoflatMapIsComonad[F[_]](using e: Extract[F], cf: CoflatMap[F]): Comonad[F] =
     new Comonad[F] {
       def extract[A](fa: F[A]): A = e.extract(fa)
       override def map[A, B](fa: F[A])(f: A => B): F[B] = cf.map(fa)(f)

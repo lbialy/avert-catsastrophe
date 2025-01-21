@@ -24,7 +24,7 @@ package cats.kernel.laws
 import cats.kernel.Semilattice
 
 trait SemilatticeLaws[A] extends CommutativeSemigroupLaws[A] with BandLaws[A] {
-  implicit def S: Semilattice[A]
+  given S: Semilattice[A]
 }
 
 object SemilatticeLaws {

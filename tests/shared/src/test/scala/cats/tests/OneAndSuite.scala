@@ -64,7 +64,7 @@ class OneAndSuite extends CatsSuite {
   {
     import Helpers.POrd
 
-    implicit val partialOrder: PartialOrder[ListWrapper[POrd]] = ListWrapper.partialOrder
+    given partialOrder: PartialOrder[ListWrapper[POrd]] = ListWrapper.partialOrder
     checkAll("OneAnd[F, A]", PartialOrderTests[OneAnd[ListWrapper, POrd]].partialOrder)
     checkAll("PartialOrder[OneAnd[F, A]]", SerializableTests.serializable(PartialOrder[OneAnd[ListWrapper, POrd]]))
 
@@ -78,7 +78,7 @@ class OneAndSuite extends CatsSuite {
   {
     import Helpers.Ord
 
-    implicit val order: Order[ListWrapper[Ord]] = ListWrapper.order
+    given order: Order[ListWrapper[Ord]] = ListWrapper.order
     checkAll("OneAnd[F, A]", OrderTests[OneAnd[ListWrapper, Ord]].order)
     checkAll("Order[OneAnd[F, A]]", SerializableTests.serializable(Order[OneAnd[ListWrapper, Ord]]))
 
@@ -90,7 +90,7 @@ class OneAndSuite extends CatsSuite {
   }
 
   {
-    implicit val traverse: Traverse[OneAnd[ListWrapper, *]] =
+    given traverse: Traverse[OneAnd[ListWrapper, *]] =
       OneAnd.catsDataTraverseForOneAnd(using ListWrapper.traverse)
     checkAll("OneAnd[ListWrapper, Int] with Option",
              TraverseTests[OneAnd[ListWrapper, *]].traverse[Int, Int, Int, Int, Option, Option]
@@ -98,37 +98,37 @@ class OneAndSuite extends CatsSuite {
     checkAll("Traverse[OneAnd[ListWrapper, A]]", SerializableTests.serializable(Traverse[OneAnd[ListWrapper, *]]))
   }
 
-  implicit val iso: Isomorphisms[OneAnd[ListWrapper, *]] =
+  given iso: Isomorphisms[OneAnd[ListWrapper, *]] =
     Isomorphisms.invariant[OneAnd[ListWrapper, *]](OneAnd.catsDataFunctorForOneAnd(using ListWrapper.functor))
 
   // Test instances that have more general constraints
   {
-    implicit val monad: Monad[ListWrapper] = ListWrapper.monad
-    implicit val alt: Alternative[ListWrapper] = ListWrapper.alternative
+    given monad: Monad[ListWrapper] = ListWrapper.monad
+    given alt: Alternative[ListWrapper] = ListWrapper.alternative
     checkAll("OneAnd[ListWrapper, Int]", MonadTests[OneAnd[ListWrapper, *]].monad[Int, Int, Int])
     checkAll("MonadTests[OneAnd[ListWrapper, A]]", SerializableTests.serializable(Monad[OneAnd[ListWrapper, *]]))
   }
 
   {
-    implicit val alternative: Alternative[ListWrapper] = ListWrapper.alternative
+    given alternative: Alternative[ListWrapper] = ListWrapper.alternative
     checkAll("OneAnd[ListWrapper, Int]", ApplicativeTests[OneAnd[ListWrapper, *]].applicative[Int, Int, Int])
     checkAll("Applicative[OneAnd[ListWrapper, A]]", SerializableTests.serializable(Applicative[OneAnd[ListWrapper, *]]))
   }
 
   {
-    implicit val functor: Functor[ListWrapper] = ListWrapper.functor
+    given functor: Functor[ListWrapper] = ListWrapper.functor
     checkAll("OneAnd[ListWrapper, Int]", FunctorTests[OneAnd[ListWrapper, *]].functor[Int, Int, Int])
     checkAll("Functor[OneAnd[ListWrapper, A]]", SerializableTests.serializable(Functor[OneAnd[ListWrapper, *]]))
   }
 
   {
-    implicit val alternative: Alternative[ListWrapper] = ListWrapper.alternative
+    given alternative: Alternative[ListWrapper] = ListWrapper.alternative
     checkAll("OneAnd[ListWrapper, Int]", SemigroupKTests[OneAnd[ListWrapper, *]].semigroupK[Int])
     checkAll("SemigroupK[OneAnd[ListWrapper, A]]", SerializableTests.serializable(SemigroupK[OneAnd[ListWrapper, *]]))
   }
 
   {
-    implicit val foldable: Foldable[ListWrapper] = ListWrapper.foldable
+    given foldable: Foldable[ListWrapper] = ListWrapper.foldable
     checkAll("OneAnd[ListWrapper, Int]", FoldableTests[OneAnd[ListWrapper, *]].foldable[Int, Int])
     checkAll("Foldable[OneAnd[ListWrapper, A]]", SerializableTests.serializable(Foldable[OneAnd[ListWrapper, *]]))
   }

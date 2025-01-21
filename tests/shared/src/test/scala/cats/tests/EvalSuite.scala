@@ -42,7 +42,7 @@ import cats.syntax.eq._
 import org.scalacheck.Prop._
 
 class EvalSuite extends CatsSuite {
-  implicit val eqThrow: Eq[Throwable] = Eq.allEqual
+  given eqThrow: Eq[Throwable] = Eq.allEqual
 
   /**
    * This method creates a Eval[A] instance (along with a
@@ -128,7 +128,7 @@ class EvalSuite extends CatsSuite {
   }
 
   {
-    implicit val iso: SemigroupalTests.Isomorphisms[Eval] =
+    given iso: SemigroupalTests.Isomorphisms[Eval] =
       SemigroupalTests.Isomorphisms.invariant[Eval]
     checkAll("Eval[Int]", BimonadTests[Eval].bimonad[Int, Int, Int])
   }
@@ -145,27 +145,27 @@ class EvalSuite extends CatsSuite {
   checkAll("Eval[Int]", GroupTests[Eval[Int]].group)
 
   {
-    implicit val A: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
+    given A: Monoid[ListWrapper[Int]] = ListWrapper.monoid[Int]
     checkAll("Eval[ListWrapper[Int]]", MonoidTests[Eval[ListWrapper[Int]]].monoid)
   }
 
   {
-    implicit val A: Semigroup[ListWrapper[Int]] = ListWrapper.semigroup[Int]
+    given A: Semigroup[ListWrapper[Int]] = ListWrapper.semigroup[Int]
     checkAll("Eval[ListWrapper[Int]]", SemigroupTests[Eval[ListWrapper[Int]]].semigroup)
   }
 
   {
-    implicit val A: Order[ListWrapper[Int]] = ListWrapper.order[Int]
+    given A: Order[ListWrapper[Int]] = ListWrapper.order[Int]
     checkAll("Eval[ListWrapper[Int]]", OrderTests[Eval[ListWrapper[Int]]].order)
   }
 
   {
-    implicit val A: PartialOrder[ListWrapper[Int]] = ListWrapper.partialOrder[Int]
+    given A: PartialOrder[ListWrapper[Int]] = ListWrapper.partialOrder[Int]
     checkAll("Eval[ListWrapper[Int]]", PartialOrderTests[Eval[ListWrapper[Int]]].partialOrder)
   }
 
   {
-    implicit val A: Eq[ListWrapper[Int]] = ListWrapper.eqv[Int]
+    given A: Eq[ListWrapper[Int]] = ListWrapper.eqv[Int]
     checkAll("Eval[ListWrapper[Int]]", EqTests[Eval[ListWrapper[Int]]].eqv)
   }
 
@@ -223,7 +223,7 @@ class EvalSuite extends CatsSuite {
     case class OMemoize[A]() extends O[A]
     case class ODefer[A]() extends O[A]
 
-    implicit def arbitraryO[A: Arbitrary: Cogen]: Arbitrary[O[A]] =
+    given arbitraryO[A: Arbitrary: Cogen]: Arbitrary[O[A]] =
       Arbitrary(
         Gen.oneOf(arbitrary[A => A].map(OMap(_)),
                   arbitrary[A => Eval[A]].map(OFlatMap(_)),
@@ -254,7 +254,7 @@ class EvalSuite extends CatsSuite {
     // for an actual stress test increase to 200K or so.
     val MaxDepth = 100
 
-    implicit def arbitraryDeepEval[A: Arbitrary: Cogen]: Arbitrary[DeepEval[A]] = {
+    given arbitraryDeepEval[A: Arbitrary: Cogen]: Arbitrary[DeepEval[A]] = {
       val gen: Gen[O[A]] = arbitrary[O[A]]
       Arbitrary(for {
         leaf <- arbitrary[() => Eval[A]]

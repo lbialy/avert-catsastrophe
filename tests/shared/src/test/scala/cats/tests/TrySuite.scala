@@ -34,7 +34,7 @@ import cats.syntax.eq._
 import org.scalacheck.Prop._
 
 class TrySuite extends CatsSuite {
-  implicit val eqThrow: Eq[Throwable] = Eq.allEqual
+  given eqThrow: Eq[Throwable] = Eq.allEqual
 
   checkAll("Try[Int]", SemigroupalTests[Try].semigroupal[Int, Int, Int])
   checkAll("Semigroupal[Try]", SerializableTests.serializable(Semigroupal[Try]))
@@ -52,7 +52,7 @@ class TrySuite extends CatsSuite {
   checkAll("Monad[Try]", SerializableTests.serializable(Monad[Try]))
 
   {
-    implicit val F: Semigroup[ListWrapper[Int]] = ListWrapper.semigroup[Int]
+    given F: Semigroup[ListWrapper[Int]] = ListWrapper.semigroup[Int]
 
     checkAll("Try[ListWrapper[Int]]", SemigroupTests[Try[ListWrapper[Int]]].semigroup)
     checkAll("Semigroup[Try[ListWrapper[Int]]", SerializableTests.serializable(Semigroup[Try[ListWrapper[Int]]]))

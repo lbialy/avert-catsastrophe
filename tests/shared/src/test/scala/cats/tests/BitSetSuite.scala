@@ -29,7 +29,7 @@ import cats.syntax.eq._
 import org.scalacheck.Prop._
 
 class BitSetSuite extends CatsSuite {
-  implicit val arbitraryBitSet: Arbitrary[BitSet] =
+  given arbitraryBitSet: Arbitrary[BitSet] =
     Arbitrary(arbitrary[List[Short]].map(ns => BitSet(ns.map(_ & 0xffff): _*)))
 
   test("show BitSet") {

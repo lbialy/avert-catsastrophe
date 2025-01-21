@@ -24,7 +24,7 @@ package cats.kernel.laws
 import cats.kernel.Semigroup
 
 trait SemigroupLaws[A] {
-  implicit def S: Semigroup[A]
+  given S: Semigroup[A]
 
   def semigroupAssociative(x: A, y: A, z: A): IsEq[A] =
     S.combine(S.combine(x, y), z) <-> S.combine(x, S.combine(y, z))

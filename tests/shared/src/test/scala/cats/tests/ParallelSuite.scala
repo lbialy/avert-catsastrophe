@@ -112,7 +112,7 @@ class ParallelSuite
   }
 
   case class ListTuple2[A, B](value: List[(A, B)])
-  implicit val catsBitraverseForListTuple2: Bitraverse[ListTuple2] = new Bitraverse[ListTuple2] {
+  given catsBitraverseForListTuple2: Bitraverse[ListTuple2] = new Bitraverse[ListTuple2] {
     def bifoldLeft[A, B, C](fab: ListTuple2[A, B], c: C)(f: (C, A) => C, g: (C, B) => C): C =
       fab.value.foldLeft(c) { case (c, (a, b)) => g(f(c, a), b) }
     def bifoldRight[A, B, C](fab: ListTuple2[A, B],
@@ -496,12 +496,12 @@ class ParallelSuite
     )
 
     val resultSansInstance = {
-      implicit val ev0: Monad[Effect] = monadInstance
+      given ev0: Monad[Effect] = monadInstance
       checkMarker(iorts.parSequence)
     }
     val resultWithInstance = {
-      implicit val ev0: Monad[Effect] = monadInstance
-      implicit val ev1: Parallel.Aux[Effect, Effect] = parallelInstance
+      given ev0: Monad[Effect] = monadInstance
+      given ev1: Parallel.Aux[Effect, Effect] = parallelInstance
       checkMarker(iorts.parSequence)
     }
 
@@ -532,7 +532,7 @@ class ParallelSuite
     "Parallel[IorT[F, String, *]] with parallel effect (accumulating)", {
       type IE[A] = IorT[Either[String, *], String, A]
       type IV[A] = IorT[Validated[String, *], String, A]
-      implicit val iorTParallel: Parallel.Aux[IE, IV] = IorT.accumulatingParallel[Either[String, *], String]
+      given iorTParallel: Parallel.Aux[IE, IV] = IorT.accumulatingParallel[Either[String, *], String]
       ParallelTests[IorT[Either[String, *], String, *]].parallel[Int, String]
     }
   )
@@ -565,7 +565,7 @@ class ParallelSuite
     "Parallel[EitherT[M, String, *]] (accumulating)", {
       type EE[A] = EitherT[Either[String, *], String, A]
       type VV[A] = Nested[Validated[String, *], Validated[String, *], A]
-      implicit val eitherTParallel: Parallel.Aux[EE, VV] = EitherT.accumulatingParallel[Either[String, *], String]
+      given eitherTParallel: Parallel.Aux[EE, VV] = EitherT.accumulatingParallel[Either[String, *], String]
       ParallelTests[EitherT[Either[String, *], String, *]].parallel[Int, String]
     }
   )
@@ -591,7 +591,7 @@ class ParallelSuite
   checkAll("Parallel[Either[String, *]]", SerializableTests.serializable(Parallel[Either[String, *]]))
 
   {
-    implicit def kleisliEq[F[_], A, B](implicit ev: Eq[A => F[B]]): Eq[Kleisli[F, A, B]] =
+    given kleisliEq[F[_], A, B](using ev: Eq[A => F[B]]): Eq[Kleisli[F, A, B]] =
       Eq.by[Kleisli[F, A, B], A => F[B]](_.run)
 
     checkAll(
@@ -662,10 +662,10 @@ sealed trait ParallelSuiteStreamSpecific { self: ParallelSuite =>
 }
 
 trait ApplicativeErrorForEitherTest extends munit.DisciplineSuite {
-  implicit def eqV[A: Eq, B: Eq]: Eq[Validated[A, B]] = cats.data.Validated.catsDataEqForValidated
+  given eqV[A: Eq, B: Eq]: Eq[Validated[A, B]] = cats.data.Validated.catsDataEqForValidated
 
   {
-    implicit val parVal: ApplicativeError[Validated[String, *], String] =
+    given parVal: ApplicativeError[Validated[String, *], String] =
       Parallel.applicativeError[Either[String, *], String]
 
     checkAll("ApplicativeError[Validated[String, Int]]",

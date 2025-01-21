@@ -40,8 +40,8 @@ object LatticePartialOrderLaws {
 
 trait LatticePartialOrderLaws[A] extends Laws {
 
-  implicit def Equ: Eq[A]
-  implicit def Arb: Arbitrary[A]
+  given Equ: Eq[A]
+  given Arb: Arbitrary[A]
 
   def joinSemilatticePartialOrder(implicit A: JoinSemilattice[A], P: PartialOrder[A]) =
     new LatticePartialOrderProperties(

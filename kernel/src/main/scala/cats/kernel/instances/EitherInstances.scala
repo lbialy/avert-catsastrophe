@@ -24,7 +24,7 @@ package instances
 
 trait EitherInstances extends EitherInstances0 {
 
-  implicit def catsStdOrderForEither[A, B](implicit A: Order[A], B: Order[B]): Order[Either[A, B]] =
+  given catsStdOrderForEither[A, B](using A: Order[A], B: Order[B]): Order[Either[A, B]] =
     new Order[Either[A, B]] {
       def compare(x: Either[A, B], y: Either[A, B]): Int =
         x match {
@@ -41,7 +41,7 @@ trait EitherInstances extends EitherInstances0 {
         }
     }
 
-  implicit def catsDataMonoidForEither[A, B](implicit B: Monoid[B]): Monoid[Either[A, B]] =
+  given catsDataMonoidForEither[A, B](using B: Monoid[B]): Monoid[Either[A, B]] =
     new Monoid[Either[A, B]] {
       def empty: Either[A, B] =
         Right(B.empty)
@@ -59,7 +59,7 @@ trait EitherInstances extends EitherInstances0 {
 
 private[instances] trait EitherInstances0 extends EitherInstances1 {
 
-  implicit def catsDataSemigroupForEither[A, B](implicit B: Semigroup[B]): Semigroup[Either[A, B]] =
+  given catsDataSemigroupForEither[A, B](using B: Semigroup[B]): Semigroup[Either[A, B]] =
     (x, y) =>
       x match {
         case left @ Left(_) => left
@@ -70,7 +70,7 @@ private[instances] trait EitherInstances0 extends EitherInstances1 {
           }
       }
 
-  implicit def catsStdPartialOrderForEither[A, B](implicit
+  given catsStdPartialOrderForEither[A, B](using
     A: PartialOrder[A],
     B: PartialOrder[B]
   ): PartialOrder[Either[A, B]] =
@@ -90,12 +90,12 @@ private[instances] trait EitherInstances0 extends EitherInstances1 {
         }
     }
 
-  implicit def catsStdHashForEither[A, B](implicit A: Hash[A], B: Hash[B]): Hash[Either[A, B]] = new EitherHash[A, B]
+  given catsStdHashForEither[A, B](using A: Hash[A], B: Hash[B]): Hash[Either[A, B]] = new EitherHash[A, B]
 }
 
 private[instances] trait EitherInstances1 {
 
-  implicit def catsStdEqForEither[A, B](implicit A: Eq[A], B: Eq[B]): Eq[Either[A, B]] = new EitherEq[A, B]
+  given catsStdEqForEither[A, B](using A: Eq[A], B: Eq[B]): Eq[Either[A, B]] = new EitherEq[A, B]
 
 }
 

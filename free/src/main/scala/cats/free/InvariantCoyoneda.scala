@@ -105,7 +105,7 @@ object InvariantCoyoneda {
   /**
    * `InvariantCoyoneda[F, *]` provides a invariant functor for any `F`.
    */
-  implicit def catsFreeInvariantFunctorForInvariantCoyoneda[F[_]]: Invariant[InvariantCoyoneda[F, *]] =
+  given catsFreeInvariantFunctorForInvariantCoyoneda[F[_]]: Invariant[InvariantCoyoneda[F, *]] =
     new Invariant[InvariantCoyoneda[F, *]] {
       def imap[A, B](cfa: InvariantCoyoneda[F, A])(f: A => B)(g: B => A): InvariantCoyoneda[F, B] =
         cfa.imap(f)(g)

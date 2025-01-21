@@ -34,7 +34,7 @@ import scala.collection.immutable.SortedSet
 import cats.syntax.eq._
 
 class SortedSetSuite extends CatsSuite {
-  implicit val iso: Isomorphisms[SortedSet] = SortedSetIsomorphism
+  given iso: Isomorphisms[SortedSet] = SortedSetIsomorphism
 
   checkAll("SortedSet[Int]", SemigroupKTests[SortedSet].semigroupK[Int])
   checkAll("SortedSet[Int]", SemigroupalTests[SortedSet].semigroupal[Int, Int, Int])
@@ -70,7 +70,7 @@ class SortedSetSuite extends CatsSuite {
 
   test("show keeps separate entries for items that map to identical strings") {
     // note: this val name has to be the same to shadow the cats.instances instance
-    implicit val catsStdShowForInt: Show[Int] = _ => "1"
+    given catsStdShowForInt: Show[Int] = _ => "1"
     // an implementation implemented as set.map(_.show).mkString(", ") would
     // only show one entry in the result instead of 3, because SortedSet.map combines
     // duplicate items in the codomain.
@@ -83,7 +83,7 @@ object SortedSetIsomorphism extends Isomorphisms[SortedSet] {
   override def associativity[A, B, C](
     fs: (SortedSet[(A, (B, C))], SortedSet[((A, B), C)])
   ): IsEq[SortedSet[(A, B, C)]] = {
-    implicit val ord: Ordering[(A, B, C)] = Ordering.by[(A, B, C), ((A, B), C)] { case (a, b, c) => ((a, b), c) }(
+    given ord: Ordering[(A, B, C)] = Ordering.by[(A, B, C), ((A, B), C)] { case (a, b, c) => ((a, b), c) }(
       fs._2.ordering
     )
 
@@ -92,12 +92,12 @@ object SortedSetIsomorphism extends Isomorphisms[SortedSet] {
   }
 
   override def leftIdentity[A](fs: (SortedSet[(Unit, A)], SortedSet[A])): IsEq[SortedSet[A]] = {
-    implicit val ordering: Ordering[A] = fs._2.ordering
+    given ordering: Ordering[A] = fs._2.ordering
     fs._1.map(_._2) <-> fs._2
   }
 
   override def rightIdentity[A](fs: (SortedSet[(A, Unit)], SortedSet[A])): IsEq[SortedSet[A]] = {
-    implicit val ordering: Ordering[A] = fs._2.ordering
+    given ordering: Ordering[A] = fs._2.ordering
     fs._1.map(_._1) <-> fs._2
   }
 }

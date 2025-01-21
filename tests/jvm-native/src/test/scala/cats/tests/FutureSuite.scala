@@ -40,21 +40,21 @@ class FutureSuite extends CatsSuite {
   def futureEither[A](f: Future[A]): Future[Either[Throwable, A]] =
     f.map(Either.right[Throwable, A]).recover { case t => Either.left(t) }
 
-  implicit def eqfa[A: Eq]: Eq[Future[A]] = { (fx, fy) =>
+  given eqfa[A: Eq]: Eq[Future[A]] = { (fx, fy) =>
     val fz = futureEither(fx).zip(futureEither(fy))
     Await.result(fz.map { case (tx, ty) => tx === ty }, timeout)
   }
 
-  implicit def cogen[A: Cogen]: Cogen[Future[A]] =
+  given cogen[A: Cogen]: Cogen[Future[A]] =
     Cogen[Future[A]] { (seed: Seed, t: Future[A]) =>
       Cogen[A].perturb(seed, Await.result(t, timeout))
     }
 
-  implicit val throwableEq: Eq[Throwable] =
+  given throwableEq: Eq[Throwable] =
     Eq.by[Throwable, String](_.toString)
 
   // Need non-fatal Throwables for Future recoverWith/handleError
-  implicit val nonFatalArbitrary: Arbitrary[Throwable] =
+  given nonFatalArbitrary: Arbitrary[Throwable] =
     Arbitrary(arbitrary[Exception].map(identity))
 
   checkAll("Future with Throwable", MonadErrorTests[Future, Throwable].monadError[Int, Int, Int])
@@ -62,7 +62,7 @@ class FutureSuite extends CatsSuite {
   checkAll("Future", CoflatMapTests[Future].coflatMap[Int, Int, Int])
 
   {
-    implicit val F: Semigroup[ListWrapper[Int]] = ListWrapper.semigroup[Int]
+    given F: Semigroup[ListWrapper[Int]] = ListWrapper.semigroup[Int]
     checkAll("Future[ListWrapper[Int]]", SemigroupLawTests[Future[ListWrapper[Int]]].semigroup)
   }
 

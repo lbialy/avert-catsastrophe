@@ -54,9 +54,9 @@ class ApplicativeErrorSuite extends CatsSuite {
     case class ErrA() extends Err
     case class ErrB() extends Err
 
-    implicit val eqForErr: Eq[Err] = Eq.fromUniversalEquals[Err]
-    implicit val eqForErrA: Eq[ErrA] = Eq.fromUniversalEquals[ErrA]
-    implicit val eqForErrB: Eq[ErrB] = Eq.fromUniversalEquals[ErrB]
+    given eqForErr: Eq[Err] = Eq.fromUniversalEquals[Err]
+    given eqForErrA: Eq[ErrA] = Eq.fromUniversalEquals[ErrA]
+    given eqForErrB: Eq[ErrB] = Eq.fromUniversalEquals[ErrB]
 
     val failed: Either[Err, Int] = ErrA().raiseError[Either[Err, *], Int]
 
@@ -69,9 +69,9 @@ class ApplicativeErrorSuite extends CatsSuite {
     case object Str extends T[String]
     case class Num(i: Int) extends T[Int]
 
-    implicit def eqForT[A]: Eq[T[A]] = Eq.fromUniversalEquals[T[A]]
-    implicit val eqForStr: Eq[Str.type] = Eq.fromUniversalEquals[Str.type]
-    implicit val eqForNum: Eq[Num] = Eq.fromUniversalEquals[Num]
+    given eqForT[A]: Eq[T[A]] = Eq.fromUniversalEquals[T[A]]
+    given eqForStr: Eq[Str.type] = Eq.fromUniversalEquals[Str.type]
+    given eqForNum: Eq[Num] = Eq.fromUniversalEquals[Num]
 
     val e: Either[T[Int], Unit] = Num(1).asLeft[Unit]
     assert(e.attemptNarrow[Num] === (e.asRight[T[Int]]))
@@ -100,7 +100,7 @@ class ApplicativeErrorSuite extends CatsSuite {
   {
     final case class OptionWrapper[A](option: Option[A])
 
-    implicit def mayBeApplicativeError[E](implicit
+    given mayBeApplicativeError[E](using
       ev: ApplicativeError[Option, E]
     ): ApplicativeError[OptionWrapper, E] =
       new ApplicativeError[OptionWrapper, E] {

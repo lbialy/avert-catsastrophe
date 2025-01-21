@@ -46,8 +46,8 @@ import org.scalacheck.Prop._
 
 class TupleSuite extends CatsSuite {
 
-  implicit val iso1: Isomorphisms[(NonEmptyList[Int], *)] = Isomorphisms.invariant[(NonEmptyList[Int], *)]
-  implicit val iso2: Isomorphisms[(String, *)] = Isomorphisms.invariant[(String, *)]
+  given iso1: Isomorphisms[(NonEmptyList[Int], *)] = Isomorphisms.invariant[(NonEmptyList[Int], *)]
+  given iso2: Isomorphisms[(String, *)] = Isomorphisms.invariant[(String, *)]
 
   checkAll("Tuple2", BitraverseTests[Tuple2].bitraverse[Option, Int, Int, Int, String, String, String])
   checkAll("Bitraverse[Tuple2]", SerializableTests.serializable(Bitraverse[Tuple2]))
@@ -222,17 +222,17 @@ class TupleSuite extends CatsSuite {
     // relevant types instead of blindly calling toString
     case class Foo(x: Int)
     object Foo {
-      implicit val fooShow: Show[Foo] = (f: Foo) => s"foo.x = ${f.x}"
+      given fooShow: Show[Foo] = (f: Foo) => s"foo.x = ${f.x}"
     }
 
     case class Bar(y: Int)
     object Bar {
-      implicit val barShow: Show[Bar] = (f: Bar) => s"bar.y = ${f.y}"
+      given barShow: Show[Bar] = (f: Bar) => s"bar.y = ${f.y}"
     }
 
     case class Baz(y: Int)
     object Baz {
-      implicit val bazShow: Show[Baz] = (f: Baz) => s"baz.y = ${f.y}"
+      given bazShow: Show[Baz] = (f: Baz) => s"baz.y = ${f.y}"
     }
 
     val foo1 = Foo(1)

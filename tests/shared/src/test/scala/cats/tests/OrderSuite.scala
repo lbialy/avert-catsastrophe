@@ -81,10 +81,10 @@ object OrderSuite {
   {
     Ordering[String]
     class C
-    implicit val ording: Ordering[C] = new Ordering[C] {
+    given ording: Ordering[C] = new Ordering[C] {
       def compare(x: C, y: C) = 0
     }
-    implicit val ord: Order[C] = Order.allEqual
+    given ord: Order[C] = Order.allEqual
     Ordering[C]
   }
 }

@@ -34,7 +34,7 @@ import org.scalacheck.Prop._
 class ContravariantSuite extends CatsSuite {
 
   test("narrow equals contramap(identity)") {
-    implicit val constInst: Contravariant[Const[Int, *]] = Const.catsDataContravariantForConst[Int]
+    given constInst: Contravariant[Const[Int, *]] = Const.catsDataContravariantForConst[Int]
     forAll { (i: Int) =>
       val const: Const[Int, Option[Int]] = Const[Int, Option[Int]](i)
       val narrowed: Const[Int, Some[Int]] = constInst.narrow[Option[Int], Some[Int]](const)
@@ -45,7 +45,7 @@ class ContravariantSuite extends CatsSuite {
 
   case class Predicate[A](run: A => Boolean)
 
-  implicit val contravariantMonoidalPredicate: ContravariantMonoidal[Predicate] =
+  given contravariantMonoidalPredicate: ContravariantMonoidal[Predicate] =
     new ContravariantMonoidal[Predicate] {
       def unit: Predicate[Unit] = Predicate[Unit](Function.const(true))
       def product[A, B](fa: Predicate[A], fb: Predicate[B]): Predicate[(A, B)] =
@@ -54,10 +54,10 @@ class ContravariantSuite extends CatsSuite {
         Predicate(x => fa.run(f(x)))
     }
 
-  implicit def eqPredicate[A: ExhaustiveCheck]: Eq[Predicate[A]] =
+  given eqPredicate[A: ExhaustiveCheck]: Eq[Predicate[A]] =
     Eq.by[Predicate[A], A => Boolean](_.run)
 
-  implicit def arbPredicate[A: Cogen]: Arbitrary[Predicate[A]] =
+  given arbPredicate[A: Cogen]: Arbitrary[Predicate[A]] =
     Arbitrary(implicitly[Arbitrary[A => Boolean]].arbitrary.map(f => Predicate(f)))
 
   checkAll("ContravariantMonoidal[Predicate]",
@@ -65,11 +65,11 @@ class ContravariantSuite extends CatsSuite {
   )
 
   {
-    implicit val predicateMonoid: Monoid[Predicate[MiniInt]] = ContravariantMonoidal.monoid[Predicate, MiniInt]
+    given predicateMonoid: Monoid[Predicate[MiniInt]] = ContravariantMonoidal.monoid[Predicate, MiniInt]
     checkAll("ContravariantMonoidal[Predicate].monoid", MonoidTests[Predicate[MiniInt]].monoid)
   }
   {
-    implicit val predicateSemigroup: Semigroup[Predicate[MiniInt]] =
+    given predicateSemigroup: Semigroup[Predicate[MiniInt]] =
       ContravariantSemigroupal.semigroup[Predicate, MiniInt]
     checkAll("ContravariantSemigroupal[Predicate].semigroup", SemigroupTests[Predicate[MiniInt]].semigroup)
   }

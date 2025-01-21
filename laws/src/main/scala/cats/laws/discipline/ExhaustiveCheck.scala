@@ -33,23 +33,23 @@ trait ExhaustiveCheck[A] extends Serializable { self =>
 }
 
 object ExhaustiveCheck {
-  def apply[A](implicit A: ExhaustiveCheck[A]): ExhaustiveCheck[A] = A
+  def apply[A](using A: ExhaustiveCheck[A]): ExhaustiveCheck[A] = A
 
   def instance[A](values: List[A]): ExhaustiveCheck[A] =
     new ExhaustiveCheck[A] {
       val allValues: List[A] = values
     }
 
-  implicit val catsLawsExhaustiveCheckForBoolean: ExhaustiveCheck[Boolean] =
+  given catsLawsExhaustiveCheckForBoolean: ExhaustiveCheck[Boolean] =
     instance(List(false, true))
 
-  implicit val catsLawsExhaustiveCheckForSetBoolean: ExhaustiveCheck[Set[Boolean]] =
+  given catsLawsExhaustiveCheckForSetBoolean: ExhaustiveCheck[Set[Boolean]] =
     forSet[Boolean]
 
   /**
    * Warning: the domain of (A, B) is the cross-product of the domain of `A` and the domain of `B`.
    */
-  implicit def catsLawsExhaustiveCheckForTuple2[A, B](implicit
+  given catsLawsExhaustiveCheckForTuple2[A, B](using
     A: ExhaustiveCheck[A],
     B: ExhaustiveCheck[B]
   ): ExhaustiveCheck[(A, B)] =
@@ -58,7 +58,7 @@ object ExhaustiveCheck {
   /**
    * Warning: the domain of (A, B, C) is the cross-product of the 3 domains.
    */
-  implicit def catsLawsExhaustiveCheckForTuple3[A, B, C](implicit
+  given catsLawsExhaustiveCheckForTuple3[A, B, C](using
     A: ExhaustiveCheck[A],
     B: ExhaustiveCheck[B],
     C: ExhaustiveCheck[C]
@@ -71,13 +71,13 @@ object ExhaustiveCheck {
       } yield (a, b, c)
     )
 
-  implicit def catsLawsExhaustiveCheckForEither[A, B](implicit
+  given catsLawsExhaustiveCheckForEither[A, B](using
     A: ExhaustiveCheck[A],
     B: ExhaustiveCheck[B]
   ): ExhaustiveCheck[Either[A, B]] =
     instance(A.allValues.map(Left(_)) ++ B.allValues.map(Right(_)))
 
-  implicit def catsLawsExhaustiveCheckForOption[A](implicit A: ExhaustiveCheck[A]): ExhaustiveCheck[Option[A]] =
+  given catsLawsExhaustiveCheckForOption[A](using A: ExhaustiveCheck[A]): ExhaustiveCheck[Option[A]] =
     instance(None :: A.allValues.map(Some(_)))
 
   /**
@@ -85,6 +85,6 @@ object ExhaustiveCheck {
    * values. Note that if there are `n` elements in the domain of `A` there will be `2^n` elements
    * in the domain of `Set[A]`, so use this only on small domains.
    */
-  def forSet[A](implicit A: ExhaustiveCheck[A]): ExhaustiveCheck[Set[A]] =
+  def forSet[A](using A: ExhaustiveCheck[A]): ExhaustiveCheck[Set[A]] =
     instance(A.allValues.toSet.subsets().toList)
 }

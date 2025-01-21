@@ -27,7 +27,7 @@ import algebra.ring.Field
 import java.lang.Math
 
 trait FloatInstances extends cats.kernel.instances.FloatInstances {
-  implicit val floatAlgebra: Field[Float] =
+  given floatAlgebra: Field[Float] =
     new FloatAlgebra
 
   // Not bounded due to the presence of NaN

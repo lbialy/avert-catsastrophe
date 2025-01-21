@@ -38,7 +38,7 @@ class AndThenSuite extends CatsSuite with ScalaCheckSuite {
   checkAll("Semigroupal[AndThen[Int, *]]", SerializableTests.serializable(Semigroupal[AndThen[Int, *]]))
 
   {
-    implicit val iso: SemigroupalTests.Isomorphisms[AndThen[*, Int]] =
+    given iso: SemigroupalTests.Isomorphisms[AndThen[*, Int]] =
       SemigroupalTests.Isomorphisms.invariant[AndThen[*, Int]]
     checkAll("AndThen[*, Int]",
              ContravariantMonoidalTests[AndThen[*, Int]].contravariantMonoidal[MiniInt, Boolean, Boolean]

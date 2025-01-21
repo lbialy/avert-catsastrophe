@@ -35,7 +35,7 @@ import cats.syntax.eq._
 import org.scalacheck.Prop._
 
 class EitherSuite extends CatsSuite {
-  implicit val iso: Isomorphisms[Either[Int, *]] = Isomorphisms.invariant[Either[Int, *]]
+  given iso: Isomorphisms[Either[Int, *]] = Isomorphisms.invariant[Either[Int, *]]
 
   checkAll("Either[String, Int]", MonoidTests[Either[String, Int]].monoid)
   checkAll("Monoid[Either[String, Int]]", SerializableTests.serializable(Monoid[Either[String, Int]]))
@@ -46,7 +46,7 @@ class EitherSuite extends CatsSuite {
   checkAll("Either[Int, Int]", AlignTests[Either[Int, *]].align[Int, Int, Int, Int])
   checkAll("Align[Either[Int, *]]", SerializableTests.serializable(Align[Either[Int, *]]))
 
-  implicit val eq0: Eq[EitherT[Either[Int, *], Int, Int]] = EitherT.catsDataEqForEitherT[Either[Int, *], Int, Int]
+  given eq0: Eq[EitherT[Either[Int, *], Int, Int]] = EitherT.catsDataEqForEitherT[Either[Int, *], Int, Int]
 
   checkAll("Either[Int, Int]", MonadErrorTests[Either[Int, *], Int].monadError[Int, Int, Int])
   checkAll("MonadError[Either[Int, *]]", SerializableTests.serializable(MonadError[Either[Int, *], Int]))
@@ -73,8 +73,8 @@ class EitherSuite extends CatsSuite {
   val show = implicitly[Show[Either[Int, String]]]
 
   {
-    implicit val S: Eq[ListWrapper[String]] = ListWrapper.eqv[String]
-    implicit val I: Eq[ListWrapper[Int]] = ListWrapper.eqv[Int]
+    given S: Eq[ListWrapper[String]] = ListWrapper.eqv[String]
+    given I: Eq[ListWrapper[Int]] = ListWrapper.eqv[Int]
     checkAll("Either[ListWrapper[String], ListWrapper[Int]]",
              EqTests[Either[ListWrapper[String], ListWrapper[Int]]].eqv
     )
@@ -286,7 +286,7 @@ class EitherSuite extends CatsSuite {
   }
 
   test("toTry then fromTry is identity") {
-    implicit def eqTh: Eq[Throwable] = Eq.allEqual
+    given eqTh: Eq[Throwable] = Eq.allEqual
 
     forAll { (x: Throwable Either String) =>
       assert(Either.fromTry(x.toTry) === x)

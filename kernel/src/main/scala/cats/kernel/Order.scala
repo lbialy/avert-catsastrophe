@@ -139,7 +139,7 @@ trait OrderToOrderingConversion {
    * Implicitly derive a `scala.math.Ordering[A]` from a `Order[A]`
    * instance.
    */
-  implicit def catsKernelOrderingForOrder[A](implicit ev: Order[A]): Ordering[A] =
+  given catsKernelOrderingForOrder[A](using ev: Order[A]): Ordering[A] =
     ev.toOrdering
 
 }

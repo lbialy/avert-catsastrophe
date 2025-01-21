@@ -114,7 +114,7 @@ object Rat {
 
   def unapply(r: Rat): Some[(BigInt, BigInt)] = Some((r.num, r.den))
 
-  implicit val ratAlgebra: RatAlgebra =
+  given ratAlgebra: RatAlgebra =
     new RatAlgebra
 
   val RatMinMaxLattice: DistributiveLattice[Rat] =
@@ -127,7 +127,7 @@ object Rat {
       else genNonZero
     }
 
-  implicit val ratArbitrary: Arbitrary[Rat] =
+  given ratArbitrary: Arbitrary[Rat] =
     Arbitrary(for {
       n <- arbitrary[BigInt]
       d <- genNonZero

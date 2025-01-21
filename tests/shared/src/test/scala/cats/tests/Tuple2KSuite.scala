@@ -33,7 +33,7 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.Prop._
 
 class Tuple2KSuite extends CatsSuite {
-  implicit val iso: Isomorphisms[Tuple2K[Option, List, *]] = Isomorphisms.invariant[Tuple2K[Option, List, *]]
+  given iso: Isomorphisms[Tuple2K[Option, List, *]] = Isomorphisms.invariant[Tuple2K[Option, List, *]]
   checkAll("Tuple2K[Eval, Eval, *]", DeferTests[Tuple2K[Eval, Eval, *]].defer[Int])
   checkAll("Tuple2K[Option, List, Int]", SemigroupalTests[λ[α => Tuple2K[Option, List, α]]].semigroupal[Int, Int, Int])
   checkAll("Semigroupal[Tuple2K[Option, List, Int]]",
@@ -67,7 +67,7 @@ class Tuple2KSuite extends CatsSuite {
     type Pair[A] = (A, A)
 
     // Scala 2.12 implicit resolution absolutely loses its mind here
-    implicit val help_scala2_12: Representable.Aux[Tuple2K[Pair, Pair, *], Either[Boolean, Boolean]] =
+    given help_scala2_12: Representable.Aux[Tuple2K[Pair, Pair, *], Either[Boolean, Boolean]] =
       Tuple2K.catsDataRepresentableForTuple2K[Pair, Pair]
 
     val a: Arbitrary[Int] = implicitly[Arbitrary[Int]]
@@ -94,7 +94,7 @@ class Tuple2KSuite extends CatsSuite {
   }
 
   {
-    implicit val monoidK: MonoidK[ListWrapper] = ListWrapper.monoidK
+    given monoidK: MonoidK[ListWrapper] = ListWrapper.monoidK
     checkAll("Tuple2K[ListWrapper, ListWrapper, *]", MonoidKTests[Tuple2K[ListWrapper, ListWrapper, *]].monoidK[Int])
     checkAll("MonoidK[Tuple2K[ListWrapper, ListWrapper, *]]",
              SerializableTests.serializable(MonoidK[Tuple2K[ListWrapper, ListWrapper, *]])
@@ -102,7 +102,7 @@ class Tuple2KSuite extends CatsSuite {
   }
 
   {
-    implicit val semigroupK: SemigroupK[ListWrapper] = ListWrapper.semigroupK
+    given semigroupK: SemigroupK[ListWrapper] = ListWrapper.semigroupK
     checkAll("Tuple2K[ListWrapper, ListWrapper, *]",
              SemigroupKTests[Tuple2K[ListWrapper, ListWrapper, *]].semigroupK[Int]
     )
@@ -112,8 +112,8 @@ class Tuple2KSuite extends CatsSuite {
   }
 
   {
-    implicit val apply: Apply[ListWrapper] = ListWrapper.applyInstance
-    implicit val iso: Isomorphisms[Tuple2K[ListWrapper, ListWrapper, *]] =
+    given apply: Apply[ListWrapper] = ListWrapper.applyInstance
+    given iso: Isomorphisms[Tuple2K[ListWrapper, ListWrapper, *]] =
       Isomorphisms.invariant[Tuple2K[ListWrapper, ListWrapper, *]]
     checkAll("Tuple2K[ListWrapper, ListWrapper, *]",
              ApplyTests[Tuple2K[ListWrapper, ListWrapper, *]].apply[Int, Int, Int]
@@ -142,7 +142,7 @@ class Tuple2KSuite extends CatsSuite {
   }
 
   {
-    implicit val functor: Functor[ListWrapper] = ListWrapper.functor
+    given functor: Functor[ListWrapper] = ListWrapper.functor
     checkAll("Tuple2K[ListWrapper, ListWrapper, *]",
              FunctorTests[Tuple2K[ListWrapper, ListWrapper, *]].functor[Int, Int, Int]
     )
@@ -152,8 +152,8 @@ class Tuple2KSuite extends CatsSuite {
   }
 
   {
-    implicit val monad: Monad[ListWrapper] = ListWrapper.monad
-    implicit val iso: Isomorphisms[Tuple2K[ListWrapper, ListWrapper, *]] =
+    given monad: Monad[ListWrapper] = ListWrapper.monad
+    given iso: Isomorphisms[Tuple2K[ListWrapper, ListWrapper, *]] =
       Isomorphisms.invariant[Tuple2K[ListWrapper, ListWrapper, *]]
     checkAll("Tuple2K[ListWrapper, ListWrapper, *]",
              MonadTests[Tuple2K[ListWrapper, ListWrapper, *]].monad[Int, Int, Int]
@@ -164,7 +164,7 @@ class Tuple2KSuite extends CatsSuite {
   }
 
   {
-    implicit val foldable: Foldable[ListWrapper] = ListWrapper.foldable
+    given foldable: Foldable[ListWrapper] = ListWrapper.foldable
     checkAll("Tuple2K[ListWrapper, ListWrapper, *]",
              FoldableTests[Tuple2K[ListWrapper, ListWrapper, *]].foldable[Int, Int]
     )
@@ -174,7 +174,7 @@ class Tuple2KSuite extends CatsSuite {
   }
 
   {
-    implicit val traverse: Traverse[ListWrapper] = ListWrapper.traverse
+    given traverse: Traverse[ListWrapper] = ListWrapper.traverse
     checkAll("Tuple2K[ListWrapper, ListWrapper, *]",
              TraverseTests[Tuple2K[ListWrapper, ListWrapper, *]].traverse[Int, Int, Int, Int, Option, Option]
     )
@@ -184,8 +184,8 @@ class Tuple2KSuite extends CatsSuite {
   }
 
   {
-    implicit val alternative: Alternative[ListWrapper] = ListWrapper.alternative
-    implicit val iso: Isomorphisms[Tuple2K[ListWrapper, ListWrapper, *]] =
+    given alternative: Alternative[ListWrapper] = ListWrapper.alternative
+    given iso: Isomorphisms[Tuple2K[ListWrapper, ListWrapper, *]] =
       Isomorphisms.invariant[Tuple2K[ListWrapper, ListWrapper, *]]
     checkAll("Tuple2K[ListWrapper, ListWrapper, *]",
              AlternativeTests[Tuple2K[ListWrapper, ListWrapper, *]].alternative[Int, Int, Int]
@@ -196,9 +196,9 @@ class Tuple2KSuite extends CatsSuite {
   }
 
   {
-    implicit val E: Eq[ListWrapper[Int]] = ListWrapper.eqv[Int]
-    implicit val O: Order[ListWrapper[Int]] = ListWrapper.order[Int]
-    implicit val P: PartialOrder[ListWrapper[Int]] = ListWrapper.partialOrder[Int]
+    given E: Eq[ListWrapper[Int]] = ListWrapper.eqv[Int]
+    given O: Order[ListWrapper[Int]] = ListWrapper.order[Int]
+    given P: PartialOrder[ListWrapper[Int]] = ListWrapper.partialOrder[Int]
 
     checkAll("Tuple2K[ListWrapper, ListWrapper, Int]", EqTests[Tuple2K[ListWrapper, ListWrapper, Int]].eqv)
     checkAll("Tuple2K[ListWrapper, ListWrapper, Int]", OrderTests[Tuple2K[ListWrapper, ListWrapper, Int]].order)

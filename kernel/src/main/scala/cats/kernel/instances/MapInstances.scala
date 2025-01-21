@@ -50,17 +50,17 @@ import compat.scalaVersionSpecific._
 
 @suppressUnusedImportWarningForScalaVersionSpecific
 trait MapInstances extends MapInstances1 {
-  implicit def catsKernelStdHashForMap[K, V](implicit @unused K: Hash[K], V: Hash[V]): Hash[Map[K, V]] =
+  given catsKernelStdHashForMap[K, V](using @unused K: Hash[K], V: Hash[V]): Hash[Map[K, V]] =
     new MapHash[K, V]
 
-  implicit def catsKernelStdCommutativeMonoidForMap[K, V: CommutativeSemigroup]: CommutativeMonoid[Map[K, V]] =
+  given catsKernelStdCommutativeMonoidForMap[K, V: CommutativeSemigroup]: CommutativeMonoid[Map[K, V]] =
     new MapMonoid[K, V] with CommutativeMonoid[Map[K, V]]
 }
 
 private[instances] trait MapInstances1 {
-  implicit def catsKernelStdEqForMap[K, V: Eq]: Eq[Map[K, V]] =
+  given catsKernelStdEqForMap[K, V: Eq]: Eq[Map[K, V]] =
     new MapEq[K, V]
-  implicit def catsKernelStdMonoidForMap[K, V: Semigroup]: Monoid[Map[K, V]] =
+  given catsKernelStdMonoidForMap[K, V: Semigroup]: Monoid[Map[K, V]] =
     new MapMonoid[K, V]
 }
 

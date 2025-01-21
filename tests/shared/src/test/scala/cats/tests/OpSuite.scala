@@ -31,13 +31,13 @@ import cats.kernel.laws.discipline.EqTests
 
 class OpSuite extends CatsSuite {
   {
-    implicit val catsDataEqForOp: Eq[Op[Function1, Int, MiniInt]] = Op.catsDataEqForOp[Function1, Int, MiniInt]
+    given catsDataEqForOp: Eq[Op[Function1, Int, MiniInt]] = Op.catsDataEqForOp[Function1, Int, MiniInt]
     checkAll("Op[Function1, Int, MiniInt]", EqTests[Op[Function1, Int, MiniInt]].eqv)
     checkAll("Eq[Op[Function1, Int, MiniInt]]", SerializableTests.serializable(Eq[Op[Function1, Int, MiniInt]]))
   }
 
   {
-    implicit val catsDataCategoryForOp: Category[Op[Function1, *, *]] = Op.catsDataCategoryForOp[Function1]
+    given catsDataCategoryForOp: Category[Op[Function1, *, *]] = Op.catsDataCategoryForOp[Function1]
     checkAll("Op[Function1, *, *]", CategoryTests[Op[Function1, *, *]].category[Char, MiniInt, Char, Boolean])
     checkAll("Category[Op[Function1, *, *]]", SerializableTests.serializable(Category[Op[Function1, *, *]]))
   }

@@ -19,7 +19,7 @@ object ContraMapToLMapTests {
   object Bar
   object Baz
 
-  implicit val showFoo: Show[Foo.type] = Show.fromToString
+  given showFoo: Show[Foo.type] = Show.fromToString
 
   val showBar: Show[Bar.type] = showFoo.contramap(_ => Foo)
 

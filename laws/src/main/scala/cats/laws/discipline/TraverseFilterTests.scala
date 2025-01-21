@@ -49,7 +49,7 @@ trait TraverseFilterTests[F[_]] extends FunctorFilterTests[F] {
     EqGFA: Eq[Option[F[A]]],
     EqMNFC: Eq[Nested[Option, Option, F[C]]]
   ): RuleSet = {
-    implicit val arbFAOB: Arbitrary[PartialFunction[A, Option[B]]] =
+    given arbFAOB: Arbitrary[PartialFunction[A, Option[B]]] =
       Arbitrary(ArbFABoo.arbitrary.map { pfab =>
         {
           case a if pfab.isDefinedAt(a) =>

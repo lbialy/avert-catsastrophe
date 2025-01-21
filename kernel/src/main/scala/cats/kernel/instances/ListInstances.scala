@@ -27,23 +27,23 @@ import compat.scalaVersionSpecific._
 
 @suppressUnusedImportWarningForScalaVersionSpecific
 trait ListInstances extends ListInstances1 {
-  implicit def catsKernelStdOrderForList[A: Order]: Order[List[A]] =
+  given catsKernelStdOrderForList[A: Order]: Order[List[A]] =
     new ListOrder[A]
 
-  implicit def catsKernelStdMonoidForList[A]: Monoid[List[A]] =
+  given catsKernelStdMonoidForList[A]: Monoid[List[A]] =
     ListMonoid[A]
 }
 
 private[instances] trait ListInstances1 extends ListInstances2 {
-  implicit def catsKernelStdPartialOrderForList[A: PartialOrder]: PartialOrder[List[A]] =
+  given catsKernelStdPartialOrderForList[A: PartialOrder]: PartialOrder[List[A]] =
     new ListPartialOrder[A]
 
-  implicit def catsKernelStdHashForList[A: Hash]: Hash[List[A]] =
+  given catsKernelStdHashForList[A: Hash]: Hash[List[A]] =
     new ListHash[A]
 }
 
 private[instances] trait ListInstances2 {
-  implicit def catsKernelStdEqForList[A: Eq]: Eq[List[A]] =
+  given catsKernelStdEqForList[A: Eq]: Eq[List[A]] =
     new ListEq[A]
 }
 

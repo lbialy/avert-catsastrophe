@@ -31,10 +31,10 @@ import cats.syntax.eq._
 import org.scalacheck.Prop._
 
 class YonedaSuite extends CatsSuite {
-  implicit def yonedaArbitrary[F[_]: Functor, A](implicit F: Arbitrary[F[A]]): Arbitrary[Yoneda[F, A]] =
+  given yonedaArbitrary[F[_]: Functor, A](using F: Arbitrary[F[A]]): Arbitrary[Yoneda[F, A]] =
     Arbitrary(F.arbitrary.map(Yoneda(_)))
 
-  implicit def yonedaEq[F[_]: Functor, A](implicit FA: Eq[F[A]]): Eq[Yoneda[F, A]] =
+  given yonedaEq[F[_]: Functor, A](using FA: Eq[F[A]]): Eq[Yoneda[F, A]] =
     Eq.by(_.run)
 
   checkAll("Yoneda[Option, *]", FunctorTests[Yoneda[Option, *]].functor[Int, Int, Int])

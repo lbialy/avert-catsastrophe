@@ -25,7 +25,7 @@ package laws
 import cats.data.Nested
 
 trait UnorderedTraverseLaws[F[_]] extends UnorderedFoldableLaws[F] {
-  implicit def F: UnorderedTraverse[F]
+  given F: UnorderedTraverse[F]
 
   def unorderedTraverseIdentity[A, B](fa: F[A])(f: A => B)(implicit ev: Functor[F]): IsEq[F[B]] =
     F.unorderedTraverse[Id, A, B](fa)(f) <-> (ev.map(fa)(f))
@@ -46,7 +46,7 @@ trait UnorderedTraverseLaws[F[_]] extends UnorderedFoldableLaws[F] {
   ): IsEq[(M[F[B]], N[F[B]])] = {
 
     type MN[Z] = (M[Z], N[Z])
-    implicit val MN: CommutativeApplicative[MN] = new CommutativeApplicative[MN] {
+    given MN: CommutativeApplicative[MN] = new CommutativeApplicative[MN] {
       def pure[X](x: X): MN[X] = (M.pure(x), N.pure(x))
       def ap[X, Y](f: MN[X => Y])(fa: MN[X]): MN[Y] = {
         val (fam, fan) = fa

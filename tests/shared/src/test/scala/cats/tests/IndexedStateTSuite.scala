@@ -358,33 +358,33 @@ class IndexedStateTSuite extends CatsSuite {
     }
   }
 
-  implicit val iso: Isomorphisms[IndexedStateT[ListWrapper, String, Int, *]] =
+  given iso: Isomorphisms[IndexedStateT[ListWrapper, String, Int, *]] =
     Isomorphisms.invariant[IndexedStateT[ListWrapper, String, Int, *]](
       IndexedStateT.catsDataFunctorForIndexedStateT(using ListWrapper.monad)
     )
 
   {
     // F has a Functor
-    implicit val F: Functor[ListWrapper] = ListWrapper.functor
+    given F: Functor[ListWrapper] = ListWrapper.functor
     // We only need a Functor on F to find a Functor on StateT
     Functor[IndexedStateT[ListWrapper, String, Int, *]]
   }
 
   {
     // We only need a Functor to derive a Contravariant for IndexedStateT
-    implicit val F: Functor[ListWrapper] = ListWrapper.monad
+    given F: Functor[ListWrapper] = ListWrapper.monad
     Contravariant[IndexedStateT[ListWrapper, *, Int, String]]
   }
 
   {
     // We only need a Functor to derive a Bifunctor for IndexedStateT
-    implicit val F: Functor[ListWrapper] = ListWrapper.monad
+    given F: Functor[ListWrapper] = ListWrapper.monad
     Bifunctor[IndexedStateT[ListWrapper, Int, *, *]]
   }
 
   {
     // We only need a Functor to derive a Profunctor for IndexedStateT
-    implicit val F: Functor[ListWrapper] = ListWrapper.monad
+    given F: Functor[ListWrapper] = ListWrapper.monad
     Profunctor[IndexedStateT[ListWrapper, *, *, String]]
   }
 
@@ -392,8 +392,8 @@ class IndexedStateTSuite extends CatsSuite {
 
   {
     // F needs a Monad to do Eq on StateT
-    implicit val F: Monad[ListWrapper] = ListWrapper.monad
-    implicit val FS: Functor[IndexedStateT[ListWrapper, String, Int, *]] = IndexedStateT.catsDataFunctorForIndexedStateT
+    given F: Monad[ListWrapper] = ListWrapper.monad
+    given FS: Functor[IndexedStateT[ListWrapper, String, Int, *]] = IndexedStateT.catsDataFunctorForIndexedStateT
 
     checkAll("IndexedStateT[ListWrapper, MiniInt, Int, Int]",
              FunctorTests[IndexedStateT[ListWrapper, MiniInt, Int, *]].functor[Int, Int, Int]
@@ -406,8 +406,8 @@ class IndexedStateTSuite extends CatsSuite {
   }
 
   {
-    implicit val F0: Monad[ListWrapper] = ListWrapper.monad
-    implicit val FF: FunctorFilter[ListWrapper] = ListWrapper.functorFilter
+    given F0: Monad[ListWrapper] = ListWrapper.monad
+    given FF: FunctorFilter[ListWrapper] = ListWrapper.functorFilter
 
     checkAll("IndexedStateT[ListWrapper, MiniInt, Int, *]",
              FunctorFilterTests[IndexedStateT[ListWrapper, MiniInt, Int, *]].functorFilter[Int, Int, Int]
@@ -421,8 +421,8 @@ class IndexedStateTSuite extends CatsSuite {
   }
 
   {
-    implicit val F: Monad[ListWrapper] = ListWrapper.monad
-    implicit val FS: Contravariant[IndexedStateT[ListWrapper, *, Int, Int]] =
+    given F: Monad[ListWrapper] = ListWrapper.monad
+    given FS: Contravariant[IndexedStateT[ListWrapper, *, Int, Int]] =
       IndexedStateT.catsDataContravariantForIndexedStateT
 
     checkAll("IndexedStateT[ListWrapper, *, Int, Boolean]",
@@ -436,8 +436,8 @@ class IndexedStateTSuite extends CatsSuite {
   }
 
   {
-    implicit val F: Monad[ListWrapper] = ListWrapper.monad
-    implicit val FS: Bifunctor[IndexedStateT[ListWrapper, Int, *, *]] = IndexedStateT.catsDataBifunctorForIndexedStateT
+    given F: Monad[ListWrapper] = ListWrapper.monad
+    given FS: Bifunctor[IndexedStateT[ListWrapper, Int, *, *]] = IndexedStateT.catsDataBifunctorForIndexedStateT
 
     checkAll(
       "IndexedStateT[ListWrapper, MiniInt, String, Int]",
@@ -451,8 +451,8 @@ class IndexedStateTSuite extends CatsSuite {
   }
 
   {
-    implicit val F: Monad[ListWrapper] = ListWrapper.monad
-    implicit val FS: Profunctor[IndexedStateT[ListWrapper, *, *, Int]] =
+    given F: Monad[ListWrapper] = ListWrapper.monad
+    given FS: Profunctor[IndexedStateT[ListWrapper, *, *, Int]] =
       IndexedStateT.catsDataProfunctorForIndexedStateT
 
     checkAll("IndexedStateT[ListWrapper, String, Int, Int]",
@@ -466,8 +466,8 @@ class IndexedStateTSuite extends CatsSuite {
   }
 
   {
-    implicit val F: Monad[ListWrapper] = ListWrapper.monad
-    implicit val FS: Strong[IndexedStateT[ListWrapper, *, *, Int]] = IndexedStateT.catsDataStrongForIndexedStateT
+    given F: Monad[ListWrapper] = ListWrapper.monad
+    given FS: Strong[IndexedStateT[ListWrapper, *, *, Int]] = IndexedStateT.catsDataStrongForIndexedStateT
 
     checkAll("IndexedStateT[ListWrapper, *, *, Int]",
              StrongTests[IndexedStateT[ListWrapper, *, *, Int]].strong[MiniInt, Int, Boolean, Boolean, Boolean, String]
@@ -481,7 +481,7 @@ class IndexedStateTSuite extends CatsSuite {
 
   {
     // F has a Monad
-    implicit val F: Monad[ListWrapper] = ListWrapper.monad
+    given F: Monad[ListWrapper] = ListWrapper.monad
 
     checkAll("IndexedStateT[ListWrapper, MiniInt, Int, *]",
              MonadTests[IndexedStateT[ListWrapper, MiniInt, MiniInt, *]].monad[Int, Int, Int]
@@ -499,8 +499,8 @@ class IndexedStateTSuite extends CatsSuite {
 
   {
     // F has a Monad and a SemigroupK
-    implicit val F: Monad[ListWrapper] = ListWrapper.monad
-    implicit val S: SemigroupK[ListWrapper] = ListWrapper.semigroupK
+    given F: Monad[ListWrapper] = ListWrapper.monad
+    given S: SemigroupK[ListWrapper] = ListWrapper.semigroupK
 
     checkAll("IndexedStateT[ListWrapper, MiniInt, Int, *]",
              SemigroupKTests[IndexedStateT[ListWrapper, MiniInt, Int, *]].semigroupK[Int]
@@ -512,13 +512,13 @@ class IndexedStateTSuite extends CatsSuite {
 
   {
     // F has an Alternative
-    implicit val G: Monad[ListWrapper] = ListWrapper.monad
-    implicit val F: Alternative[ListWrapper] = ListWrapper.alternative
+    given G: Monad[ListWrapper] = ListWrapper.monad
+    given F: Alternative[ListWrapper] = ListWrapper.alternative
     val SA =
       IndexedStateT
         .catsDataAlternativeForIndexedStateT[ListWrapper, MiniInt](using ListWrapper.monad, ListWrapper.alternative)
 
-    implicit val f: Isomorphisms[IndexedStateT[ListWrapper, MiniInt, MiniInt, *]] = Isomorphisms.invariant(SA)
+    given f: Isomorphisms[IndexedStateT[ListWrapper, MiniInt, MiniInt, *]] = Isomorphisms.invariant(SA)
 
     checkAll("IndexedStateT[ListWrapper, MiniInt, Int, Int]",
              AlternativeTests[IndexedStateT[ListWrapper, MiniInt, MiniInt, *]](SA).alternative[Int, Int, Int]
@@ -536,7 +536,7 @@ class IndexedStateTSuite extends CatsSuite {
   }
 
   {
-    implicit val iso: Isomorphisms[State[MiniInt, *]] = Isomorphisms.invariant[State[MiniInt, *]]
+    given iso: Isomorphisms[State[MiniInt, *]] = Isomorphisms.invariant[State[MiniInt, *]]
 
     checkAll("State[MiniInt, *]", MonadTests[State[MiniInt, *]].monad[Int, Int, Int])
     checkAll("Monad[State[Long, *]]", SerializableTests.serializable(Monad[State[Long, *]]))
@@ -544,8 +544,8 @@ class IndexedStateTSuite extends CatsSuite {
 
   {
     // F has a MonadError
-    implicit val iso: Isomorphisms[StateT[Option, MiniInt, *]] = Isomorphisms.invariant[StateT[Option, MiniInt, *]]
-    implicit val eqEitherTFA: Eq[EitherT[StateT[Option, MiniInt, *], Unit, Int]] =
+    given iso: Isomorphisms[StateT[Option, MiniInt, *]] = Isomorphisms.invariant[StateT[Option, MiniInt, *]]
+    given eqEitherTFA: Eq[EitherT[StateT[Option, MiniInt, *], Unit, Int]] =
       EitherT.catsDataEqForEitherT[StateT[Option, MiniInt, *], Unit, Int]
 
     checkAll("StateT[Option, MiniInt, Int]",
@@ -559,7 +559,7 @@ class IndexedStateTSuite extends CatsSuite {
 }
 
 object IndexedStateTSuite extends IndexedStateTSuiteInstances {
-  implicit def stateEq[S: Eq: ExhaustiveCheck, A: Eq]: Eq[State[S, A]] =
+  given stateEq[S: Eq: ExhaustiveCheck, A: Eq]: Eq[State[S, A]] =
     indexedStateTEq[Eval, S, S, A]
 
   val add1: State[Int, Int] = State(n => (n + 1, n))
@@ -567,7 +567,7 @@ object IndexedStateTSuite extends IndexedStateTSuiteInstances {
 
 sealed trait IndexedStateTSuiteInstances {
 
-  implicit def indexedStateTEq[F[_], SA, SB, A](implicit
+  given indexedStateTEq[F[_], SA, SB, A](using
     SA: ExhaustiveCheck[SA],
     FSB: Eq[F[(SB, A)]],
     F: FlatMap[F]

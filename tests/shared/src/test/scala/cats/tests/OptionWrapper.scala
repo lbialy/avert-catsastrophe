@@ -37,13 +37,13 @@ object OptionWrapper {
     def map[A, B](fa: OptionWrapper[A])(f: A => B) = OptionWrapper(fa.option.map(f))
   }
 
-  implicit def optionWrapperArbitrary[A: Arbitrary]: Arbitrary[OptionWrapper[A]] =
+  given optionWrapperArbitrary[A: Arbitrary]: Arbitrary[OptionWrapper[A]] =
     Arbitrary(arbitrary[Option[A]].map(OptionWrapper.apply))
 
-  implicit def optionWrapperCogen[A: Cogen]: Cogen[OptionWrapper[A]] =
+  given optionWrapperCogen[A: Cogen]: Cogen[OptionWrapper[A]] =
     Cogen[Option[A]].contramap(_.option)
 
-  implicit def catsLawsExhaustiveCheckForOptionWrapper[A](implicit
+  given catsLawsExhaustiveCheckForOptionWrapper[A](using
     A: ExhaustiveCheck[A]
   ): ExhaustiveCheck[OptionWrapper[A]] =
     ExhaustiveCheck.instance(ExhaustiveCheck[Option[A]].allValues.map(OptionWrapper(_)))

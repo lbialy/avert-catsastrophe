@@ -385,7 +385,7 @@ class ReaderWriterStateTSuite extends CatsSuite {
     }
   }
 
-  implicit val iso: Isomorphisms[IndexedReaderWriterStateT[ListWrapper, String, String, Int, String, *]] =
+  given iso: Isomorphisms[IndexedReaderWriterStateT[ListWrapper, String, String, Int, String, *]] =
     Isomorphisms.invariant[IndexedReaderWriterStateT[ListWrapper, String, String, Int, String, *]](
       IndexedReaderWriterStateT.catsDataFunctorForIRWST(using ListWrapper.functor)
     )
@@ -396,7 +396,7 @@ class ReaderWriterStateTSuite extends CatsSuite {
   )
 
   {
-    implicit val F: Monad[ListWrapper] = ListWrapper.monad
+    given F: Monad[ListWrapper] = ListWrapper.monad
 
     checkAll(
       "IndexedReaderWriterStateT[ListWrapper, Boolean, String, MiniInt, String, *]",
@@ -449,7 +449,7 @@ class ReaderWriterStateTSuite extends CatsSuite {
   }
 
   {
-    implicit val G: Monad[ListWrapper] = ListWrapper.monad
+    given G: Monad[ListWrapper] = ListWrapper.monad
 
     val SA = IRWST.catsDataAlternativeForIRWST[ListWrapper, Boolean, String, MiniInt](
       using ListWrapper.monad,
@@ -467,7 +467,7 @@ class ReaderWriterStateTSuite extends CatsSuite {
   }
 
   {
-    implicit val LWM: Monad[ListWrapper] = ListWrapper.monad
+    given LWM: Monad[ListWrapper] = ListWrapper.monad
 
     checkAll(
       "ReaderWriterStateT[ListWrapper, Boolean, String, MiniInt, MiniInt, *]",
@@ -480,9 +480,9 @@ class ReaderWriterStateTSuite extends CatsSuite {
   }
 
   {
-    implicit val iso: Isomorphisms[ReaderWriterStateT[Option, Boolean, String, MiniInt, *]] =
+    given iso: Isomorphisms[ReaderWriterStateT[Option, Boolean, String, MiniInt, *]] =
       Isomorphisms.invariant[ReaderWriterStateT[Option, Boolean, String, MiniInt, *]]
-    implicit val eqEitherTFA: Eq[EitherT[ReaderWriterStateT[Option, Boolean, String, MiniInt, *], Unit, Int]] =
+    given eqEitherTFA: Eq[EitherT[ReaderWriterStateT[Option, Boolean, String, MiniInt, *], Unit, Int]] =
       EitherT.catsDataEqForEitherT[ReaderWriterStateT[Option, Boolean, String, MiniInt, *], Unit, Int]
 
     checkAll(
@@ -496,8 +496,8 @@ class ReaderWriterStateTSuite extends CatsSuite {
   }
 
   {
-    implicit val F: Monad[ListWrapper] = ListWrapper.monad
-    implicit val S: SemigroupK[ListWrapper] = ListWrapper.semigroupK
+    given F: Monad[ListWrapper] = ListWrapper.monad
+    given S: SemigroupK[ListWrapper] = ListWrapper.semigroupK
 
     checkAll(
       "ReaderWriterStateT[ListWrapper, Boolean, String, MiniInt, *]",
@@ -522,7 +522,7 @@ object ReaderWriterStateTSuite {
       ((), state + i, state + i)
     }
 
-  implicit def IRWSTEq[F[_], E, L, SA, SB, A](implicit
+  given IRWSTEq[F[_], E, L, SA, SB, A](using
     SA: ExhaustiveCheck[SA],
     SB: Arbitrary[SB],
     E: ExhaustiveCheck[E],

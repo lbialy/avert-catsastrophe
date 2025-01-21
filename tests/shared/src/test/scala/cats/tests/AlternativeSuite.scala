@@ -30,7 +30,7 @@ import org.scalacheck.Prop._
 class AlternativeSuite extends CatsSuite {
 
   // Alternative[ListWrapper] is different from Alternative[List] since the former does not override any default implementation.
-  implicit val listWrapperAlternative: Alternative[ListWrapper] = ListWrapper.alternative
+  given listWrapperAlternative: Alternative[ListWrapper] = ListWrapper.alternative
 
   checkAll("compose List[List[Int]]", AlternativeTests.composed[List, List].alternative[Int, Int, Int])
   checkAll("compose List[Option[Int]]", AlternativeTests.composed[List, Option].alternative[Int, Int, Int])
@@ -46,8 +46,8 @@ class AlternativeSuite extends CatsSuite {
       assert(Alternative[List].unite(list) === expected)
 
       // See #3997: check that correct `unite` version is picked up.
-      implicit val listWrapperAlternative: Alternative[ListWrapper] = ListWrapper.alternative
-      implicit val listWrapperFlatMap: FlatMap[ListWrapper] = ListWrapper.flatMap
+      given listWrapperAlternative: Alternative[ListWrapper] = ListWrapper.alternative
+      given listWrapperFlatMap: FlatMap[ListWrapper] = ListWrapper.flatMap
 
       assert(Alternative[ListWrapper].unite(ListWrapper(list)).list === expected)
     }
@@ -62,8 +62,8 @@ class AlternativeSuite extends CatsSuite {
       assert(Alternative[List].separate(list) === expected)
 
       // See #3997: check that correct `separate` version is picked up.
-      implicit val listWrapperAlternative: Alternative[ListWrapper] = ListWrapper.alternative
-      implicit val listWrapperFlatMap: FlatMap[ListWrapper] = ListWrapper.flatMap
+      given listWrapperAlternative: Alternative[ListWrapper] = ListWrapper.alternative
+      given listWrapperFlatMap: FlatMap[ListWrapper] = ListWrapper.flatMap
 
       val (obtainedLwInts, obtainedLwStrings) = Alternative[ListWrapper].separate(ListWrapper(list))
       assert(obtainedLwInts.list === expectedInts)

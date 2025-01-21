@@ -66,7 +66,7 @@ class NonEmptyChainSuite extends NonEmptyCollectionSuite[Chain, NonEmptyChain, N
   checkAll("NonEmptyChain[Int]", ShortCircuitingTests[NonEmptyChain].nonEmptyTraverse[Int])
 
   {
-    implicit val partialOrder: PartialOrder[ListWrapper[Int]] = ListWrapper.partialOrder[Int]
+    given partialOrder: PartialOrder[ListWrapper[Int]] = ListWrapper.partialOrder[Int]
     checkAll("NonEmptyChain[ListWrapper[Int]]", PartialOrderTests[NonEmptyChain[ListWrapper[Int]]].partialOrder)
     checkAll("PartialOrder[NonEmptyChain[ListWrapper[Int]]",
              SerializableTests.serializable(PartialOrder[NonEmptyChain[ListWrapper[Int]]])
@@ -74,7 +74,7 @@ class NonEmptyChainSuite extends NonEmptyCollectionSuite[Chain, NonEmptyChain, N
   }
 
   {
-    implicit val eqv: Eq[ListWrapper[Int]] = ListWrapper.eqv[Int]
+    given eqv: Eq[ListWrapper[Int]] = ListWrapper.eqv[Int]
     checkAll("NonEmptyChain[ListWrapper[Int]]", EqTests[NonEmptyChain[ListWrapper[Int]]].eqv)
     checkAll("Eq[NonEmptyChain[ListWrapper[Int]]", SerializableTests.serializable(Eq[NonEmptyChain[ListWrapper[Int]]]))
   }

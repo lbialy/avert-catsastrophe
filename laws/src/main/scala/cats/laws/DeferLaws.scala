@@ -28,7 +28,7 @@ import cats.platform.Platform
  * Laws that must be obeyed by any `Defer`.
  */
 trait DeferLaws[F[_]] {
-  implicit def F: Defer[F]
+  given F: Defer[F]
 
   def deferIdentity[A](fa: Unit => F[A]): IsEq[F[A]] =
     F.defer(fa(())) <-> fa(())

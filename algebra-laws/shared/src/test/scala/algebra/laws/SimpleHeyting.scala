@@ -38,7 +38,7 @@ object SimpleHeyting {
   private case object Half extends SimpleHeyting
   private case object One extends SimpleHeyting
 
-  implicit val heyting: Heyting[SimpleHeyting] = new Heyting[SimpleHeyting] {
+  given heyting: Heyting[SimpleHeyting] = new Heyting[SimpleHeyting] {
     def zero: SimpleHeyting = Zero
     def one: SimpleHeyting = One
 
@@ -72,8 +72,8 @@ object SimpleHeyting {
     }
   }
 
-  implicit val arbitrary: Arbitrary[SimpleHeyting] = Arbitrary(oneOf(Zero, Half, One))
+  given arbitrary: Arbitrary[SimpleHeyting] = Arbitrary(oneOf(Zero, Half, One))
 
-  implicit val eq: Eq[SimpleHeyting] =
+  given eq: Eq[SimpleHeyting] =
     Eq.fromUniversalEquals
 }

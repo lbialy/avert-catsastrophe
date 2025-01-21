@@ -48,7 +48,7 @@ class RegressionSuite extends CatsSuite with ScalaVersionSpecificRegressionSuite
   }
 
   object State {
-    implicit def instance[S]: Monad[State[S, *]] =
+    given instance[S]: Monad[State[S, *]] =
       new Monad[State[S, *]] with StackSafeMonad[State[S, *]] { // lies!
         def pure[A](a: A): State[S, A] = State(s => (a, s))
         def flatMap[A, B](sa: State[S, A])(f: A => State[S, B]): State[S, B] = sa.flatMap(f)
@@ -59,7 +59,7 @@ class RegressionSuite extends CatsSuite with ScalaVersionSpecificRegressionSuite
   val buf = mutable.ListBuffer.empty[String]
 
   case class Person(id: Int, name: String)
-  implicit val personEq: Eq[Person] = Eq.fromUniversalEquals
+  given personEq: Eq[Person] = Eq.fromUniversalEquals
 
   def alloc(name: String): State[Int, Person] =
     State { id =>
@@ -192,7 +192,7 @@ class RegressionSuite extends CatsSuite with ScalaVersionSpecificRegressionSuite
     }
 
     {
-      implicit val me: MonadError[EitherT[Option, String, *], Unit] =
+      given me: MonadError[EitherT[Option, String, *], Unit] =
         EitherT.catsDataMonadErrorFForEitherT[Option, Unit, String]
       EitherT.right[String](Option(1)).handleErrorWith((_: Unit) => EitherT.pure(2))
     }

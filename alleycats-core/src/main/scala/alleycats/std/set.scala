@@ -35,7 +35,7 @@ trait SetInstances {
 
   // We use a def instead of val here as a workaround to the MiMa
   // 'ReversedMissingMethodProblem' error.
-  implicit def alleycatsStdInstancesForSet
+  given alleycatsStdInstancesForSet
   // Monad advertises parametricity, but Set relies on using
   // universal hash codes and equality, which hurts our ability to
   // rely on free theorems.
@@ -60,7 +60,7 @@ trait SetInstances {
   // If we accept Monad for Set, we can also have Alternative, as
   // Alternative only requires MonoidK (already accepted by cats-core) and
   // the Applicative that comes from Monad.
-    : Monad[Set] & Alternative[Set] & Traverse[Set] & TraverseFilter[Set] =
+    : (Monad[Set] & Alternative[Set] & Traverse[Set] & TraverseFilter[Set]) =
     alleycatsStdInstancesForSet_
 
   @deprecated("Use alleycatsStdInstancesForSet", "2.13.0")

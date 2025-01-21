@@ -55,24 +55,24 @@ class FutureTests extends CatsSuite {
   def futureEither[A](f: Future[A]): Future[Either[Throwable, A]] =
     f.map(Either.right[Throwable, A]).recover { case t => Either.left(t) }
 
-  implicit def eqfa[A: Eq]: Eq[Future[A]] = { (fx, fy) =>
+  given eqfa[A: Eq]: Eq[Future[A]] = { (fx, fy) =>
     val fz = futureEither(fx).zip(futureEither(fy))
     Await.result(fz.map { case (tx, ty) => tx === ty }, timeout)
   }
 
-  implicit val throwableEq: Eq[Throwable] =
+  given throwableEq: Eq[Throwable] =
     Eq.by[Throwable, String](_.toString)
 
   val comonad: Comonad[Future] = futureComonad(timeout)
 
   // Need non-fatal Throwables for Future recoverWith/handleError
-  implicit val nonFatalArbitrary: Arbitrary[Throwable] =
+  given nonFatalArbitrary: Arbitrary[Throwable] =
     Arbitrary(arbitrary[Exception].map(identity))
 
   // We can't block on futures in JS, so we can't create interesting
   // cogen instances. This will allow the tests to run in a
   // less-useful way.
-  implicit def cogenForFuture[A]: Cogen[Future[A]] =
+  given cogenForFuture[A]: Cogen[Future[A]] =
     Cogen[Unit].contramap(_ => ())
 
   checkAll("Future[Int]", MonadErrorTests[Future, Throwable].monadError[Int, Int, Int])
@@ -80,7 +80,7 @@ class FutureTests extends CatsSuite {
   checkAll("Future", MonadTests[Future].monad[Int, Int, Int])
 
   {
-    implicit val F = ListWrapper.semigroup[Int]
+    given F = ListWrapper.semigroup[Int]
     checkAll("Future[ListWrapper[Int]]", SemigroupLawTests[Future[ListWrapper[Int]]].semigroup)
   }
 

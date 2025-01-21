@@ -325,7 +325,7 @@ class AlgebraInvariantSuite extends CatsSuite with ScalaVersionSpecificAlgebraIn
           x / y
         }
     }
-    implicit val arbFractionalMiniInt: Arbitrary[Fractional[MiniInt]] = Arbitrary(Gen.const(fractionalForMiniInt))
+    given arbFractionalMiniInt: Arbitrary[Fractional[MiniInt]] = Arbitrary(Gen.const(fractionalForMiniInt))
 
     checkAll("Invariant[Fractional]", InvariantTests[Fractional].invariant[MiniInt, Boolean, Boolean])
   }

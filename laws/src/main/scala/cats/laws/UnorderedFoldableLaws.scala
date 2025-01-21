@@ -25,7 +25,7 @@ package laws
 import cats.kernel.CommutativeMonoid
 
 trait UnorderedFoldableLaws[F[_]] {
-  implicit def F: UnorderedFoldable[F]
+  given F: UnorderedFoldable[F]
 
   def unorderedFoldConsistentWithUnorderedFoldMap[A: CommutativeMonoid](fa: F[A]): IsEq[A] =
     F.unorderedFoldMap(fa)(identity) <-> F.unorderedFold(fa)

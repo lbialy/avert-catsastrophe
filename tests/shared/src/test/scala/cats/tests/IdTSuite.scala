@@ -33,7 +33,7 @@ import org.scalacheck.Prop._
 
 class IdTSuite extends CatsSuite {
 
-  implicit val iso: Isomorphisms[IdT[ListWrapper, *]] =
+  given iso: Isomorphisms[IdT[ListWrapper, *]] =
     Isomorphisms.invariant[IdT[ListWrapper, *]](IdT.catsDataFunctorForIdT(using ListWrapper.functor))
 
   checkAll("IdT[(CSemi, *), Int]", CommutativeFlatMapTests[IdT[(CSemi, *), *]].commutativeFlatMap[Int, Int, Int])
@@ -45,35 +45,35 @@ class IdTSuite extends CatsSuite {
   checkAll("CommutativeMonad[IdT[Option, *]]", SerializableTests.serializable(CommutativeMonad[IdT[Option, *]]))
 
   {
-    implicit val F: Eq[ListWrapper[Option[Int]]] = ListWrapper.eqv[Option[Int]]
+    given F: Eq[ListWrapper[Option[Int]]] = ListWrapper.eqv[Option[Int]]
 
     checkAll("IdT[ListWrapper, Int]", EqTests[IdT[ListWrapper, Int]].eqv)
     checkAll("Eq[IdT[ListWrapper, Int]]", SerializableTests.serializable(Eq[IdT[ListWrapper, Int]]))
   }
 
   {
-    implicit val F: Order[ListWrapper[Int]] = ListWrapper.order[Int]
+    given F: Order[ListWrapper[Int]] = ListWrapper.order[Int]
 
     checkAll("IdT[ListWrapper, Int]", OrderTests[IdT[ListWrapper, Int]].order)
     checkAll("Order[IdT[ListWrapper, Int]]", SerializableTests.serializable(Order[IdT[ListWrapper, Int]]))
   }
 
   {
-    implicit val F: Functor[ListWrapper] = ListWrapper.functor
+    given F: Functor[ListWrapper] = ListWrapper.functor
 
     checkAll("IdT[ListWrapper, Int]", FunctorTests[IdT[ListWrapper, *]].functor[Int, Int, Int])
     checkAll("Functor[IdT[ListWrapper, *]]", SerializableTests.serializable(Functor[IdT[ListWrapper, *]]))
   }
 
   {
-    implicit val F: Apply[ListWrapper] = ListWrapper.applyInstance
+    given F: Apply[ListWrapper] = ListWrapper.applyInstance
 
     checkAll("IdT[ListWrapper, Int]", ApplyTests[IdT[ListWrapper, *]].apply[Int, Int, Int])
     checkAll("Apply[IdT[ListWrapper, *]]", SerializableTests.serializable(Apply[IdT[ListWrapper, *]]))
   }
 
   {
-    implicit val F: Applicative[ListWrapper] = ListWrapper.applicative
+    given F: Applicative[ListWrapper] = ListWrapper.applicative
 
     checkAll("IdT[ListWrapper, Int]", ApplicativeTests[IdT[ListWrapper, *]].applicative[Int, Int, Int])
     checkAll("Applicative[IdT[ListWrapper, *]]", SerializableTests.serializable(Applicative[IdT[ListWrapper, *]]))
@@ -89,28 +89,28 @@ class IdTSuite extends CatsSuite {
   }
 
   {
-    implicit val F: FlatMap[ListWrapper] = ListWrapper.flatMap
+    given F: FlatMap[ListWrapper] = ListWrapper.flatMap
 
     checkAll("IdT[ListWrapper, Int]", FlatMapTests[IdT[ListWrapper, *]].flatMap[Int, Int, Int])
     checkAll("FlatMap[IdT[ListWrapper, *]]", SerializableTests.serializable(FlatMap[IdT[ListWrapper, *]]))
   }
 
   {
-    implicit val F: Monad[ListWrapper] = ListWrapper.monad
+    given F: Monad[ListWrapper] = ListWrapper.monad
 
     checkAll("IdT[ListWrapper, Int]", MonadTests[IdT[ListWrapper, *]].monad[Int, Int, Int])
     checkAll("Monad[IdT[ListWrapper, *]]", SerializableTests.serializable(Monad[IdT[ListWrapper, *]]))
   }
 
   {
-    implicit val F: Foldable[ListWrapper] = ListWrapper.foldable
+    given F: Foldable[ListWrapper] = ListWrapper.foldable
 
     checkAll("IdT[ListWrapper, Int]", FoldableTests[IdT[ListWrapper, *]].foldable[Int, Int])
     checkAll("Foldable[IdT[ListWrapper, *]]", SerializableTests.serializable(Foldable[IdT[ListWrapper, *]]))
   }
 
   {
-    implicit val F: Traverse[ListWrapper] = ListWrapper.traverse
+    given F: Traverse[ListWrapper] = ListWrapper.traverse
 
     checkAll("IdT[ListWrapper, Int] with Option",
              TraverseTests[IdT[ListWrapper, *]].traverse[Int, Int, Int, Int, Option, Option]
@@ -119,7 +119,7 @@ class IdTSuite extends CatsSuite {
   }
 
   {
-    implicit val F: Traverse[NonEmptyList] = NonEmptyList.catsDataInstancesForNonEmptyList
+    given F: Traverse[NonEmptyList] = NonEmptyList.catsDataInstancesForNonEmptyList
 
     checkAll("IdT[NonEmptyList, Int]",
              NonEmptyTraverseTests[IdT[NonEmptyList, *]].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]

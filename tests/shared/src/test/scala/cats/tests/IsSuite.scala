@@ -29,8 +29,8 @@ import cats.laws.discipline.CategoryTests
 import org.scalacheck.{Arbitrary, Gen}
 
 class IsSuite extends CatsSuite {
-  implicit def arbIs[A, B](implicit ev: A Is B): Arbitrary[A Is B] = Arbitrary(Gen.const(ev))
-  implicit def eqIs[A, B]: Eq[A Is B] = Eq.fromUniversalEquals
+  given arbIs[A, B](using ev: A Is B): Arbitrary[A Is B] = Arbitrary(Gen.const(ev))
+  given eqIs[A, B]: Eq[A Is B] = Eq.fromUniversalEquals
 
   trait Top {
     def foo: String = this.getClass.getName
@@ -53,7 +53,7 @@ class IsSuite extends CatsSuite {
 
     {
       trait Foo
-      implicit def eqFooBar: Foo =:= Bar = implicitly[Foo =:= Foo].asInstanceOf[Foo =:= Bar]
+      given eqFooBar: (Foo =:= Bar) = implicitly[Foo =:= Foo].asInstanceOf[Foo =:= Bar]
       // make sure the above is found
       implicitly[Is[Foo, Bar]]
 

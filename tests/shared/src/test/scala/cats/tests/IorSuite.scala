@@ -41,12 +41,12 @@ import org.scalacheck.Prop._
 
 class IorSuite extends CatsSuite {
 
-  implicit val iso: Isomorphisms[Ior[String, *]] = Isomorphisms.invariant[Ior[String, *]]
+  given iso: Isomorphisms[Ior[String, *]] = Isomorphisms.invariant[Ior[String, *]]
 
   checkAll("Ior[String, Int]", SemigroupalTests[Ior[String, *]].semigroupal[Int, Int, Int])
   checkAll("Semigroupal[Ior[String, *]]", SerializableTests.serializable(Semigroupal[Ior[String, *]]))
 
-  implicit val eq0: Eq[EitherT[Ior[String, *], String, Int]] = EitherT.catsDataEqForEitherT[Ior[String, *], String, Int]
+  given eq0: Eq[EitherT[Ior[String, *], String, Int]] = EitherT.catsDataEqForEitherT[Ior[String, *], String, Int]
 
   checkAll("Ior[String, Int]", MonadErrorTests[Ior[String, *], String].monadError[Int, Int, Int])
   checkAll("MonadError[SIor[String, *]]", SerializableTests.serializable(MonadError[Ior[String, *], String]))

@@ -23,7 +23,7 @@ package cats
 package laws
 
 trait BifoldableLaws[F[_, _]] {
-  implicit def F: Bifoldable[F]
+  given F: Bifoldable[F]
 
   def bifoldLeftConsistentWithBifoldMap[A, B, C](fab: F[A, B], f: A => C, g: B => C)(implicit C: Monoid[C]): IsEq[C] = {
     val expected = F.bifoldLeft(fab, C.empty)(

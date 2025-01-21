@@ -39,7 +39,7 @@ import org.scalacheck.Prop._
 class FreeSuite extends CatsSuite {
   import FreeSuite._
 
-  implicit val iso: Isomorphisms[Free[Option, *]] = Isomorphisms.invariant[Free[Option, *]]
+  given iso: Isomorphisms[Free[Option, *]] = Isomorphisms.invariant[Free[Option, *]]
 
   Monad[Free[Id, *]]
   implicitly[Monad[Free[Id, *]]]
@@ -53,14 +53,14 @@ class FreeSuite extends CatsSuite {
   checkAll("Monad[Free[Option, *]]", SerializableTests.serializable(Monad[Free[Option, *]]))
 
   locally {
-    implicit val instance: Foldable[Free[Option, *]] = Free.catsFreeFoldableForFree[Option]
+    given instance: Foldable[Free[Option, *]] = Free.catsFreeFoldableForFree[Option]
 
     checkAll("Free[Option, *]", FoldableTests[Free[Option, *]].foldable[Int, Int])
     checkAll("Foldable[Free[Option,*]]", SerializableTests.serializable(Foldable[Free[Option, *]]))
   }
 
   locally {
-    implicit val instance: Traverse[Free[Option, *]] = Free.catsFreeTraverseForFree[Option]
+    given instance: Traverse[Free[Option, *]] = Free.catsFreeTraverseForFree[Option]
     checkAll("Free[Option,*]", TraverseTests[Free[Option, *]].traverse[Int, Int, Int, Int, Option, Option])
     checkAll("Traverse[Free[Option,*]]", SerializableTests.serializable(Traverse[Free[Option, *]]))
   }
@@ -162,7 +162,7 @@ class FreeSuite extends CatsSuite {
   def test1[A](value: Int, f: Int => A): Test1Algebra[A] = Test1(value, f)
 
   object Test1Algebra {
-    implicit def test1AlgebraAFunctor: Functor[Test1Algebra] =
+    given test1AlgebraAFunctor: Functor[Test1Algebra] =
       new Functor[Test1Algebra] {
         def map[A, B](a: Test1Algebra[A])(f: A => B): Test1Algebra[B] =
           a match {
@@ -170,7 +170,7 @@ class FreeSuite extends CatsSuite {
           }
       }
 
-    implicit def test1AlgebraArbitrary[A](implicit
+    given test1AlgebraArbitrary[A](using
       seqArb: Arbitrary[Int],
       intAArb: Arbitrary[Int => A]
     ): Arbitrary[Test1Algebra[A]] =
@@ -184,7 +184,7 @@ class FreeSuite extends CatsSuite {
   def test2[A](value: Int, f: Int => A): Test2Algebra[A] = Test2(value, f)
 
   object Test2Algebra {
-    implicit def test2AlgebraAFunctor: Functor[Test2Algebra] =
+    given test2AlgebraAFunctor: Functor[Test2Algebra] =
       new Functor[Test2Algebra] {
         def map[A, B](a: Test2Algebra[A])(f: A => B): Test2Algebra[B] =
           a match {
@@ -192,7 +192,7 @@ class FreeSuite extends CatsSuite {
           }
       }
 
-    implicit def test2AlgebraArbitrary[A](implicit
+    given test2AlgebraArbitrary[A](using
       seqArb: Arbitrary[Int],
       intAArb: Arbitrary[Int => A]
     ): Arbitrary[Test2Algebra[A]] =
@@ -219,7 +219,7 @@ class FreeSuite extends CatsSuite {
 
   test(".liftInject") {
     forAll { (x: Int, y: Int) =>
-      def res[F[_]](implicit I0: Test1Algebra :<: F, I1: Test2Algebra :<: F): Free[F, Int] =
+      def res[F[_]](using I0: Test1Algebra :<: F, I1: Test2Algebra :<: F): Free[F, Int] =
         for {
           a <- Free.liftInject[F](test1(x, identity))
           b <- Free.liftInject[F](test2(y, identity))
@@ -231,7 +231,7 @@ class FreeSuite extends CatsSuite {
   test(".injectRoll") {
     def distr[F[_], A](
       f: Free[F, A]
-    )(implicit F: Functor[F], I0: Test1Algebra :<: F, I1: Test2Algebra :<: F): Option[Free[F, A]] =
+    )(using F: Functor[F], I0: Test1Algebra :<: F, I1: Test2Algebra :<: F): Option[Free[F, A]] =
       for {
         Test1(x, h) <- Free.match_[F, Test1Algebra, A](f)
         Test2(y, k) <- Free.match_[F, Test2Algebra, A](h(x))
@@ -247,24 +247,24 @@ class FreeSuite extends CatsSuite {
 }
 
 object FreeSuite extends FreeSuiteInstances {
-  implicit def trampolineArbitrary[A: Arbitrary]: Arbitrary[Trampoline[A]] =
+  given trampolineArbitrary[A: Arbitrary]: Arbitrary[Trampoline[A]] =
     freeArbitrary[Function0, A]
 
-  implicit def trampolineEq[A: Eq]: Eq[Trampoline[A]] =
+  given trampolineEq[A: Eq]: Eq[Trampoline[A]] =
     freeEq[Function0, A]
 }
 
 sealed trait FreeSuiteInstances extends FreeSuiteInstances1 {
 
-  implicit def freeIdArbitrary[A](implicit A: Arbitrary[A]): Arbitrary[Free[Id, A]] = freeArbitrary[Id, A]
+  given freeIdArbitrary[A](using A: Arbitrary[A]): Arbitrary[Free[Id, A]] = freeArbitrary[Id, A]
 
-  implicit def freeIdEq[A](implicit SA: Eq[A]): Eq[Free[Id, A]] = freeEq[Id, A]
+  given freeIdEq[A](using SA: Eq[A]): Eq[Free[Id, A]] = freeEq[Id, A]
 }
 
 sealed trait FreeSuiteInstances1 {
   val headOptionU = new FunctionK[List, Option] { def apply[A](a: List[A]): Option[A] = a.headOption }
 
-  private def freeGen[F[_], A](maxDepth: Int)(implicit F: Arbitrary[F[A]], A: Arbitrary[A]): Gen[Free[F, A]] = {
+  private def freeGen[F[_], A](maxDepth: Int)(using F: Arbitrary[F[A]], A: Arbitrary[A]): Gen[Free[F, A]] = {
     val noFlatMapped = Gen.oneOf(A.arbitrary.map(Free.pure[F, A]), F.arbitrary.map(Free.liftF[F, A]))
 
     val nextDepth = Gen.chooseNum(1, math.max(1, maxDepth - 1))
@@ -281,9 +281,9 @@ sealed trait FreeSuiteInstances1 {
     else Gen.oneOf(noFlatMapped, withFlatMapped)
   }
 
-  implicit def freeArbitrary[F[_], A](implicit F: Arbitrary[F[A]], A: Arbitrary[A]): Arbitrary[Free[F, A]] =
+  given freeArbitrary[F[_], A](using F: Arbitrary[F[A]], A: Arbitrary[A]): Arbitrary[Free[F, A]] =
     Arbitrary(freeGen[F, A](4))
 
-  implicit def freeEq[S[_]: Monad, A](implicit SA: Eq[S[A]]): Eq[Free[S, A]] =
+  given freeEq[S[_]: Monad, A](using SA: Eq[S[A]]): Eq[Free[S, A]] =
     Eq.by(_.runM(identity))
 }

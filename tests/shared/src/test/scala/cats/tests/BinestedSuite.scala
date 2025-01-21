@@ -43,7 +43,7 @@ class BinestedSuite extends CatsSuite {
 
   {
     // Bifunctor + Functor + Functor = Bifunctor
-    implicit val instance: Functor[ListWrapper] = ListWrapper.functor
+    given instance: Functor[ListWrapper] = ListWrapper.functor
     checkAll(
       "Binested[Either, ListWrapper, Option, *, *]",
       BifunctorTests[Binested[Either, ListWrapper, Option, *, *]].bifunctor[Int, Int, Int, String, String, String]
@@ -55,7 +55,7 @@ class BinestedSuite extends CatsSuite {
 
   {
     // Profunctor + Functor + Functor = Profunctor
-    implicit val instance: Functor[OptionWrapper] = OptionWrapper.functor
+    given instance: Functor[OptionWrapper] = OptionWrapper.functor
     Eq[OptionWrapper[MiniInt] => Option[Int]]
     checkAll(
       "Binested[Function1, OptionWrapper, Option, *, *]",
@@ -70,7 +70,7 @@ class BinestedSuite extends CatsSuite {
 
   {
     // Bifoldable + foldable + foldable = Bifoldable
-    implicit val instance: Foldable[ListWrapper] = ListWrapper.foldable
+    given instance: Foldable[ListWrapper] = ListWrapper.foldable
     checkAll("Binested[Either, ListWrapper, ListWrapper, *, *]",
              BifoldableTests[Binested[Either, ListWrapper, ListWrapper, *, *]].bifoldable[Int, Int, Int]
     )
@@ -82,7 +82,7 @@ class BinestedSuite extends CatsSuite {
 
   {
     // Bitraverse + traverse + traverse = Bitraverse
-    implicit val instance: Traverse[ListWrapper] = ListWrapper.traverse
+    given instance: Traverse[ListWrapper] = ListWrapper.traverse
     checkAll(
       "Binested[Either, ListWrapper, ListWrapper, *, *]",
       BitraverseTests[Binested[Either, ListWrapper, ListWrapper, *, *]]

@@ -47,7 +47,7 @@ object Empty extends EmptyInstances0 {
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllEmptyOps[A](target: A)(implicit tc: Empty[A]): AllOps[A] {
+    implicit def toAllEmptyOps[A](target: A)(using tc: Empty[A]): AllOps[A] {
       type TypeClassType = Empty[A]
     } =
       new AllOps[A] {
@@ -65,7 +65,7 @@ object Empty extends EmptyInstances0 {
   }
   trait AllOps[A] extends Ops[A]
   trait ToEmptyOps extends Serializable {
-    implicit def toEmptyOps[A](target: A)(implicit tc: Empty[A]): Ops[A] {
+    implicit def toEmptyOps[A](target: A)(using tc: Empty[A]): Ops[A] {
       type TypeClassType = Empty[A]
     } =
       new Ops[A] {
@@ -83,6 +83,6 @@ private[alleycats] trait EmptyInstances0 extends compat.IterableEmptyInstance wi
 
 private[alleycats] trait EmptyInstances1 {
   // If Monoid extended Empty then this could be an exported subclass instance provided by Monoid
-  implicit def monoidIsEmpty[A: Monoid]: Empty[A] =
+  given monoidIsEmpty[A: Monoid]: Empty[A] =
     Empty(Monoid[A].empty)
 }

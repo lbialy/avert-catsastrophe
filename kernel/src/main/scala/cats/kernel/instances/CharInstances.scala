@@ -23,7 +23,7 @@ package cats.kernel
 package instances
 
 trait CharInstances {
-  implicit val catsKernelStdOrderForChar: CharOrder & Hash[Char] & BoundedEnumerable[Char] = new CharOrder
+  given catsKernelStdOrderForChar: (CharOrder & Hash[Char] & BoundedEnumerable[Char]) = new CharOrder
 }
 
 trait CharEnumerable extends BoundedEnumerable[Char] {

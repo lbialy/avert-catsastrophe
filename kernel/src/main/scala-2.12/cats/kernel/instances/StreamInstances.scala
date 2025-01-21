@@ -23,22 +23,22 @@ package cats.kernel
 package instances
 
 trait StreamInstances extends StreamInstances1 {
-  implicit def catsKernelStdOrderForStream[A: Order]: Order[Stream[A]] =
+  given catsKernelStdOrderForStream[A: Order]: Order[Stream[A]] =
     new StreamOrder[A]
-  implicit def catsKernelStdMonoidForStream[A]: Monoid[Stream[A]] =
+  given catsKernelStdMonoidForStream[A]: Monoid[Stream[A]] =
     new StreamMonoid[A]
 }
 
 private[instances] trait StreamInstances1 extends StreamInstances2 {
-  implicit def catsKernelStdPartialOrderForStream[A: PartialOrder]: PartialOrder[Stream[A]] =
+  given catsKernelStdPartialOrderForStream[A: PartialOrder]: PartialOrder[Stream[A]] =
     new StreamPartialOrder[A]
 
-  implicit def catsKernelStdHashForStream[A: Hash]: Hash[Stream[A]] =
+  given catsKernelStdHashForStream[A: Hash]: Hash[Stream[A]] =
     new StreamHash[A]
 }
 
 private[instances] trait StreamInstances2 {
-  implicit def catsKernelStdEqForStream[A: Eq]: Eq[Stream[A]] =
+  given catsKernelStdEqForStream[A: Eq]: Eq[Stream[A]] =
     new StreamEq[A]
 }
 

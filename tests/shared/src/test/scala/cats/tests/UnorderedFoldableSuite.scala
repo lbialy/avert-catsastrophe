@@ -57,21 +57,21 @@ sealed abstract class UnorderedFoldableSuite[F[_]](name: String)(implicit
 
   test(s"UnorderedFoldable[$name].count") {
     forAll { (fa: F[String], p: String => Boolean) =>
-      implicit val F: UnorderedFoldable[F] = instance
+      given F: UnorderedFoldable[F] = instance
       assert(fa.count(p) === (iterator(fa).count(p).toLong))
     }
   }
 
   test(s"UnorderedFoldable[$name].size") {
     forAll { (fa: F[String]) =>
-      implicit val F: UnorderedFoldable[F] = instance
+      given F: UnorderedFoldable[F] = instance
       assert(fa.count(Function.const(true)) === (fa.size))
     }
   }
 
   test(s"UnorderedFoldable[$name].contains") {
     forAll { (fa: F[String], v: String) =>
-      implicit val F: UnorderedFoldable[F] = instance
+      given F: UnorderedFoldable[F] = instance
       assert(fa.contains_(v) === (iterator(fa).contains(v)))
     }
   }

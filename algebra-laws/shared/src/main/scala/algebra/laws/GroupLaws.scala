@@ -40,8 +40,8 @@ object GroupLaws {
 @deprecated("Provided by cats.kernel.laws", since = "2.7.0")
 trait GroupLaws[A] extends Laws {
 
-  implicit def Equ: Eq[A]
-  implicit def Arb: Arbitrary[A]
+  given Equ: Eq[A]
+  given Arb: Arbitrary[A]
 
   // groups
 

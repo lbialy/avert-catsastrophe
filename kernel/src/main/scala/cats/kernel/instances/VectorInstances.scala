@@ -27,22 +27,22 @@ import scala.annotation.nowarn
 
 @suppressUnusedImportWarningForScalaVersionSpecific
 trait VectorInstances extends VectorInstances1 {
-  implicit def catsKernelStdOrderForVector[A: Order]: Order[Vector[A]] =
+  given catsKernelStdOrderForVector[A: Order]: Order[Vector[A]] =
     new VectorOrder[A]
-  implicit def catsKernelStdMonoidForVector[A]: Monoid[Vector[A]] =
+  given catsKernelStdMonoidForVector[A]: Monoid[Vector[A]] =
     VectorMonoid[A]
 }
 
 private[instances] trait VectorInstances1 extends VectorInstances2 {
-  implicit def catsKernelStdPartialOrderForVector[A: PartialOrder]: PartialOrder[Vector[A]] =
+  given catsKernelStdPartialOrderForVector[A: PartialOrder]: PartialOrder[Vector[A]] =
     new VectorPartialOrder[A]
 
-  implicit def catsKernelStdHashForVector[A: Hash]: Hash[Vector[A]] =
+  given catsKernelStdHashForVector[A: Hash]: Hash[Vector[A]] =
     new VectorHash[A]
 }
 
 private[instances] trait VectorInstances2 {
-  implicit def catsKernelStdEqForVector[A: Eq]: Eq[Vector[A]] =
+  given catsKernelStdEqForVector[A: Eq]: Eq[Vector[A]] =
     new VectorEq[A]
 }
 

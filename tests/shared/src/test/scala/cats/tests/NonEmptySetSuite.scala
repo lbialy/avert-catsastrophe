@@ -49,7 +49,7 @@ class NonEmptySetSuite extends CatsSuite {
   checkAll("NonEmptySet[String]", HashTests[NonEmptySet[String]].hash)
 
   {
-    implicit val A: Order[ListWrapper[Int]] = ListWrapper.order[Int]
+    given A: Order[ListWrapper[Int]] = ListWrapper.order[Int]
     checkAll("Eq[NonEmptySet[ListWrapper[Int]]]", SerializableTests.serializable(Eq[NonEmptySet[ListWrapper[Int]]]))
 
     checkAll("NonEmptySet[ListWrapper[Int]]", OrderTests[NonEmptySet[ListWrapper[Int]]].order)

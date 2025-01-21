@@ -39,7 +39,7 @@ trait SortedMapInstances extends SortedMapInstances2 {
   def catsStdCommutativeMonoidForSortedMap[K: Order, V: CommutativeSemigroup] =
     cats.kernel.instances.sortedMap.catsKernelStdCommutativeMonoidForSortedMap[K, V]
 
-  implicit def catsStdShowForSortedMap[A, B](using showA: Show[A], showB: Show[B]): Show[SortedMap[A, B]] =
+  given catsStdShowForSortedMap[A, B](using showA: Show[A], showB: Show[B]): Show[SortedMap[A, B]] =
     _.iterator
       .map { case (a, b) => showA.show(a) + " -> " + showB.show(b) }
       .mkString("SortedMap(", ", ", ")")

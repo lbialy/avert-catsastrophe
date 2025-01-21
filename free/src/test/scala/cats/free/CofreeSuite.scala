@@ -38,16 +38,16 @@ class CofreeSuite extends CatsSuite {
 
   import CofreeSuite._
 
-  implicit val iso: Isomorphisms[Cofree[Option, *]] = Isomorphisms.invariant[Cofree[Option, *]]
+  given iso: Isomorphisms[Cofree[Option, *]] = Isomorphisms.invariant[Cofree[Option, *]]
 
   checkAll("Cofree[Option, *]", ComonadTests[Cofree[Option, *]].comonad[Int, Int, Int])
   locally {
-    implicit val instance: Traverse[Cofree[Option, *]] = Cofree.catsTraverseForCofree[Option]
+    given instance: Traverse[Cofree[Option, *]] = Cofree.catsTraverseForCofree[Option]
     checkAll("Cofree[Option, *]", TraverseTests[Cofree[Option, *]].traverse[Int, Int, Int, Int, Option, Option])
     checkAll("Traverse[Cofree[Option, *]]", SerializableTests.serializable(Traverse[Cofree[Option, *]]))
   }
   locally {
-    implicit val instance: Reducible[Cofree[Option, *]] = Cofree.catsReducibleForCofree[Option]
+    given instance: Reducible[Cofree[Option, *]] = Cofree.catsReducibleForCofree[Option]
     checkAll("Cofree[Option, *]", ReducibleTests[Cofree[Option, *]].reducible[Option, Int, Int])
     checkAll("Reducible[Cofree[Option, *]]", SerializableTests.serializable(Reducible[Cofree[Option, *]]))
   }
@@ -178,7 +178,7 @@ sealed trait CofreeSuiteInstances {
   type CofreeNel[A] = Cofree[Option, A]
   type CofreeRoseTree[A] = Cofree[List, A]
 
-  implicit def cofNelEq[A](implicit e: Eq[A]): Eq[CofreeNel[A]] = new Eq[CofreeNel[A]] {
+  given cofNelEq[A](using e: Eq[A]): Eq[CofreeNel[A]] = new Eq[CofreeNel[A]] {
     @tailrec def eqv(a: CofreeNel[A], b: CofreeNel[A]): Boolean =
       (a.tailForced, b.tailForced) match {
         case (Some(at), Some(bt)) if e.eqv(a.head, b.head) => eqv(at, bt)
@@ -187,10 +187,10 @@ sealed trait CofreeSuiteInstances {
       }
   }
 
-  implicit def CofreeOptionCogen[A: Cogen]: Cogen[CofreeNel[A]] =
+  given CofreeOptionCogen[A: Cogen]: Cogen[CofreeNel[A]] =
     implicitly[Cogen[List[A]]].contramap[CofreeNel[A]](cofNelToNel(_).toList)
 
-  implicit def CofreeOptionArb[A: Arbitrary]: Arbitrary[CofreeNel[A]] = {
+  given CofreeOptionArb[A: Arbitrary]: Arbitrary[CofreeNel[A]] = {
     val arb = Arbitrary {
       Gen.resize(20, Gen.nonEmptyListOf(implicitly[Arbitrary[A]].arbitrary))
     }

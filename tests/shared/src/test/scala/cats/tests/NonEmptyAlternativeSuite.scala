@@ -25,7 +25,7 @@ import cats.NonEmptyAlternative
 import cats.laws.discipline.NonEmptyAlternativeTests
 
 class NonEmptyAlternativeSuite extends CatsSuite {
-  implicit val listWrapperNeAlternative: NonEmptyAlternative[ListWrapper] = ListWrapper.nonEmptyAlternative
+  given listWrapperNeAlternative: NonEmptyAlternative[ListWrapper] = ListWrapper.nonEmptyAlternative
 
   checkAll("Option[Int]", NonEmptyAlternativeTests[Option].nonEmptyAlternative[Int, Int, Int])
   checkAll("List[Int]", NonEmptyAlternativeTests[List].nonEmptyAlternative[Int, Int, Int])

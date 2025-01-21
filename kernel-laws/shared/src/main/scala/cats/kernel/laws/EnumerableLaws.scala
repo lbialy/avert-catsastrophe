@@ -24,7 +24,7 @@ package laws
 
 trait PartialPreviousLaws[A] extends PartialOrderLaws[A] {
 
-  implicit def P: PartialPrevious[A]
+  given P: PartialPrevious[A]
 
   def previousOrderWeak(a: A): IsEq[Boolean] =
     P.partialPrevious(a).map(E.lt(_, a)).getOrElse(true) <-> true
@@ -48,7 +48,7 @@ object PartialPreviousLaws {
 
 trait PartialNextLaws[A] extends PartialOrderLaws[A] {
 
-  implicit def N: PartialNext[A]
+  given N: PartialNext[A]
 
   def nextOrderWeak(a: A): IsEq[Boolean] =
     N.partialNext(a).map(E.gt(_, a)).getOrElse(true) <-> true

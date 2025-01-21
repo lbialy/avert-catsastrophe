@@ -28,7 +28,7 @@ import algebra.ring._
 package object int extends IntInstances
 
 trait IntInstances extends cats.kernel.instances.IntInstances {
-  implicit val intAlgebra: IntAlgebra =
+  given intAlgebra: IntAlgebra =
     new IntAlgebra
 
   val IntMinMaxLattice: BoundedDistributiveLattice[Int] =

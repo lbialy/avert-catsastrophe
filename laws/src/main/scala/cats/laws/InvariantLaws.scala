@@ -29,7 +29,7 @@ import cats.syntax.invariant._
  * Laws that must be obeyed by any `cats.Invariant`.
  */
 trait InvariantLaws[F[_]] {
-  implicit def F: Invariant[F]
+  given F: Invariant[F]
 
   def invariantIdentity[A](fa: F[A]): IsEq[F[A]] =
     fa.imap(identity[A])(identity[A]) <-> fa

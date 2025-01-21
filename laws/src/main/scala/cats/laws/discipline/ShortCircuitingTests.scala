@@ -57,7 +57,7 @@ trait ShortCircuitingTests[F[_]] extends Laws {
     )
 
   def traverseFilter[A: Arbitrary](implicit TF: TraverseFilter[F], ArbFA: Arbitrary[F[A]], lEq: Eq[Long]): RuleSet = {
-    implicit val T: Traverse[F] = TF.traverse
+    given T: Traverse[F] = TF.traverse
     new DefaultRuleSet(
       name = "traverseFilterShortCircuiting",
       parent = Some(traverse[A]),

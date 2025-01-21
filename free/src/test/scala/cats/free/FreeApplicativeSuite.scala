@@ -37,7 +37,7 @@ import org.scalacheck.{Arbitrary, Gen}
 class FreeApplicativeSuite extends CatsSuite {
   import FreeApplicativeSuite._
 
-  implicit val iso: Isomorphisms[FreeApplicative[Option, *]] = Isomorphisms.invariant[FreeApplicative[Option, *]]
+  given iso: Isomorphisms[FreeApplicative[Option, *]] = Isomorphisms.invariant[FreeApplicative[Option, *]]
 
   checkAll("FreeApplicative[Option, *]", ApplicativeTests[FreeApplicative[Option, *]].applicative[Int, Int, Int])
   checkAll("Applicative[FreeApplicative[Option, *]]",
@@ -182,17 +182,17 @@ object FreeApplicativeSuite {
     else Gen.oneOf(noFlatMapped, withFlatMapped)
   }
 
-  implicit def freeArbitrary[F[_], A](implicit
+  given freeArbitrary[F[_], A](using
     F: Arbitrary[F[A]],
     FF: Arbitrary[(A, A) => A],
     A: Arbitrary[A]
   ): Arbitrary[FreeApplicative[F, A]] =
     Arbitrary(freeGen[F, A](4))
 
-  implicit def freeApplicativeEq[S[_]: Applicative, A](implicit SA: Eq[S[A]]): Eq[FreeApplicative[S, A]] =
+  given freeApplicativeEq[S[_]: Applicative, A](using SA: Eq[S[A]]): Eq[FreeApplicative[S, A]] =
     Eq.by(_.fold)
 
-  implicit def catsLawsArbitraryForListNatTrans: Arbitrary[List ~> List] =
+  given catsLawsArbitraryForListNatTrans: Arbitrary[List ~> List] =
     Arbitrary(
       Gen.oneOf(FunctionK.id[List],
                 new (List ~> List) {

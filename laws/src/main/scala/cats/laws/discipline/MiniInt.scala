@@ -72,14 +72,14 @@ object MiniInt {
 
   val allValues: List[MiniInt] = (minIntValue to maxIntValue).map(unsafeFromInt).toList
 
-  implicit val catsLawsEqInstancesForMiniInt: Order[MiniInt] & Hash[MiniInt] =
+  given catsLawsEqInstancesForMiniInt: (Order[MiniInt] & Hash[MiniInt]) =
     new Order[MiniInt] with Hash[MiniInt] {
       def hash(x: MiniInt): Int = Hash[Int].hash(x.intBits)
 
       def compare(x: MiniInt, y: MiniInt): Int = Order[Int].compare(x.toInt, y.toInt)
     }
 
-  implicit val catsLawsExhaustiveCheckForMiniInt: ExhaustiveCheck[MiniInt] =
+  given catsLawsExhaustiveCheckForMiniInt: ExhaustiveCheck[MiniInt] =
     ExhaustiveCheck.instance(allValues)
 
   val miniIntAddition: CommutativeGroup[MiniInt] = new CommutativeGroup[MiniInt] {

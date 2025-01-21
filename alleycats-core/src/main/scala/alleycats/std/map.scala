@@ -31,7 +31,7 @@ object map extends MapInstances
 trait MapInstances {
 
   // toList is inconsistent. See https://github.com/typelevel/cats/issues/1831
-  implicit def alleycatsStdInstancesForMap[K]: Traverse[Map[K, *]] =
+  given alleycatsStdInstancesForMap[K]: Traverse[Map[K, *]] =
     new Traverse[Map[K, *]] {
 
       def traverse[G[_], A, B](fa: Map[K, A])(f: A => G[B])(implicit G: Applicative[G]): G[Map[K, B]] =
@@ -97,7 +97,7 @@ trait MapInstances {
         collectFirst(fa)(Function.unlift(f))
     }
 
-  implicit def alleycatsStdMapTraverseFilter[K]: TraverseFilter[Map[K, *]] =
+  given alleycatsStdMapTraverseFilter[K]: TraverseFilter[Map[K, *]] =
     new TraverseFilter[Map[K, *]] {
       def traverse: Traverse[Map[K, *]] = alleycatsStdInstancesForMap
 
@@ -116,7 +116,7 @@ trait MapInstances {
           }) { chain => chain.foldLeft(Map.empty[K, B]) { case (m, (k, b)) => m.updated(k, b) } }
     }
 
-  implicit def alletcatsStdMapEmptyK[K]: EmptyK[Map[K, *]] =
+  given alletcatsStdMapEmptyK[K]: EmptyK[Map[K, *]] =
     new EmptyK[Map[K, *]] {
       def empty[A]: Map[K, A] = Map.empty[K, A]
     }

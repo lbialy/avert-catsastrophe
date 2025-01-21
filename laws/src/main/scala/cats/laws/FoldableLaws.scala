@@ -27,7 +27,7 @@ import cats.syntax.all._
 import scala.collection.mutable
 
 trait FoldableLaws[F[_]] extends UnorderedFoldableLaws[F] {
-  implicit def F: Foldable[F]
+  given F: Foldable[F]
 
   def foldRightLazy[A](fa: F[A]): Boolean = {
     var i = 0

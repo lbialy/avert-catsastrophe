@@ -23,8 +23,8 @@ package cats.kernel
 package instances
 
 trait DoubleInstances {
-  implicit val catsKernelStdOrderForDouble: Order[Double] & Hash[Double] = new DoubleOrder
-  implicit val catsKernelStdGroupForDouble: CommutativeGroup[Double] = new DoubleGroup
+  given catsKernelStdOrderForDouble: (Order[Double] & Hash[Double]) = new DoubleOrder
+  given catsKernelStdGroupForDouble: CommutativeGroup[Double] = new DoubleGroup
 }
 
 class DoubleGroup extends CommutativeGroup[Double] {

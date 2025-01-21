@@ -45,24 +45,24 @@ package instances
 import scala.collection.immutable.SortedMap
 
 trait SortedMapInstances extends SortedMapInstances3 {
-  implicit def catsKernelStdHashForSortedMap[K: Hash, V: Hash]: Hash[SortedMap[K, V]] =
+  given catsKernelStdHashForSortedMap[K: Hash, V: Hash]: Hash[SortedMap[K, V]] =
     new SortedMapHash[K, V]
 
   @deprecated("Use catsKernelStdHashForSortedMap override without Order", "2.2.0-M3")
   def catsKernelStdHashForSortedMap[K, V](hashK: Hash[K], orderK: Order[K], hashV: Hash[V]): Hash[SortedMap[K, V]] =
     new SortedMapHash[K, V]()(hashV, hashK)
 
-  implicit def catsKernelStdCommutativeSemigroupForSortedMap[K, V: CommutativeSemigroup]
+  given catsKernelStdCommutativeSemigroupForSortedMap[K, V: CommutativeSemigroup]
     : CommutativeSemigroup[SortedMap[K, V]] =
     new SortedMapCommutativeSemigroup[K, V]
 
-  implicit def catsKernelStdCommutativeMonoidForSortedMap[K: Order, V: CommutativeSemigroup]
+  given catsKernelStdCommutativeMonoidForSortedMap[K: Order, V: CommutativeSemigroup]
     : CommutativeMonoid[SortedMap[K, V]] =
     new SortedMapCommutativeMonoid[K, V]
 }
 
 private[instances] trait SortedMapInstances1 {
-  implicit def catsKernelStdEqForSortedMap[K, V: Eq]: Eq[SortedMap[K, V]] =
+  given catsKernelStdEqForSortedMap[K, V: Eq]: Eq[SortedMap[K, V]] =
     new SortedMapEq[K, V]
 
   @deprecated("Use catsKernelStdEqForSortedMap override without Order", "2.2.0-M3")
@@ -71,24 +71,24 @@ private[instances] trait SortedMapInstances1 {
 }
 
 private[instances] trait SortedMapInstances2 extends SortedMapInstances1 {
-  implicit def catsKernelStdSemigroupForSortedMap[K, V: Semigroup]: Semigroup[SortedMap[K, V]] =
+  given catsKernelStdSemigroupForSortedMap[K, V: Semigroup]: Semigroup[SortedMap[K, V]] =
     new SortedMapSemigroup[K, V]
 
-  implicit def catsKernelStdMonoidForSortedMap[K: Order, V: Semigroup]: Monoid[SortedMap[K, V]] =
+  given catsKernelStdMonoidForSortedMap[K: Order, V: Semigroup]: Monoid[SortedMap[K, V]] =
     new SortedMapMonoid[K, V]
 
-  implicit def catsKernelStdPartialOrderForSortedMap[K, V: PartialOrder]: PartialOrder[SortedMap[K, V]] =
+  given catsKernelStdPartialOrderForSortedMap[K, V: PartialOrder]: PartialOrder[SortedMap[K, V]] =
     new SortedMapPartialOrder[K, V]
 }
 
 private[instances] trait SortedMapInstances3 extends SortedMapInstances2 {
-  implicit def catsKernelStdOrderForSortedMap[K, V: Order]: Order[SortedMap[K, V]] =
+  given catsKernelStdOrderForSortedMap[K, V: Order]: Order[SortedMap[K, V]] =
     new SortedMapOrder[K, V]
 }
 
 private[instances] class SortedMapOrder[K, V](implicit V: Order[V]) extends Order[SortedMap[K, V]] {
   override def compare(x: SortedMap[K, V], y: SortedMap[K, V]): Int = {
-    implicit val order: Order[K] = Order.fromOrdering(x.ordering)
+    given order: Order[K] = Order.fromOrdering(x.ordering)
     if (x eq y) {
       0
     } else {
@@ -100,7 +100,7 @@ private[instances] class SortedMapOrder[K, V](implicit V: Order[V]) extends Orde
 private[instances] class SortedMapPartialOrder[K, V](implicit V: PartialOrder[V])
     extends PartialOrder[SortedMap[K, V]] {
   override def partialCompare(x: SortedMap[K, V], y: SortedMap[K, V]): Double = {
-    implicit val order: Order[K] = Order.fromOrdering(x.ordering)
+    given order: Order[K] = Order.fromOrdering(x.ordering)
 
     if (x eq y) {
       0.0

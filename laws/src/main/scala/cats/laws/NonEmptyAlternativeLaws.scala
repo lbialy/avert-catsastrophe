@@ -25,7 +25,8 @@ package laws
 import cats.syntax.all._
 
 trait NonEmptyAlternativeLaws[F[_]] extends ApplicativeLaws[F] with SemigroupKLaws[F] {
-  implicit override def F: NonEmptyAlternative[F]
+  given F: NonEmptyAlternative[F]
+  // Scala 3 givens cannot be overriden
   implicit def algebra[A]: Semigroup[F[A]] = F.algebra[A]
 
   def nonEmptyAlternativeLeftDistributivity[A, B](fa: F[A], fa2: F[A], f: A => B): IsEq[F[B]] =

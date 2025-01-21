@@ -23,9 +23,9 @@ package cats.kernel
 package instances
 
 trait LongInstances {
-  implicit val catsKernelStdOrderForLong: Order[Long] & Hash[Long] & BoundedEnumerable[Long] =
+  given catsKernelStdOrderForLong: (Order[Long] & Hash[Long] & BoundedEnumerable[Long]) =
     new LongOrder
-  implicit val catsKernelStdGroupForLong: CommutativeGroup[Long] = new LongGroup
+  given catsKernelStdGroupForLong: CommutativeGroup[Long] = new LongGroup
 }
 
 class LongGroup extends CommutativeGroup[Long] {

@@ -33,7 +33,7 @@ class FreeStructuralSuite extends CatsSuite {
   import FreeSuite.freeArbitrary
   import FreeStructuralSuite._
 
-  implicit def freeCogen[S[_]: Functor, A](implicit S: => Cogen[S[Free[S, A]]], A: Cogen[A]): Cogen[Free[S, A]] =
+  given freeCogen[S[_]: Functor, A](using S: => Cogen[S[Free[S, A]]], A: Cogen[A]): Cogen[Free[S, A]] =
     Cogen { (seed, f) =>
       f.resume match {
         case Left(sf) =>
@@ -58,7 +58,7 @@ object FreeStructuralSuite {
   sealed trait ExprF[A] extends Product with Serializable
 
   object ExprF {
-    implicit def eq[A: Eq]: Eq[ExprF[A]] = {
+    given eq[A: Eq]: Eq[ExprF[A]] = {
       case (Add(left1, right1), Add(left2, right2)) =>
         left1 === left2 && right1 === right2
       case (Neg(inner1), Neg(inner2)) =>
@@ -69,7 +69,7 @@ object FreeStructuralSuite {
         false
     }
 
-    implicit def traverse: Traverse[ExprF] =
+    given traverse: Traverse[ExprF] =
       new Traverse[ExprF] {
 
         def foldLeft[A, B](fa: ExprF[A], b: B)(f: (B, A) => B): B =
@@ -109,7 +109,7 @@ object FreeStructuralSuite {
           }
       }
 
-    implicit def arbitraryExprF[A: Arbitrary](implicit gnum: Arbitrary[Int]): Arbitrary[ExprF[A]] =
+    given arbitraryExprF[A: Arbitrary](using gnum: Arbitrary[Int]): Arbitrary[ExprF[A]] =
       Arbitrary {
         import Arbitrary.arbitrary
 
@@ -127,7 +127,7 @@ object FreeStructuralSuite {
         Gen.oneOf(genAdd, genNeg, genNum)
       }
 
-    implicit def cogenExprF[A](implicit cg: Cogen[A], cgnum: Cogen[Int]): Cogen[ExprF[A]] =
+    given cogenExprF[A](using cg: Cogen[A], cgnum: Cogen[Int]): Cogen[ExprF[A]] =
       Cogen { (seed, ef) =>
         ef match {
           case Add(left, right) =>

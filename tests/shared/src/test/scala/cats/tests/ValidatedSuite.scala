@@ -49,14 +49,14 @@ import cats.syntax.eq._
 import org.scalacheck.Prop._
 
 class ValidatedSuite extends CatsSuite {
-  implicit val iso: Isomorphisms[Validated[String, *]] = Isomorphisms.invariant[Validated[String, *]]
+  given iso: Isomorphisms[Validated[String, *]] = Isomorphisms.invariant[Validated[String, *]]
   checkAll("Validated[String, Int]", SemigroupalTests[Validated[String, *]].semigroupal[Int, Int, Int])
   checkAll("Semigroupal[Validated[String,*]]", SerializableTests.serializable(Semigroupal[Validated[String, *]]))
 
   checkAll("Validated[*, *]", BitraverseTests[Validated].bitraverse[Option, Int, Int, Int, String, String, String])
   checkAll("Bitraverse[Validated]", SerializableTests.serializable(Bitraverse[Validated]))
 
-  implicit val eq0: Eq[EitherT[Validated[String, *], String, Int]] =
+  given eq0: Eq[EitherT[Validated[String, *], String, Int]] =
     EitherT.catsDataEqForEitherT[Validated[String, *], String, Int]
 
   checkAll("Validated[String, Int]",
@@ -87,7 +87,7 @@ class ValidatedSuite extends CatsSuite {
   checkAll("Align[Validated[Int, *]]", SerializableTests.serializable(Align[Validated[Int, *]]))
 
   {
-    implicit val L: Semigroup[ListWrapper[String]] = ListWrapper.semigroup[String]
+    given L: Semigroup[ListWrapper[String]] = ListWrapper.semigroup[String]
     checkAll("Validated[ListWrapper[String], *]", SemigroupKTests[Validated[ListWrapper[String], *]].semigroupK[Int])
     checkAll("SemigroupK[Validated[ListWrapper[String], *]]",
              SerializableTests.serializable(SemigroupK[Validated[ListWrapper[String], *]])
@@ -95,8 +95,8 @@ class ValidatedSuite extends CatsSuite {
   }
 
   {
-    implicit val S: PartialOrder[ListWrapper[String]] = ListWrapper.partialOrder[String]
-    implicit val I: PartialOrder[ListWrapper[Int]] = ListWrapper.partialOrder[Int]
+    given S: PartialOrder[ListWrapper[String]] = ListWrapper.partialOrder[String]
+    given I: PartialOrder[ListWrapper[Int]] = ListWrapper.partialOrder[Int]
     checkAll("Validated[ListWrapper[String], ListWrapper[Int]]",
              PartialOrderTests[Validated[ListWrapper[String], ListWrapper[Int]]].partialOrder
     )
@@ -107,8 +107,8 @@ class ValidatedSuite extends CatsSuite {
   }
 
   {
-    implicit val S: Eq[ListWrapper[String]] = ListWrapper.eqv[String]
-    implicit val I: Eq[ListWrapper[Int]] = ListWrapper.eqv[Int]
+    given S: Eq[ListWrapper[String]] = ListWrapper.eqv[String]
+    given I: Eq[ListWrapper[Int]] = ListWrapper.eqv[Int]
     checkAll("Validated[ListWrapper[String], ListWrapper[Int]]",
              EqTests[Validated[ListWrapper[String], ListWrapper[Int]]].eqv
     )
@@ -367,7 +367,7 @@ class ValidatedSuite extends CatsSuite {
   }
 
   test("liftTo works with specialized errors") {
-    implicit val eqThrow: Eq[Throwable] = Eq.fromUniversalEquals
+    given eqThrow: Eq[Throwable] = Eq.fromUniversalEquals
     val ex: IllegalArgumentException = new IllegalArgumentException()
     val validated: Validated[IllegalArgumentException, Int] = Validated.Invalid(ex)
     val lifted: Either[Throwable, Int] = validated.liftTo[Either[Throwable, *]]

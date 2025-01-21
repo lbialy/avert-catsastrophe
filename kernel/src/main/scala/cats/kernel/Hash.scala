@@ -77,6 +77,6 @@ object Hash extends HashFunctions[Hash] {
 }
 
 trait HashToHashingConversion {
-  implicit def catsKernelHashToHashing[A](implicit ev: Hash[A]): Hashing[A] =
+  given catsKernelHashToHashing[A](using ev: Hash[A]): Hashing[A] =
     ev.hash(_)
 }

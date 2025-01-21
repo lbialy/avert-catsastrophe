@@ -32,10 +32,10 @@ import cats.syntax.eq._
 import org.scalacheck.Prop._
 
 class CoyonedaSuite extends CatsSuite {
-  implicit def coyonedaArbitrary[F[_]: Functor, A: Arbitrary](implicit F: Arbitrary[F[A]]): Arbitrary[Coyoneda[F, A]] =
+  given coyonedaArbitrary[F[_]: Functor, A: Arbitrary](using F: Arbitrary[F[A]]): Arbitrary[Coyoneda[F, A]] =
     Arbitrary(F.arbitrary.map(Coyoneda.lift))
 
-  implicit def coyonedaEq[F[_]: Functor, A](implicit FA: Eq[F[A]]): Eq[Coyoneda[F, A]] =
+  given coyonedaEq[F[_]: Functor, A](using FA: Eq[F[A]]): Eq[Coyoneda[F, A]] =
     Eq.by(_.run)
 
   checkAll("Coyoneda[Option, *]", FunctorTests[Coyoneda[Option, *]].functor[Int, Int, Int])

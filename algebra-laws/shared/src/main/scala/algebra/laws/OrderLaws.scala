@@ -48,9 +48,9 @@ object OrderLaws {
 @deprecated("Provided by cats.kernel.laws", since = "2.7.0")
 trait OrderLaws[A] extends Laws {
 
-  implicit def Equ: Eq[A]
-  implicit def Arb: Arbitrary[A]
-  implicit def Cog: Cogen[A]
+  given Equ: Eq[A]
+  given Arb: Arbitrary[A]
+  given Cog: Cogen[A]
 
   def eqv: OrderProperties = new OrderProperties(
     name = "eq",

@@ -29,15 +29,15 @@ import cats.arrow.Category
 class AsSuite extends CatsSuite {
   import cats.evidence._
 
-  def toMap[A, B, X](fa: List[X])(implicit ev: X <~< (A, B)): Map[A, B] = {
+  def toMap[A, B, X](fa: List[X])(using ev: X <~< (A, B)): Map[A, B] = {
     type RequiredFunc = (Map[A, B], X) => Map[A, B]
     type GivenFunc = (Map[A, B], (A, B)) => Map[A, B]
     val subst: GivenFunc <~< RequiredFunc = As.contra2_3(ev) // because inference failed on Scala.js on 2.10.6
     fa.foldLeft(Map.empty[A, B])(subst(_ + _))
   }
 
-  implicit def arbAs[A, B](implicit ev: A <~< B): Arbitrary[A <~< B] = Arbitrary(Gen.const(ev))
-  implicit def eq[A, B]: Eq[As[A, B]] = Eq.fromUniversalEquals
+  given arbAs[A, B](using ev: A <~< B): Arbitrary[A <~< B] = Arbitrary(Gen.const(ev))
+  given eq[A, B]: Eq[As[A, B]] = Eq.fromUniversalEquals
 
   test("narrow an input of a function2") {
     // scala's GenTraversableOnce#toMap has a similar <:< constraint
@@ -66,7 +66,7 @@ class AsSuite extends CatsSuite {
     {
       trait Foo
       trait Bar
-      implicit def subFooBar: Foo <:< Bar = implicitly[Foo <:< Foo].asInstanceOf[Foo <:< Bar]
+      given subFooBar: (Foo <:< Bar) = implicitly[Foo <:< Foo].asInstanceOf[Foo <:< Bar]
       // make sure the above is found
       implicitly[As[Foo, Bar]]
       val res: Foo <:< Bar = implicitly[As[Foo, Bar]].toPredef

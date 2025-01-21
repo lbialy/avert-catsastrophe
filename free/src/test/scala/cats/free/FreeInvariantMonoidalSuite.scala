@@ -37,7 +37,7 @@ import cats.tests.CatsSuite
 import org.scalacheck.{Arbitrary, Gen}
 
 class FreeInvariantMonoidalSuite extends CatsSuite {
-  implicit def freeInvariantMonoidalArbitrary[F[_], A](implicit
+  given freeInvariantMonoidalArbitrary[F[_], A](using
     F: Arbitrary[F[A]],
     A: Arbitrary[A]
   ): Arbitrary[FreeInvariantMonoidal[F, A]] =
@@ -45,12 +45,12 @@ class FreeInvariantMonoidalSuite extends CatsSuite {
       Gen.oneOf(A.arbitrary.map(FreeInvariantMonoidal.pure[F, A]), F.arbitrary.map(FreeInvariantMonoidal.lift[F, A]))
     )
 
-  implicit def freeInvariantMonoidalEq[S[_]: InvariantMonoidal, A](implicit
+  given freeInvariantMonoidalEq[S[_]: InvariantMonoidal, A](using
     SA: Eq[S[A]]
   ): Eq[FreeInvariantMonoidal[S, A]] =
     Eq.by(_.foldMap(FunctionK.id))
 
-  implicit val isoFreeBinCodec: Isomorphisms[FreeInvariantMonoidal[BinCodec, *]] =
+  given isoFreeBinCodec: Isomorphisms[FreeInvariantMonoidal[BinCodec, *]] =
     Isomorphisms.invariant[FreeInvariantMonoidal[BinCodec, *]]
 
   checkAll("FreeInvariantMonoidal[BinCodec, *]",
@@ -74,7 +74,7 @@ class FreeInvariantMonoidalSuite extends CatsSuite {
     }
   }
 
-  implicit val idIsInvariantMonoidal: InvariantMonoidal[Id] = new InvariantMonoidal[Id] {
+  given idIsInvariantMonoidal: InvariantMonoidal[Id] = new InvariantMonoidal[Id] {
     def product[A, B](fa: Id[A], fb: Id[B]): Id[(A, B)] = fa -> fb
     def imap[A, B](fa: Id[A])(f: A => B)(g: B => A): Id[B] = f(fa)
     def unit: Id[Unit] = ()

@@ -42,16 +42,16 @@ import org.scalacheck.Test.Parameters
 @suppressUnusedImportWarningForScalaVersionSpecific
 object KernelCheck {
 
-  implicit val arbitraryBitSet: Arbitrary[BitSet] =
+  given arbitraryBitSet: Arbitrary[BitSet] =
     Arbitrary(arbitrary[List[Short]].map(ns => BitSet(ns.map(_ & 0xffff): _*)))
 
-  implicit val arbitrarySymbol: Arbitrary[Symbol] =
+  given arbitrarySymbol: Arbitrary[Symbol] =
     Arbitrary(arbitrary[String].map(s => Symbol(s)))
 
-  implicit val arbitraryUUID: Arbitrary[UUID] =
+  given arbitraryUUID: Arbitrary[UUID] =
     Arbitrary(Gen.uuid)
 
-  implicit val arbitraryFiniteDuration: Arbitrary[FiniteDuration] = {
+  given arbitraryFiniteDuration: Arbitrary[FiniteDuration] = {
     // max range is +/- 292 years, but we give ourselves some extra headroom
     // to ensure that we can add these things up. they crash on overflow.
     val n = (292L * 365) / 500
@@ -68,52 +68,52 @@ object KernelCheck {
     )
   }
 
-  implicit val arbitraryDeadline: Arbitrary[Deadline] =
+  given arbitraryDeadline: Arbitrary[Deadline] =
     Arbitrary(arbitraryFiniteDuration.arbitrary.map(Deadline.apply))
 
   // `Duration.Undefined`, `Duration.Inf` and `Duration.MinusInf` break the tests
-  implicit val arbitraryDuration: Arbitrary[Duration] =
+  given arbitraryDuration: Arbitrary[Duration] =
     Arbitrary(arbitraryFiniteDuration.arbitrary.map(fd => fd: Duration))
 
   // Copied from cats-laws.
-  implicit def arbitrarySortedMap[K: Arbitrary: Order, V: Arbitrary]: Arbitrary[SortedMap[K, V]] =
+  given arbitrarySortedMap[K: Arbitrary: Order, V: Arbitrary]: Arbitrary[SortedMap[K, V]] =
     Arbitrary(arbitrary[Map[K, V]].map(s => SortedMap.empty[K, V](implicitly[Order[K]].toOrdering) ++ s))
 
   // Copied from cats-laws.
-  implicit def cogenSortedMap[K: Order: Cogen, V: Cogen]: Cogen[SortedMap[K, V]] = {
-    implicit val orderingK: Ordering[K] = Order[K].toOrdering
+  given cogenSortedMap[K: Order: Cogen, V: Cogen]: Cogen[SortedMap[K, V]] = {
+    given orderingK: Ordering[K] = Order[K].toOrdering
 
     implicitly[Cogen[Map[K, V]]].contramap(_.toMap)
   }
 
   // Copied from cats-laws.
-  implicit def arbitrarySortedSet[A: Arbitrary: Order]: Arbitrary[SortedSet[A]] =
+  given arbitrarySortedSet[A: Arbitrary: Order]: Arbitrary[SortedSet[A]] =
     Arbitrary(arbitrary[Set[A]].map(s => SortedSet.empty[A](implicitly[Order[A]].toOrdering) ++ s))
 
   // Copied from cats-laws.
-  implicit def cogenSortedSet[A: Order: Cogen]: Cogen[SortedSet[A]] = {
-    implicit val orderingA: Ordering[A] = Order[A].toOrdering
+  given cogenSortedSet[A: Order: Cogen]: Cogen[SortedSet[A]] = {
+    given orderingA: Ordering[A] = Order[A].toOrdering
 
     implicitly[Cogen[Set[A]]].contramap(_.toSet)
   }
 
   // this instance is not available in ScalaCheck 1.13.2.
   // remove this once a newer version is available.
-  implicit val cogenBigInt: Cogen[BigInt] =
+  given cogenBigInt: Cogen[BigInt] =
     Cogen[Long].contramap(_.toLong)
 
   // this instance is not available in ScalaCheck 1.13.2.
   // remove this once a newer version is available.
-  implicit val cogenBigDecimal: Cogen[BigDecimal] =
+  given cogenBigDecimal: Cogen[BigDecimal] =
     Cogen[Double].contramap(_.toDouble)
 
-  implicit val cogenSymbol: Cogen[Symbol] =
+  given cogenSymbol: Cogen[Symbol] =
     Cogen[String].contramap(_.name)
 
-  implicit val cogenUUID: Cogen[UUID] =
+  given cogenUUID: Cogen[UUID] =
     Cogen[(Long, Long)].contramap(u => (u.getMostSignificantBits, u.getLeastSignificantBits))
 
-  implicit val cogenDeadline: Cogen[Deadline] =
+  given cogenDeadline: Cogen[Deadline] =
     Cogen[FiniteDuration].contramap(_.time)
 }
 
@@ -145,7 +145,7 @@ class Tests extends TestsConfig with DisciplineSuite {
 
   {
     // needed for Cogen[Map[...]]
-    implicit val ohe: Ordering[HasEq[Int]] = Ordering.by[HasEq[Int], Int](_.a)
+    given ohe: Ordering[HasEq[Int]] = Ordering.by[HasEq[Int], Int](_.a)
     checkAll("Eq[Map[String, HasEq[Int]]]", EqTests[Map[String, HasEq[Int]]].eqv)
     checkAll("Eq[SortedMap[String, HasEq[Int]]]", EqTests[SortedMap[String, HasEq[Int]]].eqv)
   }
@@ -362,7 +362,7 @@ class Tests extends TestsConfig with DisciplineSuite {
   checkAll("subsetPartialOrder[Int]", PartialOrderTests(subsetPartialOrder[Int]).partialOrder)
 
   {
-    implicit def subsetPartialOrdering[A]: PartialOrdering[Set[A]] =
+    given subsetPartialOrdering[A]: PartialOrdering[Set[A]] =
       new PartialOrdering[Set[A]] {
 
         override def tryCompare(x: Set[A], y: Set[A]): Option[Int] =
@@ -376,10 +376,10 @@ class Tests extends TestsConfig with DisciplineSuite {
     checkAll("fromPartialOrdering[Int]", PartialOrderTests(PartialOrder.fromPartialOrdering[Set[Int]]).partialOrder)
   }
 
-  implicit val arbitraryComparison: Arbitrary[Comparison] =
+  given arbitraryComparison: Arbitrary[Comparison] =
     Arbitrary(Gen.oneOf(Comparison.GreaterThan, Comparison.EqualTo, Comparison.LessThan))
 
-  implicit val cogenComparison: Cogen[Comparison] =
+  given cogenComparison: Cogen[Comparison] =
     Cogen[Int].contramap(_.toInt)
 
   checkAll("Eq[Comparison]", EqTests[Comparison].eqv)
@@ -432,48 +432,48 @@ class Tests extends TestsConfig with DisciplineSuite {
     final case class N(n: Int) { require(n >= 0 && n < nMax) }
     // The arbitrary `Order[N]` values are created by mapping N values to random
     // integers.
-    implicit val arbNOrder: Arbitrary[Order[N]] = Arbitrary(arbitrary[Int].map { seed =>
+    given arbNOrder: Arbitrary[Order[N]] = Arbitrary(arbitrary[Int].map { seed =>
       val order = new Random(seed).shuffle(Vector.range(0, nMax))
       Order.by { (n: N) =>
         order(n.n)
       }
     })
-    implicit val cogNOrder: Cogen[Order[N]] =
+    given cogNOrder: Cogen[Order[N]] =
       Cogen[Unit].contramap(_ => ())
     // The arbitrary `Eq[N]` values are created by mapping N values to random
     // integers.
-    implicit val arbNEq: Arbitrary[Eq[N]] = Arbitrary(arbitrary[Int].map { seed =>
+    given arbNEq: Arbitrary[Eq[N]] = Arbitrary(arbitrary[Int].map { seed =>
       val mapping = new Random(seed).shuffle(Vector.range(0, nMax))
       Eq.by { (n: N) =>
         mapping(n.n)
       }
     })
-    implicit val cogNEq: Cogen[Eq[N]] =
+    given cogNEq: Cogen[Eq[N]] =
       Cogen[Unit].contramap(_ => ())
     // needed because currently we don't have Vector instances
-    implicit val vectorNEq: Eq[Vector[N]] = Eq.fromUniversalEquals
+    given vectorNEq: Eq[Vector[N]] = Eq.fromUniversalEquals
     // The `Eq[Order[N]]` instance enumerates all possible `N` values in a
     // `Vector` and considers two `Order[N]` instances to be equal if they
     // result in the same sorting of that vector.
-    implicit val NOrderEq: Eq[Order[N]] = Eq.by { (order: Order[N]) =>
+    given NOrderEq: Eq[Order[N]] = Eq.by { (order: Order[N]) =>
       Vector.tabulate(nMax)(N).sorted(order.toOrdering)
     }
-    implicit val NEqEq: Eq[Eq[N]] = (a, b) =>
+    given NEqEq: Eq[Eq[N]] = (a, b) =>
       Iterator
         .tabulate(nMax)(N)
         .flatMap(x => Iterator.tabulate(nMax)(N).map((x, _)))
         .forall { case (x, y) => a.eqv(x, y) == b.eqv(x, y) }
 
-    implicit val monoidOrderN: Monoid[Order[N]] & Band[Order[N]] = Order.whenEqualMonoid[N]
+    given monoidOrderN: Monoid[Order[N]] & Band[Order[N]] = Order.whenEqualMonoid[N]
     checkAll("Monoid[Order[N]]", MonoidTests[Order[N]].monoid)
     checkAll("Band[Order[N]]", BandTests[Order[N]].band)
 
     {
-      implicit val bsEqN: BoundedSemilattice[Eq[N]] = Eq.allEqualBoundedSemilattice[N]
+      given bsEqN: BoundedSemilattice[Eq[N]] = Eq.allEqualBoundedSemilattice[N]
       checkAll("BoundedSemilattice[Eq[N]]", BoundedSemilatticeTests[Eq[N]].boundedSemilattice)
     }
     {
-      implicit val sEqN: Semilattice[Eq[N]] = Eq.anyEqualSemilattice[N]
+      given sEqN: Semilattice[Eq[N]] = Eq.anyEqualSemilattice[N]
       checkAll("Semilattice[Eq[N]]", SemilatticeTests[Eq[N]].semilattice)
     }
   }
@@ -481,33 +481,33 @@ class Tests extends TestsConfig with DisciplineSuite {
   case class HasEq[A](a: A)
 
   object HasEq {
-    implicit def hasEq[A: Eq]: Eq[HasEq[A]] =
+    given hasEq[A: Eq]: Eq[HasEq[A]] =
       Eq.by(_.a)
-    implicit def hasEqArbitrary[A: Arbitrary]: Arbitrary[HasEq[A]] =
+    given hasEqArbitrary[A: Arbitrary]: Arbitrary[HasEq[A]] =
       Arbitrary(arbitrary[A].map(HasEq(_)))
-    implicit def hasCogen[A: Cogen]: Cogen[HasEq[A]] =
+    given hasCogen[A: Cogen]: Cogen[HasEq[A]] =
       Cogen[A].contramap(_.a)
   }
 
   case class HasPartialOrder[A](a: A)
 
   object HasPartialOrder {
-    implicit def hasPartialOrder[A: PartialOrder]: PartialOrder[HasPartialOrder[A]] =
+    given hasPartialOrder[A: PartialOrder]: PartialOrder[HasPartialOrder[A]] =
       PartialOrder.by(_.a)
-    implicit def hasPartialOrderArbitrary[A: Arbitrary]: Arbitrary[HasPartialOrder[A]] =
+    given hasPartialOrderArbitrary[A: Arbitrary]: Arbitrary[HasPartialOrder[A]] =
       Arbitrary(arbitrary[A].map(HasPartialOrder(_)))
-    implicit def hasCogen[A: Cogen]: Cogen[HasPartialOrder[A]] =
+    given hasCogen[A: Cogen]: Cogen[HasPartialOrder[A]] =
       Cogen[A].contramap(_.a)
   }
 
   case class HasHash[A](a: A)
 
   object HasHash {
-    implicit def hasHash[A: Hash]: Hash[HasHash[A]] =
+    given hasHash[A: Hash]: Hash[HasHash[A]] =
       Hash.by(_.a)
-    implicit def hasHashArbitrary[A: Arbitrary]: Arbitrary[HasHash[A]] =
+    given hasHashArbitrary[A: Arbitrary]: Arbitrary[HasHash[A]] =
       Arbitrary(arbitrary[A].map(HasHash(_)))
-    implicit def hasCogen[A: Cogen]: Cogen[HasHash[A]] =
+    given hasCogen[A: Cogen]: Cogen[HasHash[A]] =
       Cogen[A].contramap(_.a)
   }
 }

@@ -31,8 +31,8 @@ import cats.syntax.profunctor._
  * Laws that must be obeyed by any `cats.arrow.ArrowChoice`.
  */
 trait ArrowChoiceLaws[F[_, _]] extends ArrowLaws[F] with ChoiceLaws[F] {
-  implicit override def F: ArrowChoice[F]
-  implicit def Function: ArrowChoice[Function1]
+  given F: ArrowChoice[F]
+  given Function: ArrowChoice[Function1]
 
   def sumAssoc[A, B, C](e: Either[Either[A, B], C]): Either[A, Either[B, C]] =
     e match {

@@ -36,34 +36,38 @@ import scala.util.Random
 
 class LawTests extends munit.DisciplineSuite {
 
-  implicit val byteLattice: Lattice[Byte] = ByteMinMaxLattice
-  implicit val shortLattice: Lattice[Short] = ShortMinMaxLattice
-  implicit val intLattice: BoundedDistributiveLattice[Int] = IntMinMaxLattice
-  implicit val longLattice: BoundedDistributiveLattice[Long] = LongMinMaxLattice
+  given byteLattice: Lattice[Byte] = ByteMinMaxLattice
+  given shortLattice: Lattice[Short] = ShortMinMaxLattice
+  given intLattice: BoundedDistributiveLattice[Int] = IntMinMaxLattice
+  given longLattice: BoundedDistributiveLattice[Long] = LongMinMaxLattice
 
-  implicit def logicLaws[A: Eq: Arbitrary]: LogicLaws[A] = LogicLaws[A]
+  given logicLaws[A: Eq: Arbitrary]: LogicLaws[A] = LogicLaws[A]
+  import logicLaws.{given, *}
 
-  implicit def latticeLaws[A: Eq: Arbitrary]: LatticeLaws[A] = LatticeLaws[A]
-  implicit def ringLaws[A: Eq: Arbitrary: AdditiveMonoid]: RingLaws[A] = RingLaws[A]
-  implicit def latticePartialOrderLaws[A: Eq: Arbitrary]: LatticePartialOrderLaws[A] = LatticePartialOrderLaws[A]
+  given latticeLaws[A: Eq: Arbitrary]: LatticeLaws[A] = LatticeLaws[A]
+  import latticeLaws.{given, *}
+  given ringLaws[A: Eq: Arbitrary: AdditiveMonoid]: RingLaws[A] = RingLaws[A]
+  import ringLaws.{given, *}
+  given latticePartialOrderLaws[A: Eq: Arbitrary]: LatticePartialOrderLaws[A] = LatticePartialOrderLaws[A]
+  import latticePartialOrderLaws.{given, *}
 
   case class HasEq[A](a: A)
 
   object HasEq {
-    implicit def hasEq[A: Eq]: Eq[HasEq[A]] = Eq.by(_.a)
-    implicit def hasEqArbitrary[A: Arbitrary]: Arbitrary[HasEq[A]] =
+    given hasEq[A: Eq]: Eq[HasEq[A]] = Eq.by(_.a)
+    given hasEqArbitrary[A: Arbitrary]: Arbitrary[HasEq[A]] =
       Arbitrary(arbitrary[A].map(HasEq(_)))
-    implicit def hasEqCogen[A: Cogen]: Cogen[HasEq[A]] =
+    given hasEqCogen[A: Cogen]: Cogen[HasEq[A]] =
       Cogen[A].contramap[HasEq[A]](_.a)
   }
 
   case class HasPartialOrder[A](a: A)
 
   object HasPartialOrder {
-    implicit def hasPartialOrder[A: PartialOrder]: PartialOrder[HasPartialOrder[A]] = PartialOrder.by(_.a)
-    implicit def hasPartialOrderArbitrary[A: Arbitrary]: Arbitrary[HasPartialOrder[A]] =
+    given hasPartialOrder[A: PartialOrder]: PartialOrder[HasPartialOrder[A]] = PartialOrder.by(_.a)
+    given hasPartialOrderArbitrary[A: Arbitrary]: Arbitrary[HasPartialOrder[A]] =
       Arbitrary(arbitrary[A].map(HasPartialOrder(_)))
-    implicit def hasPartialOrderCogen[A: Cogen]: Cogen[HasPartialOrder[A]] =
+    given hasPartialOrderCogen[A: Cogen]: Cogen[HasPartialOrder[A]] =
       Cogen[A].contramap[HasPartialOrder[A]](_.a)
   }
 
@@ -119,7 +123,7 @@ class LawTests extends munit.DisciplineSuite {
       // we need a less intense arbitrary big decimal implementation.
       // this keeps the values relatively small/simple and avoids some
       // of the numerical errors we might hit.
-      implicit val arbBigDecimal: Arbitrary[BigDecimal] =
+      given arbBigDecimal: Arbitrary[BigDecimal] =
         Arbitrary(arbitrary[Int].map(x => BigDecimal(x, java.math.MathContext.UNLIMITED)))
 
       // BigDecimal does have numerical errors, so we can't pass all of
@@ -130,17 +134,17 @@ class LawTests extends munit.DisciplineSuite {
     {
       // We check the full field laws using a FPApprox.
       val mc = java.math.MathContext.DECIMAL32
-      implicit val arbBigDecimal: Arbitrary[BigDecimal] =
+      given arbBigDecimal: Arbitrary[BigDecimal] =
         Arbitrary(arbitrary[Double].map(x => BigDecimal(x, mc)))
-      implicit val epsBigDecimal = FPApprox.Epsilon.bigDecimalEpsilon(mc)
-      implicit val algebra: FPApproxAlgebra[BigDecimal] =
+      given epsBigDecimal = FPApprox.Epsilon.bigDecimalEpsilon(mc)
+      given algebra: FPApproxAlgebra[BigDecimal] =
         FPApprox.fpApproxAlgebra(new BigDecimalAlgebra(mc), Order[BigDecimal], epsBigDecimal)
       checkAll("FPApprox[BigDecimal]", RingLaws[FPApprox[BigDecimal]].field(algebra))
     }
   } else ()
 
   {
-    implicit val arbBitSet: Arbitrary[BitSet] =
+    given arbBitSet: Arbitrary[BitSet] =
       Arbitrary(arbitrary[List[Byte]].map(s => BitSet(s.map(_ & 0xff): _*)))
     checkAll("BitSet", LogicLaws[BitSet].generalizedBool)
   }
@@ -159,39 +163,39 @@ class LawTests extends munit.DisciplineSuite {
     final case class N(n: Int) { require(n >= 0 && n < nMax) }
     // The arbitrary `Order[N]` values are created by mapping N values to random
     // integers.
-    implicit val arbNOrder: Arbitrary[Order[N]] = Arbitrary(arbitrary[Int].map { seed =>
+    given arbNOrder: Arbitrary[Order[N]] = Arbitrary(arbitrary[Int].map { seed =>
       val order = new Random(seed).shuffle(Vector.range(0, nMax))
       Order.by { (n: N) => order(n.n) }
     })
     // The arbitrary `Eq[N]` values are created by mapping N values to random
     // integers.
-    implicit val arbNEq: Arbitrary[Eq[N]] = Arbitrary(arbitrary[Int].map { seed =>
+    given arbNEq: Arbitrary[Eq[N]] = Arbitrary(arbitrary[Int].map { seed =>
       val mapping = new Random(seed).shuffle(Vector.range(0, nMax))
       Eq.by { (n: N) => mapping(n.n) }
     })
     // needed because currently we don't have Vector instances
-    implicit val vectorNEq: Eq[Vector[N]] = Eq.fromUniversalEquals
+    given vectorNEq: Eq[Vector[N]] = Eq.fromUniversalEquals
     // The `Eq[Order[N]]` instance enumerates all possible `N` values in a
     // `Vector` and considers two `Order[N]` instances to be equal if they
     // result in the same sorting of that vector.
-    implicit val NOrderEq: Eq[Order[N]] = Eq.by { (order: Order[N]) =>
+    given NOrderEq: Eq[Order[N]] = Eq.by { (order: Order[N]) =>
       Vector.tabulate(nMax)(N).sorted(order.toOrdering)
     }
-    implicit val NEqEq: Eq[Eq[N]] = (a, b) =>
+    given NEqEq: Eq[Eq[N]] = (a, b) =>
       Iterator
         .tabulate(nMax)(N)
         .flatMap { x => Iterator.tabulate(nMax)(N).map((x, _)) }
         .forall { case (x, y) => a.eqv(x, y) == b.eqv(x, y) }
 
-    implicit val monoidOrderN: Monoid[Order[N]] = Order.whenEqualMonoid[N]
+    given monoidOrderN: Monoid[Order[N]] = Order.whenEqualMonoid[N]
     checkAll("Order[N]", GroupLaws[Order[N]].monoid)
 
     {
-      implicit val bsEqN: BoundedSemilattice[Eq[N]] = Eq.allEqualBoundedSemilattice[N]
+      given bsEqN: BoundedSemilattice[Eq[N]] = Eq.allEqualBoundedSemilattice[N]
       checkAll("Eq[N]", GroupLaws[Eq[N]].boundedSemilattice)
     }
     {
-      implicit val sEqN: Semilattice[Eq[N]] = Eq.anyEqualSemilattice[N]
+      given sEqN: Semilattice[Eq[N]] = Eq.anyEqualSemilattice[N]
       checkAll("Eq[N]", GroupLaws[Eq[N]].semilattice)
     }
   }

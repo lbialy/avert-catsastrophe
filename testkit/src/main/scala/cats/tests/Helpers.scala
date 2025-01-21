@@ -44,12 +44,12 @@ object Helpers {
   abstract class N { def n: Int }
 
   abstract class Arb[E <: N](f: Int => E) {
-    implicit val earb: Arbitrary[E] = Arbitrary(arbitrary[Int].map(f))
-    implicit val ccog: Cogen[E] = Cogen[Int].contramap(_.n)
+    given earb: Arbitrary[E] = Arbitrary(arbitrary[Int].map(f))
+    given ccog: Cogen[E] = Cogen[Int].contramap(_.n)
   }
 
   trait Q[E] {
-    implicit val eeq: Eq[E] = Eq.fromUniversalEquals
+    given eeq: Eq[E] = Eq.fromUniversalEquals
   }
 
   abstract class Companion[E <: N](f: Int => E) extends Arb[E](f) with Q[E]

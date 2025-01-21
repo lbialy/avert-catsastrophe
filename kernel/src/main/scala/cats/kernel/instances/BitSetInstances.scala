@@ -25,10 +25,10 @@ package instances
 import scala.collection.immutable.BitSet
 
 trait BitSetInstances {
-  implicit val catsKernelStdOrderForBitSet: PartialOrder[BitSet] & Hash[BitSet] =
+  given catsKernelStdOrderForBitSet: (PartialOrder[BitSet] & Hash[BitSet]) =
     new BitSetPartialOrder
 
-  implicit val catsKernelStdSemilatticeForBitSet: BoundedSemilattice[BitSet] =
+  given catsKernelStdSemilatticeForBitSet: BoundedSemilattice[BitSet] =
     new BitSetSemilattice
 }
 

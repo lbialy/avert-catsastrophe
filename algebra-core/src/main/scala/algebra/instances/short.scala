@@ -28,7 +28,7 @@ import algebra.ring._
 package object short extends ShortInstances
 
 trait ShortInstances extends cats.kernel.instances.ShortInstances {
-  implicit val shortAlgebra: ShortAlgebra =
+  given shortAlgebra: ShortAlgebra =
     new ShortAlgebra
 
   val ShortMinMaxLattice: BoundedDistributiveLattice[Short] =

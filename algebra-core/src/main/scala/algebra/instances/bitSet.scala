@@ -29,7 +29,7 @@ import algebra.lattice._
 package object bitSet extends BitSetInstances
 
 trait BitSetInstances extends cats.kernel.instances.BitSetInstances {
-  implicit val bitSetAlgebra: BitSetAlgebra =
+  given bitSetAlgebra: BitSetAlgebra =
     new BitSetAlgebra
 }
 

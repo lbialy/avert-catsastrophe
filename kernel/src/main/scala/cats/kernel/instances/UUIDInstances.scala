@@ -25,7 +25,7 @@ package instances
 import java.util.UUID
 
 trait UUIDInstances {
-  implicit val catsKernelStdOrderForUUID: Order[UUID] & Hash[UUID] & LowerBounded[UUID] & UpperBounded[UUID] =
+  given catsKernelStdOrderForUUID: (Order[UUID] & Hash[UUID] & LowerBounded[UUID] & UpperBounded[UUID]) =
     new Order[UUID] with Hash[UUID] with UUIDBounded { self =>
       def compare(x: UUID, y: UUID): Int = x.compareTo(y)
       def hash(x: UUID): Int = x.hashCode()
