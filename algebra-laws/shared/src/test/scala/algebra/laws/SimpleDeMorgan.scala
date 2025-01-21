@@ -39,7 +39,7 @@ object SimpleDeMorgan {
   private case object Unknown extends SimpleDeMorgan
   private case object True extends SimpleDeMorgan
 
-  implicit val deMorgan: DeMorgan[SimpleDeMorgan] = new DeMorgan[SimpleDeMorgan] {
+  given deMorgan: DeMorgan[SimpleDeMorgan] = new DeMorgan[SimpleDeMorgan] {
     def zero: SimpleDeMorgan = False
     def one: SimpleDeMorgan = True
 
@@ -66,8 +66,8 @@ object SimpleDeMorgan {
     }
   }
 
-  implicit val arbitrary: Arbitrary[SimpleDeMorgan] = Arbitrary(oneOf(False, Unknown, True))
+  given arbitrary: Arbitrary[SimpleDeMorgan] = Arbitrary(oneOf(False, Unknown, True))
 
-  implicit val eq: Eq[SimpleDeMorgan] =
+  given eq: Eq[SimpleDeMorgan] =
     Eq.fromUniversalEquals
 }

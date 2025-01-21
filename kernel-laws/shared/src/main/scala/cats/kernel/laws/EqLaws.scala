@@ -25,7 +25,7 @@ import cats.kernel.Eq
 
 trait EqLaws[A] {
 
-  implicit def E: Eq[A]
+  given E: Eq[A]
 
   def reflexivityEq(x: A): IsEq[A] =
     x <-> x

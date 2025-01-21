@@ -38,19 +38,19 @@ class MiniIntSuite extends CatsSuite {
   checkAll("Hash[MiniInt]", SerializableTests.serializable(Hash[MiniInt]))
 
   {
-    implicit val g: CommutativeGroup[MiniInt] = miniIntAddition
+    given g: CommutativeGroup[MiniInt] = miniIntAddition
     checkAll("MiniInt addition", CommutativeGroupTests[MiniInt].commutativeGroup)
     checkAll("CommutativeGroup[MiniInt] addition", SerializableTests.serializable(miniIntAddition))
   }
 
   {
-    implicit val m: CommutativeMonoid[MiniInt] = miniIntMultiplication
+    given m: CommutativeMonoid[MiniInt] = miniIntMultiplication
     checkAll("MiniInt addition", CommutativeMonoidTests[MiniInt].commutativeMonoid)
     checkAll("CommutativeMonoid[MiniInt] multiplication", SerializableTests.serializable(miniIntMultiplication))
   }
 
   {
-    implicit val b: BoundedSemilattice[MiniInt] = miniIntOr
+    given b: BoundedSemilattice[MiniInt] = miniIntOr
     checkAll("MiniInt |", BoundedSemilatticeTests[MiniInt].boundedSemilattice)
     checkAll("BoundedSemilattice[MiniInt] |", SerializableTests.serializable(miniIntOr))
   }

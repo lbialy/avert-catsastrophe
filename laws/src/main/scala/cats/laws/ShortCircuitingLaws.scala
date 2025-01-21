@@ -87,7 +87,7 @@ trait ShortCircuitingLaws[F[_]] {
   }
 
   def traverseFilterShortCircuits[A](fa: F[A])(implicit TF: TraverseFilter[F]): IsEq[Long] = {
-    implicit val F: Traverse[F] = TF.traverse
+    given F: Traverse[F] = TF.traverse
 
     val size = fa.size
     val maxInvocationsAllowed = size / 2
@@ -98,7 +98,7 @@ trait ShortCircuitingLaws[F[_]] {
   }
 
   def traverseFilterWontShortCircuit[A](fa: F[A])(implicit TF: TraverseFilter[F]): IsEq[Long] = {
-    implicit val F: Traverse[F] = TF.traverse
+    given F: Traverse[F] = TF.traverse
 
     val size = fa.size
     val maxInvocationsAllowed = size / 2
@@ -109,7 +109,7 @@ trait ShortCircuitingLaws[F[_]] {
   }
 
   def filterAShortCircuits[A](fa: F[A])(implicit TF: TraverseFilter[F]): IsEq[Long] = {
-    implicit val F: Traverse[F] = TF.traverse
+    given F: Traverse[F] = TF.traverse
 
     val size = fa.size
     val maxInvocationsAllowed = size / 2
@@ -120,7 +120,7 @@ trait ShortCircuitingLaws[F[_]] {
   }
 
   def filterAWontShortCircuit[A](fa: F[A])(implicit TF: TraverseFilter[F]): IsEq[Long] = {
-    implicit val F: Traverse[F] = TF.traverse
+    given F: Traverse[F] = TF.traverse
 
     val size = fa.size
     val maxInvocationsAllowed = size / 2

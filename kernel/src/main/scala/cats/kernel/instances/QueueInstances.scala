@@ -29,21 +29,21 @@ import scala.annotation.nowarn
 
 @suppressUnusedImportWarningForScalaVersionSpecific
 trait QueueInstances extends QueueInstances1 {
-  implicit def catsKernelStdOrderForQueue[A: Order]: Order[Queue[A]] =
+  given catsKernelStdOrderForQueue[A: Order]: Order[Queue[A]] =
     new QueueOrder[A]
-  implicit def catsKernelStdMonoidForQueue[A]: Monoid[Queue[A]] = QueueMonoid[A]
+  given catsKernelStdMonoidForQueue[A]: Monoid[Queue[A]] = QueueMonoid[A]
 }
 
 private[instances] trait QueueInstances1 extends QueueInstances2 {
-  implicit def catsKernelStdPartialOrderForQueue[A: PartialOrder]: PartialOrder[Queue[A]] =
+  given catsKernelStdPartialOrderForQueue[A: PartialOrder]: PartialOrder[Queue[A]] =
     new QueuePartialOrder[A]
 
-  implicit def catsKernelStdHashForQueue[A: Hash]: Hash[Queue[A]] =
+  given catsKernelStdHashForQueue[A: Hash]: Hash[Queue[A]] =
     new QueueHash[A]
 }
 
 private[instances] trait QueueInstances2 {
-  implicit def catsKernelStdEqForQueue[A: Eq]: Eq[Queue[A]] =
+  given catsKernelStdEqForQueue[A: Eq]: Eq[Queue[A]] =
     new QueueEq[A]
 }
 

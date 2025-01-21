@@ -23,9 +23,9 @@ package cats.kernel
 package instances
 
 trait ByteInstances {
-  implicit val catsKernelStdOrderForByte: Order[Byte] & Hash[Byte] & BoundedEnumerable[Byte] =
+  given catsKernelStdOrderForByte: (Order[Byte] & Hash[Byte] & BoundedEnumerable[Byte]) =
     new ByteOrder
-  implicit val catsKernelStdGroupForByte: CommutativeGroup[Byte] = new ByteGroup
+  given catsKernelStdGroupForByte: CommutativeGroup[Byte] = new ByteGroup
 }
 
 class ByteGroup extends CommutativeGroup[Byte] {

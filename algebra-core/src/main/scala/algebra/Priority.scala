@@ -79,12 +79,12 @@ object Priority extends FindPreferred {
 
 private[algebra] trait FindPreferred extends FindFallback {
   @nowarn("msg=deprecated")
-  implicit def preferred[P](implicit ev: P): Priority[P, Nothing] =
+  given preferred[P](using ev: P): Priority[P, Nothing] =
     Priority.Preferred(ev)
 }
 
 private[algebra] trait FindFallback {
   @nowarn("msg=deprecated")
-  implicit def fallback[F](implicit ev: F): Priority[Nothing, F] =
+  given fallback[F](using ev: F): Priority[Nothing, F] =
     Priority.Fallback(ev)
 }

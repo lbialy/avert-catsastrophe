@@ -34,10 +34,10 @@ import org.scalacheck.Prop._
 
 class ContTSuite extends CatsSuite {
 
-  implicit def arbContT[M[_], A, B](implicit arbFn: Arbitrary[(B => M[A]) => M[A]]): Arbitrary[ContT[M, A, B]] =
+  given arbContT[M[_], A, B](using arbFn: Arbitrary[(B => M[A]) => M[A]]): Arbitrary[ContT[M, A, B]] =
     Arbitrary(arbFn.arbitrary.map(ContT[M, A, B](_)))
 
-  implicit def eqContT[M[_], A, B](implicit arbFn: Arbitrary[B => M[A]], eqMA: Eq[M[A]]): Eq[ContT[M, A, B]] = {
+  given eqContT[M[_], A, B](using arbFn: Arbitrary[B => M[A]], eqMA: Eq[M[A]]): Eq[ContT[M, A, B]] = {
     val genItems = Gen.listOfN(100, arbFn.arbitrary)
     val fns = genItems.sample.get
     (a, b) => fns.forall(fn => eqMA.eqv(a.run(fn), b.run(fn)))

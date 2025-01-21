@@ -28,7 +28,7 @@ trait ConsK[F[_]] extends Serializable {
 }
 
 object ConsK {
-  implicit def pureSemigroupKIsConsK[F[_]](implicit p: Pure[F], s: SemigroupK[F]): ConsK[F] =
+  given pureSemigroupKIsConsK[F[_]](using p: Pure[F], s: SemigroupK[F]): ConsK[F] =
     new ConsK[F] {
       def cons[A](hd: A, tl: F[A]): F[A] = s.combineK(p.pure(hd), tl)
     }
@@ -40,7 +40,7 @@ object ConsK {
 
   @deprecated("Use cats.syntax object imports", "2.2.0")
   object ops {
-    implicit def toAllConsKOps[F[_], A](target: F[A])(implicit tc: ConsK[F]): AllOps[F, A] {
+    implicit def toAllConsKOps[F[_], A](target: F[A])(using tc: ConsK[F]): AllOps[F, A] {
       type TypeClassType = ConsK[F]
     } =
       new AllOps[F, A] {
@@ -56,7 +56,7 @@ object ConsK {
   }
   trait AllOps[F[_], A] extends Ops[F, A]
   trait ToConsKOps extends Serializable {
-    implicit def toConsKOps[F[_], A](target: F[A])(implicit tc: ConsK[F]): Ops[F, A] {
+    implicit def toConsKOps[F[_], A](target: F[A])(using tc: ConsK[F]): Ops[F, A] {
       type TypeClassType = ConsK[F]
     } =
       new Ops[F, A] {

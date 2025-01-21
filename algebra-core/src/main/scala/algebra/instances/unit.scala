@@ -27,7 +27,7 @@ import algebra.ring.CommutativeRing
 package object unit extends UnitInstances
 
 trait UnitInstances extends cats.kernel.instances.UnitInstances {
-  implicit val unitRing: CommutativeRing[Unit] =
+  given unitRing: CommutativeRing[Unit] =
     new UnitAlgebra
 }
 

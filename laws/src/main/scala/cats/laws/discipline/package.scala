@@ -29,6 +29,6 @@ package object discipline {
 
   val SerializableTests = cats.kernel.laws.discipline.SerializableTests
 
-  implicit def catsLawsIsEqToProp[A: Eq](isEq: IsEq[A])(implicit pp: A => Pretty): Prop =
+  implicit def catsLawsIsEqToProp[A: Eq](isEq: IsEq[A])(using pp: A => Pretty): Prop =
     cats.kernel.laws.discipline.catsLawsIsEqToProp[A](isEq)
 }

@@ -26,7 +26,7 @@ import org.scalacheck.Prop
 import org.scalacheck.util.Pretty
 
 package object discipline {
-  implicit def catsLawsIsEqToProp[A](isEq: IsEq[A])(implicit ev: Eq[A], pp: A => Pretty): Prop =
+  implicit def catsLawsIsEqToProp[A](isEq: IsEq[A])(using ev: Eq[A], pp: A => Pretty): Prop =
     isEq match {
       case IsEq(x, y) =>
         if (ev.eqv(x, y)) Prop.proved

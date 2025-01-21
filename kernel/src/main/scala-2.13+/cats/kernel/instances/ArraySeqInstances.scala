@@ -28,24 +28,24 @@ import compat.scalaVersionSpecific._
 
 @suppressUnusedImportWarningForScalaVersionSpecific
 trait ArraySeqInstances extends ArraySeqInstances.ArraySeqInstances1 {
-  implicit def catsKernelStdOrderForArraySeq[A: Order]: Order[ArraySeq[A]] =
+  given catsKernelStdOrderForArraySeq[A: Order]: Order[ArraySeq[A]] =
     new ArraySeqInstances.ArraySeqOrder[A]
 
-  implicit def catsKernelStdMonoidForArraySeq[A]: Monoid[ArraySeq[A]] =
+  given catsKernelStdMonoidForArraySeq[A]: Monoid[ArraySeq[A]] =
     new ArraySeqInstances.ArraySeqMonoid[A]
 }
 
 object ArraySeqInstances {
   private[instances] trait ArraySeqInstances1 extends ArraySeqInstances2 {
-    implicit def catsKernelStdPartialOrderForArraySeq[A: PartialOrder]: PartialOrder[ArraySeq[A]] =
+    given catsKernelStdPartialOrderForArraySeq[A: PartialOrder]: PartialOrder[ArraySeq[A]] =
       new ArraySeqPartialOrder[A]
 
-    implicit def catsKernelStdHashForArraySeq[A: Hash]: Hash[ArraySeq[A]] =
+    given catsKernelStdHashForArraySeq[A: Hash]: Hash[ArraySeq[A]] =
       new ArraySeqHash[A]
   }
 
   private[instances] trait ArraySeqInstances2 {
-    implicit def catsKernelStdEqForArraySeq[A: Eq]: Eq[ArraySeq[A]] =
+    given catsKernelStdEqForArraySeq[A: Eq]: Eq[ArraySeq[A]] =
       new ArraySeqEq[A]
   }
 

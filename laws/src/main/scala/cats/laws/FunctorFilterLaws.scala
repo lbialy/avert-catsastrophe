@@ -23,9 +23,9 @@ package cats
 package laws
 
 trait FunctorFilterLaws[F[_]] {
-  implicit def F: FunctorFilter[F]
+  given F: FunctorFilter[F]
 
-  implicit def functor: Functor[F] = F.functor
+  given functor: Functor[F] = F.functor
 
   def mapFilterComposition[A, B, C](fa: F[A], f: A => Option[B], g: B => Option[C]): IsEq[F[C]] = {
     val lhs: F[C] = F.mapFilter(F.mapFilter(fa)(f))(g)

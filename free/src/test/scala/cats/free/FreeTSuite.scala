@@ -38,31 +38,31 @@ class FreeTSuite extends CatsSuite {
   import FreeTSuite._
 
   {
-    implicit val freeTFlatMap: FlatMap[FreeTOption] = FreeT.catsFreeFlatMapForFreeT[Option, Option]
+    given freeTFlatMap: FlatMap[FreeTOption] = FreeT.catsFreeFlatMapForFreeT[Option, Option]
     checkAll("FreeT[Option, Option, Int]", FlatMapTests[FreeTOption].flatMap[Int, Int, Int])
     checkAll("FlatMap[FreeT[Option, Option, *]]", SerializableTests.serializable(FlatMap[FreeTOption]))
   }
 
   {
-    implicit val freeTMonad: Monad[FreeTOption] = FreeT.catsFreeMonadForFreeT[Option, Option]
+    given freeTMonad: Monad[FreeTOption] = FreeT.catsFreeMonadForFreeT[Option, Option]
     checkAll("FreeT[Option, Option, Int]", MonadTests[FreeTOption].monad[Int, Int, Int])
     checkAll("Monad[FreeT[Option, Option, *]]", SerializableTests.serializable(Monad[FreeTOption]))
   }
 
   {
-    implicit val freeTSemigroupK: SemigroupK[FreeTOption] = FreeT.catsFreeSemigroupKForFreeT[Option, Option]
+    given freeTSemigroupK: SemigroupK[FreeTOption] = FreeT.catsFreeSemigroupKForFreeT[Option, Option]
     checkAll("FreeT[Option, Option, Int]", SemigroupKTests[FreeTOption].semigroupK[Int])
     checkAll("SemigroupK[FreeT[Option, Option, *]]", SerializableTests.serializable(SemigroupK[FreeTOption]))
   }
 
   {
-    implicit val freeTAlternative: Alternative[FreeTOption] = FreeT.catsFreeAlternativeForFreeT[Option, Option]
+    given freeTAlternative: Alternative[FreeTOption] = FreeT.catsFreeAlternativeForFreeT[Option, Option]
     checkAll("FreeT[Option, Option, Int]", AlternativeTests[FreeTOption].alternative[Int, Int, Int])
     checkAll("Alternative[FreeT[Option, Option, *]]", SerializableTests.serializable(Alternative[FreeTOption]))
   }
 
   {
-    implicit val eqEitherTFA: Eq[EitherT[FreeTOption, Unit, Int]] = EitherT.catsDataEqForEitherT[FreeTOption, Unit, Int]
+    given eqEitherTFA: Eq[EitherT[FreeTOption, Unit, Int]] = EitherT.catsDataEqForEitherT[FreeTOption, Unit, Int]
     checkAll("FreeT[Option, Option, Int]", MonadErrorTests[FreeTOption, Unit].monadError[Int, Int, Int])
     checkAll("MonadError[FreeT[Option, Option, *], Unit]",
              SerializableTests.serializable(MonadError[FreeTOption, Unit])
@@ -158,7 +158,7 @@ class FreeTSuite extends CatsSuite {
   def test1[A](value: Int, f: Int => A): Test1Algebra[A] = Test1(value, f)
 
   object Test1Algebra {
-    implicit def test1AlgebraAFunctor: Functor[Test1Algebra] =
+    given test1AlgebraAFunctor: Functor[Test1Algebra] =
       new Functor[Test1Algebra] {
         def map[A, B](a: Test1Algebra[A])(f: A => B): Test1Algebra[B] =
           a match {
@@ -166,7 +166,7 @@ class FreeTSuite extends CatsSuite {
           }
       }
 
-    implicit def test1AlgebraArbitrary[A](implicit
+    given test1AlgebraArbitrary[A](using
       seqArb: Arbitrary[Int],
       intAArb: Arbitrary[Int => A]
     ): Arbitrary[Test1Algebra[A]] =
@@ -180,7 +180,7 @@ class FreeTSuite extends CatsSuite {
   def test2[A](value: Int, f: Int => A): Test2Algebra[A] = Test2(value, f)
 
   object Test2Algebra {
-    implicit def test2AlgebraAFunctor: Functor[Test2Algebra] =
+    given test2AlgebraAFunctor: Functor[Test2Algebra] =
       new Functor[Test2Algebra] {
         def map[A, B](a: Test2Algebra[A])(f: A => B): Test2Algebra[B] =
           a match {
@@ -188,7 +188,7 @@ class FreeTSuite extends CatsSuite {
           }
       }
 
-    implicit def test2AlgebraArbitrary[A](implicit
+    given test2AlgebraArbitrary[A](using
       seqArb: Arbitrary[Int],
       intAArb: Arbitrary[Int => A]
     ): Arbitrary[Test2Algebra[A]] =
@@ -248,7 +248,7 @@ object FreeTSuite extends FreeTSuiteInstances {
   import Arbitrary._
   import org.scalacheck.Arbitrary
 
-  implicit def freeTArb[F[_], G[_]: Applicative, A](implicit
+  given freeTArb[F[_], G[_]: Applicative, A](using
     F: Arbitrary[F[A]],
     G: Arbitrary[G[A]],
     A: Arbitrary[A]
@@ -257,7 +257,7 @@ object FreeTSuite extends FreeTSuiteInstances {
 
   private def freeTGen[F[_], G[_]: Applicative, A](
     maxDepth: Int
-  )(implicit F: Arbitrary[F[A]], G: Arbitrary[G[A]], A: Arbitrary[A]): Gen[FreeT[F, G, A]] = {
+  )(using F: Arbitrary[F[A]], G: Arbitrary[G[A]], A: Arbitrary[A]): Gen[FreeT[F, G, A]] = {
     val noFlatMapped = Gen.oneOf(
       A.arbitrary.map(FreeT.pure[F, G, A]),
       F.arbitrary.map(FreeT.liftF[F, G, A])
@@ -294,17 +294,17 @@ trait FreeTSuiteInstances {
 
   case class JustFunctor[A](a: A)
 
-  implicit val ftlWIso: Isomorphisms[FreeTOption] = SemigroupalTests.Isomorphisms.invariant[FreeTOption]
+  given ftlWIso: Isomorphisms[FreeTOption] = SemigroupalTests.Isomorphisms.invariant[FreeTOption]
 
-  implicit val ftlSIso: Isomorphisms[FreeTState] = SemigroupalTests.Isomorphisms.invariant[FreeTState]
+  given ftlSIso: Isomorphisms[FreeTState] = SemigroupalTests.Isomorphisms.invariant[FreeTState]
 
-  implicit val jfFunctor: Functor[JustFunctor] = new Functor[JustFunctor] {
+  given jfFunctor: Functor[JustFunctor] = new Functor[JustFunctor] {
     override def map[A, B](fa: JustFunctor[A])(f: A => B): JustFunctor[B] = JustFunctor(f(fa.a))
   }
 
-  implicit def freeTOptionEq[A](implicit A: Eq[A]): Eq[FreeTOption[A]] =
+  given freeTOptionEq[A](using A: Eq[A]): Eq[FreeTOption[A]] =
     Eq.by(_.runM(identity))
 
-  implicit def freeTStateEq[A](implicit A: Eq[A]): Eq[FreeTState[A]] =
+  given freeTStateEq[A](using A: Eq[A]): Eq[FreeTState[A]] =
     Eq.by(_.runM(identity))
 }

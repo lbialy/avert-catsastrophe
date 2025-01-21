@@ -24,8 +24,8 @@ package instances
 import compat.scalaVersionSpecific._
 @suppressUnusedImportWarningForScalaVersionSpecific
 trait StringInstances {
-  implicit val catsKernelStdOrderForString: Order[String] & Hash[String] & LowerBounded[String] = new StringOrder
-  implicit val catsKernelStdMonoidForString: Monoid[String] = new StringMonoid
+  given catsKernelStdOrderForString: (Order[String] & Hash[String] & LowerBounded[String]) = new StringOrder
+  given catsKernelStdMonoidForString: Monoid[String] = new StringMonoid
 }
 
 trait StringLowerBounded extends LowerBounded[String] {

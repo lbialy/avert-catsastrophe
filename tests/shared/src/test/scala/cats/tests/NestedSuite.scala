@@ -41,7 +41,7 @@ class NestedSuite extends CatsSuite {
 
   {
     // Invariant composition
-    implicit val instance: Invariant[ListWrapper] = ListWrapper.invariant
+    given instance: Invariant[ListWrapper] = ListWrapper.invariant
     checkAll("Nested[ListWrapper, ListWrapper]",
              InvariantTests[Nested[ListWrapper, ListWrapper, *]].invariant[Int, Int, Int]
     )
@@ -52,8 +52,8 @@ class NestedSuite extends CatsSuite {
 
   {
     // FunctorFilter composition
-    implicit val instance: FunctorFilter[ListWrapper] = ListWrapper.functorFilter
-    implicit val functorInstance: Functor[ListWrapper] = ListWrapper.functor
+    given instance: FunctorFilter[ListWrapper] = ListWrapper.functorFilter
+    given functorInstance: Functor[ListWrapper] = ListWrapper.functor
     checkAll("Nested[ListWrapper, ListWrapper]",
              FunctorFilterTests[Nested[ListWrapper, ListWrapper, *]].functorFilter[Int, Int, Int]
     )
@@ -64,8 +64,8 @@ class NestedSuite extends CatsSuite {
 
   {
     // TraverseFilter composition
-    implicit val instance: TraverseFilter[ListWrapper] = ListWrapper.traverseFilter
-    implicit val traverseInstance: Traverse[ListWrapper] = ListWrapper.traverse
+    given instance: TraverseFilter[ListWrapper] = ListWrapper.traverseFilter
+    given traverseInstance: Traverse[ListWrapper] = ListWrapper.traverse
     checkAll("Nested[ListWrapper, ListWrapper]",
              TraverseFilterTests[Nested[ListWrapper, ListWrapper, *]].traverseFilter[Int, Int, Int]
     )
@@ -97,7 +97,7 @@ class NestedSuite extends CatsSuite {
 
   {
     // Functor composition
-    implicit val instance: Functor[ListWrapper] = ListWrapper.functor
+    given instance: Functor[ListWrapper] = ListWrapper.functor
     checkAll("Nested[Option, ListWrapper, *]", FunctorTests[Nested[Option, ListWrapper, *]].functor[Int, Int, Int])
     checkAll("Functor[Nested[Option, ListWrapper, *]]",
              SerializableTests.serializable(Functor[Nested[Option, ListWrapper, *]])
@@ -116,7 +116,7 @@ class NestedSuite extends CatsSuite {
 
   {
     // InvariantSemigroupal + Apply functor composition
-    implicit val instance: InvariantSemigroupal[ListWrapper] = ListWrapper.invariantSemigroupal
+    given instance: InvariantSemigroupal[ListWrapper] = ListWrapper.invariantSemigroupal
     checkAll("Nested[ListWrapper, Option, *]",
              InvariantSemigroupalTests[Nested[ListWrapper, Option, *]].invariantSemigroupal[Int, Int, Int]
     )
@@ -156,7 +156,7 @@ class NestedSuite extends CatsSuite {
 
   {
     // Apply composition
-    implicit val instance: Apply[ListWrapper] = ListWrapper.applyInstance
+    given instance: Apply[ListWrapper] = ListWrapper.applyInstance
     checkAll("Nested[List, ListWrapper, *]", ApplyTests[Nested[List, ListWrapper, *]].apply[Int, Int, Int])
     checkAll("Apply[Nested[List, ListWrapper, *]]", SerializableTests.serializable(Apply[Nested[List, ListWrapper, *]]))
   }
@@ -173,7 +173,7 @@ class NestedSuite extends CatsSuite {
 
   {
     // Applicative composition
-    implicit val instance: Applicative[ListWrapper] = ListWrapper.applicative
+    given instance: Applicative[ListWrapper] = ListWrapper.applicative
     checkAll("Nested[List, ListWrapper, *]", ApplicativeTests[Nested[List, ListWrapper, *]].applicative[Int, Int, Int])
     checkAll("Applicative[Nested[List, ListWrapper, *]]",
              SerializableTests.serializable(Applicative[Nested[List, ListWrapper, *]])
@@ -182,7 +182,7 @@ class NestedSuite extends CatsSuite {
 
   {
     // CommutativeApplicative composition
-    implicit val instance: Applicative[ListWrapper] = ListWrapper.applicative
+    given instance: Applicative[ListWrapper] = ListWrapper.applicative
     checkAll("Nested[Option, Validated[Int, *], *]",
              CommutativeApplicativeTests[Nested[Option, Validated[Int, *], *]].commutativeApplicative[Int, Int, Int]
     )
@@ -193,7 +193,7 @@ class NestedSuite extends CatsSuite {
 
   {
     // ApplicativeError composition
-    implicit val instance: Applicative[ListWrapper] = ListWrapper.applicative
+    given instance: Applicative[ListWrapper] = ListWrapper.applicative
 
     checkAll(
       "Nested[Validated[String, *], ListWrapper, *]",
@@ -207,7 +207,7 @@ class NestedSuite extends CatsSuite {
 
   {
     // Alternative composition
-    implicit val instance: Alternative[ListWrapper] = ListWrapper.alternative
+    given instance: Alternative[ListWrapper] = ListWrapper.alternative
     checkAll("Nested[List, ListWrapper, *]", AlternativeTests[Nested[List, ListWrapper, *]].alternative[Int, Int, Int])
     checkAll("Alternative[Nested[List, ListWrapper, *]]",
              SerializableTests.serializable(Alternative[Nested[List, ListWrapper, *]])
@@ -216,7 +216,7 @@ class NestedSuite extends CatsSuite {
 
   {
     // Foldable composition
-    implicit val instance: Foldable[ListWrapper] = ListWrapper.foldable
+    given instance: Foldable[ListWrapper] = ListWrapper.foldable
     checkAll("Nested[List, ListWrapper, *]", FoldableTests[Nested[List, ListWrapper, *]].foldable[Int, Int])
     checkAll("Foldable[Nested[List, ListWrapper, *]]",
              SerializableTests.serializable(Foldable[Nested[List, ListWrapper, *]])
@@ -225,7 +225,7 @@ class NestedSuite extends CatsSuite {
 
   {
     // Traverse composition
-    implicit val instance: Traverse[ListWrapper] = ListWrapper.traverse
+    given instance: Traverse[ListWrapper] = ListWrapper.traverse
     checkAll("Nested[List, ListWrapper, *]",
              TraverseTests[Nested[List, ListWrapper, *]].traverse[Int, Int, Int, Set[Int], Option, Option]
     )
@@ -236,7 +236,7 @@ class NestedSuite extends CatsSuite {
 
   {
     // Reducible composition
-    implicit val instance: Foldable[ListWrapper] = ListWrapper.foldable
+    given instance: Foldable[ListWrapper] = ListWrapper.foldable
     checkAll("Nested[NonEmptyList, OneAnd[ListWrapper, *], *]",
              ReducibleTests[Nested[NonEmptyList, OneAnd[ListWrapper, *], *]].reducible[Option, Int, Int]
     )
@@ -260,7 +260,7 @@ class NestedSuite extends CatsSuite {
 
   {
     // SemigroupK composition
-    implicit val instance: SemigroupK[ListWrapper] = ListWrapper.semigroupK
+    given instance: SemigroupK[ListWrapper] = ListWrapper.semigroupK
     checkAll("Nested[ListWrapper, Option, *]", SemigroupKTests[Nested[ListWrapper, Option, *]].semigroupK[Int])
     checkAll("SemigroupK[Nested[ListWrapper, Option, *]]",
              SerializableTests.serializable(SemigroupK[Nested[ListWrapper, Option, *]])
@@ -269,7 +269,7 @@ class NestedSuite extends CatsSuite {
 
   {
     // MonoidK composition
-    implicit val instance: MonoidK[ListWrapper] = ListWrapper.monoidK
+    given instance: MonoidK[ListWrapper] = ListWrapper.monoidK
     checkAll("Nested[ListWrapper, Option, *]", MonoidKTests[Nested[ListWrapper, Option, *]].monoidK[Int])
     checkAll("MonoidK[Nested[ListWrapper, Option, *]]",
              SerializableTests.serializable(MonoidK[Nested[ListWrapper, Option, *]])
@@ -292,7 +292,7 @@ class NestedSuite extends CatsSuite {
     type Pair[A] = (A, A)
 
     // Scala 2.12 implicit resolution absolutely loses its mind here
-    implicit val help_scala2_12: Representable.Aux[Nested[Pair, Pair, *], (Boolean, Boolean)] =
+    given help_scala2_12: Representable.Aux[Nested[Pair, Pair, *], (Boolean, Boolean)] =
       Nested.catsDataRepresentableForNested[Pair, Pair]
 
     val a: Arbitrary[Int] = implicitly[Arbitrary[Int]]

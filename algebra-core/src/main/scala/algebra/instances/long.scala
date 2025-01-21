@@ -28,7 +28,7 @@ import algebra.ring._
 package object long extends LongInstances
 
 trait LongInstances extends cats.kernel.instances.LongInstances {
-  implicit val longAlgebra: LongAlgebra =
+  given longAlgebra: LongAlgebra =
     new LongAlgebra
 
   val LongMinMaxLattice: BoundedDistributiveLattice[Long] =

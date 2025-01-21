@@ -23,15 +23,15 @@ package cats.kernel
 package instances
 
 trait SetInstances extends SetInstances1 {
-  implicit def catsKernelStdHashForSet[A]: Hash[Set[A]] =
+  given catsKernelStdHashForSet[A]: Hash[Set[A]] =
     new SetHash[A]
 }
 
 private[instances] trait SetInstances1 {
-  implicit def catsKernelStdPartialOrderForSet[A]: PartialOrder[Set[A]] =
+  given catsKernelStdPartialOrderForSet[A]: PartialOrder[Set[A]] =
     new SetPartialOrder[A]
 
-  implicit def catsKernelStdSemilatticeForSet[A]: BoundedSemilattice[Set[A]] =
+  given catsKernelStdSemilatticeForSet[A]: BoundedSemilattice[Set[A]] =
     new SetSemilattice[A]
 }
 

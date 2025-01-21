@@ -36,7 +36,7 @@ abstract class TraverseFilterSuite[F[_]: TraverseFilter](name: String)(implicit
   ArbFString: Arbitrary[F[String]]
 ) extends CatsSuite {
 
-  implicit def T: Traverse[F] = implicitly[TraverseFilter[F]].traverse
+  given T: Traverse[F] = implicitly[TraverseFilter[F]].traverse
 
   test(s"TraverseFilter[$name].ordDistinct") {
     forAll { (fa: F[Int]) =>

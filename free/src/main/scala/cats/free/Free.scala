@@ -334,14 +334,14 @@ object Free extends FreeInstances {
   def match_[F[_], G[_], A](fa: Free[F, A])(implicit F: Functor[F], I: InjectK[G, F]): Option[G[Free[F, A]]] =
     fa.resume.fold(I.prj(_), _ => None)
 
-  implicit def catsFreeMonadForId: Monad[Free[Id, *]] = catsFreeMonadForFree[Id]
+  given catsFreeMonadForId: Monad[Free[Id, *]] = catsFreeMonadForFree[Id]
 
-  implicit def catsFreeDeferForId: Defer[Free[Id, *]] = catsFreeDeferForFree[Id]
+  given catsFreeDeferForId: Defer[Free[Id, *]] = catsFreeDeferForFree[Id]
 }
 
 private trait FreeFoldable[F[_]] extends Foldable[Free[F, *]] {
 
-  implicit def F: Foldable[F]
+  given F: Foldable[F]
 
   final override def foldLeft[A, B](fa: Free[F, A], b: B)(f: (B, A) => B): B =
     fa.foldLeft(fa, b)(f)
@@ -351,7 +351,7 @@ private trait FreeFoldable[F[_]] extends Foldable[Free[F, *]] {
 }
 
 private trait FreeTraverse[F[_]] extends Traverse[Free[F, *]] with FreeFoldable[F] {
-  implicit def TraversableF: Traverse[F]
+  given TraversableF: Traverse[F]
 
   def F: Foldable[F] = TraversableF
 
@@ -370,14 +370,14 @@ sealed abstract private[free] class FreeInstances extends FreeInstances1 with Fr
   /**
    * `Free[S, *]` has a monad for any type constructor `S[_]`.
    */
-  implicit def catsFreeMonadForFree[S[_]]: Monad[Free[S, *]] =
+  given catsFreeMonadForFree[S[_]]: Monad[Free[S, *]] =
     new Monad[Free[S, *]] with StackSafeMonad[Free[S, *]] {
       def pure[A](a: A): Free[S, A] = Free.pure(a)
       override def map[A, B](fa: Free[S, A])(f: A => B): Free[S, B] = fa.map(f)
       def flatMap[A, B](a: Free[S, A])(f: A => Free[S, B]): Free[S, B] = a.flatMap(f)
     }
 
-  implicit def catsFreeDeferForFree[S[_]]: Defer[Free[S, *]] =
+  given catsFreeDeferForFree[S[_]]: Defer[Free[S, *]] =
     new Defer[Free[S, *]] {
       def defer[A](fa: => Free[S, A]): Free[S, A] =
         Free.defer(fa)
@@ -386,14 +386,14 @@ sealed abstract private[free] class FreeInstances extends FreeInstances1 with Fr
 
 sealed abstract private[free] class FreeInstances1 {
 
-  implicit def catsFreeFoldableForFree[F[_]](implicit
+  given catsFreeFoldableForFree[F[_]](using
     foldableF: Foldable[F]
   ): Foldable[Free[F, *]] =
     new FreeFoldable[F] {
       val F = foldableF
     }
 
-  implicit def catsFreeTraverseForFree[F[_]](implicit
+  given catsFreeTraverseForFree[F[_]](using
     traversableF: Traverse[F]
   ): Traverse[Free[F, *]] =
     new FreeTraverse[F] {

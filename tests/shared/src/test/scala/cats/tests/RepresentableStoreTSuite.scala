@@ -33,9 +33,9 @@ import org.scalacheck.{Arbitrary, Cogen}
 
 class RepresentableStoreTSuite extends CatsSuite {
 
-  implicit val monoid: Monoid[MiniInt] = MiniInt.miniIntAddition
+  given monoid: Monoid[MiniInt] = MiniInt.miniIntAddition
 
-  implicit val scala2_12_makes_me_sad: Comonad[StoreT[Id, MiniInt, *]] =
+  given scala2_12_makes_me_sad: Comonad[StoreT[Id, MiniInt, *]] =
     RepresentableStoreT.comonadForStoreT[Id, Function1[MiniInt, *], MiniInt]
   // Like, really, really, really sad
   val a: Arbitrary[Int] = implicitly[Arbitrary[Int]]

@@ -28,7 +28,7 @@ import algebra.ring.Field
 import java.lang.Math
 
 trait DoubleInstances extends cats.kernel.instances.DoubleInstances {
-  implicit val doubleAlgebra: Field[Double] =
+  given doubleAlgebra: Field[Double] =
     new DoubleAlgebra
 
   // This is not Bounded due to the presence of NaN

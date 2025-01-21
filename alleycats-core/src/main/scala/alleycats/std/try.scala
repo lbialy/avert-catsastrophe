@@ -52,7 +52,7 @@ trait TryInstances {
   // and Comonad[Try] instances have been replaced by a single Bimonad[Try]
   // instance.
   //
-  implicit val alleycatsStdTryBimonad: Bimonad[Try] =
+  given alleycatsStdTryBimonad: Bimonad[Try] =
     new Bimonad[Try] {
       def pure[A](a: A): Try[A] = Try(a)
       override def map[A, B](fa: Try[A])(f: A => B): Try[B] = fa.map(f)

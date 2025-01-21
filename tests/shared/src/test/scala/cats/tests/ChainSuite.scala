@@ -70,7 +70,7 @@ class ChainSuite extends CatsSuite {
   checkAll("Chain[Int]", ShortCircuitingTests[Chain].traverseFilter[Int])
 
   {
-    implicit val partialOrder: PartialOrder[ListWrapper[Int]] = ListWrapper.partialOrder[Int]
+    given partialOrder: PartialOrder[ListWrapper[Int]] = ListWrapper.partialOrder[Int]
     checkAll("Chain[ListWrapper[Int]]", PartialOrderTests[Chain[ListWrapper[Int]]].partialOrder)
     checkAll("PartialOrder[Chain[ListWrapper[Int]]",
              SerializableTests.serializable(PartialOrder[Chain[ListWrapper[Int]]])
@@ -78,13 +78,13 @@ class ChainSuite extends CatsSuite {
   }
 
   {
-    implicit val eqv: Eq[ListWrapper[Int]] = ListWrapper.eqv[Int]
+    given eqv: Eq[ListWrapper[Int]] = ListWrapper.eqv[Int]
     checkAll("Chain[ListWrapper[Int]]", EqTests[Chain[ListWrapper[Int]]].eqv)
     checkAll("Eq[Chain[ListWrapper[Int]]", SerializableTests.serializable(Eq[Chain[ListWrapper[Int]]]))
   }
 
   {
-    implicit val hash: Hash[ListWrapper[Int]] = ListWrapper.hash[Int]
+    given hash: Hash[ListWrapper[Int]] = ListWrapper.hash[Int]
     checkAll("Chain[ListWrapper[Int]]", HashTests[Chain[ListWrapper[Int]]].hash)
     checkAll("Hash[Chain[ListWrapper[Int]]", SerializableTests.serializable(Hash[Chain[ListWrapper[Int]]]))
   }

@@ -31,7 +31,7 @@ import scala.collection.immutable.{IndexedSeq => ImIndexedSeq}
 object iterable extends IterableInstances
 
 trait IterableInstances {
-  implicit def alleycatsStdIterableTraverse: Traverse[Iterable] =
+  given alleycatsStdIterableTraverse: Traverse[Iterable] =
     new Traverse[Iterable] {
       override def foldLeft[A, B](fa: Iterable[A], b: B)(f: (B, A) => B): B = fa.foldLeft(b)(f)
 
@@ -85,7 +85,7 @@ trait IterableInstances {
         fa.zipWithIndex.map { case (a, i) => f(a, i) }
     }
 
-  implicit def alleycatsStdIterableTraverseFilter: TraverseFilter[Iterable] = new TraverseFilter[Iterable] {
+  given alleycatsStdIterableTraverseFilter: TraverseFilter[Iterable] = new TraverseFilter[Iterable] {
     override def traverse: Traverse[Iterable] = alleycatsStdIterableTraverse
 
     override def traverseFilter[G[_], A, B](

@@ -38,8 +38,8 @@ object LatticeLaws {
 @nowarn("msg=deprecated")
 trait LatticeLaws[A] extends GroupLaws[A] {
 
-  implicit def Equ: Eq[A]
-  implicit def Arb: Arbitrary[A]
+  given Equ: Eq[A]
+  given Arb: Arbitrary[A]
 
   def joinSemilattice(implicit A: JoinSemilattice[A]) = new LatticeProperties(
     name = "joinSemilattice",

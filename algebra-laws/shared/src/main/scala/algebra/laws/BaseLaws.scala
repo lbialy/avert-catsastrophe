@@ -38,8 +38,8 @@ object BaseLaws {
 @deprecated("No replacement", since = "2.7.0")
 trait BaseLaws[A] extends Laws {
 
-  implicit def Equ: Eq[A]
-  implicit def Arb: Arbitrary[A]
+  given Equ: Eq[A]
+  given Arb: Arbitrary[A]
 
   class BaseRuleSet(
     val name: String,

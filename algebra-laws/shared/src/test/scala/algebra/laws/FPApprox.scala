@@ -113,18 +113,18 @@ object FPApprox {
     private val minFloat: Float = JFloat.intBitsToFloat(1 << 23)
     private val minDouble: Double = JDouble.longBitsToDouble(1L << 52)
 
-    implicit val floatEpsilon: Epsilon[Float] =
+    given floatEpsilon: Epsilon[Float] =
       instance(minFloat, 1.1920929e-7f, isFin(_), x => math.abs(x) < minFloat)
-    implicit val doubleEpsilon: Epsilon[Double] =
+    given doubleEpsilon: Epsilon[Double] =
       instance(minDouble, 2.220446049250313e-16, isFin(_), x => math.abs(x) < minDouble)
     def bigDecimalEpsilon(mc: MathContext): Epsilon[BigDecimal] =
       instance(BigDecimal(1, Int.MaxValue, mc), BigDecimal(1, mc.getPrecision - 1, mc), _ => true, _ == 0)
   }
 
-  implicit def fpApproxAlgebra[A: Field: Order: Epsilon]: FPApproxAlgebra[A] = new FPApproxAlgebra[A]
+  given fpApproxAlgebra[A: Field: Order: Epsilon]: FPApproxAlgebra[A] = new FPApproxAlgebra[A]
 
   // An Eq instance that returns true if 2 values *could* be equal.
-  implicit def fpApproxEq[A: Field: Order: Epsilon]: Eq[FPApprox[A]] = (x, y) =>
+  given fpApproxEq[A: Field: Order: Epsilon]: Eq[FPApprox[A]] = (x, y) =>
     // We want to check if z +/- error contains 0
     x.approx == y.approx || {
       val z = x - y
@@ -134,7 +134,7 @@ object FPApprox {
       Order.gteqv(Ring[A].plus(z.approx, err), Ring[A].zero)
     }
 
-  implicit def arbFPApprox[A: Rng: Order: Arbitrary]: Arbitrary[FPApprox[A]] =
+  given arbFPApprox[A: Rng: Order: Arbitrary]: Arbitrary[FPApprox[A]] =
     Arbitrary(Arbitrary.arbitrary[A].map(FPApprox.exact[A](_)))
 }
 

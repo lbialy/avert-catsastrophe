@@ -70,5 +70,5 @@ object EmptyK extends EmptyKInstances0 {
 }
 
 private[alleycats] trait EmptyKInstances0 {
-  implicit def alleycatsEmptyKForMap[K]: EmptyK[Map[K, *]] = alleycats.std.map.alletcatsStdMapEmptyK[K]
+  given alleycatsEmptyKForMap[K]: EmptyK[Map[K, *]] = alleycats.std.map.alletcatsStdMapEmptyK[K]
 }

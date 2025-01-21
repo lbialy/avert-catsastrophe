@@ -49,7 +49,7 @@ object SyntaxSuite {
 
   def testEmpty[A: Empty]: Unit = {
     val x = mock[A]
-    implicit val y: Eq[A] = mock[Eq[A]]
+    given y: Eq[A] = mock[Eq[A]]
     val a0: Boolean = x.isEmpty
     val a1: Boolean = x.nonEmpty
   }

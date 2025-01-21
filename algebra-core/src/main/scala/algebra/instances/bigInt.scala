@@ -27,8 +27,8 @@ import algebra.ring._
 package object bigInt extends BigIntInstances
 
 trait BigIntInstances extends cats.kernel.instances.BigIntInstances {
-  implicit val bigIntAlgebra: BigIntAlgebra = new BigIntTruncatedDivison
-  implicit def bigIntTruncatedDivision: TruncatedDivision[BigInt] =
+  given bigIntAlgebra: BigIntAlgebra = new BigIntTruncatedDivison
+  given bigIntTruncatedDivision: TruncatedDivision[BigInt] =
     bigIntAlgebra.asInstanceOf[BigIntTruncatedDivison] // Bin-compat hack to avoid allocation
 }
 

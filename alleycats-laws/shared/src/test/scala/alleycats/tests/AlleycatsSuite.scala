@@ -35,11 +35,11 @@ trait AlleycatsSuite extends munit.DisciplineSuite with TestSettings with TestIn
   implicit override def scalaCheckTestParameters: Parameters =
     checkConfiguration
 
-  implicit def EqIterable[A: Eq]: Eq[Iterable[A]] = Eq.by(_.toList)
+  given EqIterable[A: Eq]: Eq[Iterable[A]] = Eq.by(_.toList)
 }
 
 sealed trait TestInstances {
-  implicit val arbObject: Arbitrary[Object] =
+  given arbObject: Arbitrary[Object] =
     // with some probability we select from a small set of objects
     // otherwise make a totally new one
     // courtesy of @johnynek

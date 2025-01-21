@@ -163,12 +163,12 @@ object ListWrapper {
 
   def monoid[A]: Monoid[ListWrapper[A]] = alternative.algebra[A]
 
-  implicit def listWrapperArbitrary[A: Arbitrary]: Arbitrary[ListWrapper[A]] =
+  given listWrapperArbitrary[A: Arbitrary]: Arbitrary[ListWrapper[A]] =
     Arbitrary(arbitrary[List[A]].map(ListWrapper.apply))
 
-  implicit def listWrapperCogen[A: Cogen]: Cogen[ListWrapper[A]] =
+  given listWrapperCogen[A: Cogen]: Cogen[ListWrapper[A]] =
     Cogen[List[A]].contramap(_.list)
 
-  implicit def listWrapperEq[A: Eq]: Eq[ListWrapper[A]] =
+  given listWrapperEq[A: Eq]: Eq[ListWrapper[A]] =
     Eq.by(_.list)
 }

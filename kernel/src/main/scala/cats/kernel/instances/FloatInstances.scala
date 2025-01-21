@@ -23,8 +23,8 @@ package cats.kernel
 package instances
 
 trait FloatInstances {
-  implicit val catsKernelStdOrderForFloat: Order[Float] & Hash[Float] = new FloatOrder
-  implicit val catsKernelStdGroupForFloat: CommutativeGroup[Float] = new FloatGroup
+  given catsKernelStdOrderForFloat: (Order[Float] & Hash[Float]) = new FloatOrder
+  given catsKernelStdGroupForFloat: CommutativeGroup[Float] = new FloatGroup
 }
 
 /**

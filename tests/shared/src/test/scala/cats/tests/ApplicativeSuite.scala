@@ -89,7 +89,7 @@ class ApplicativeSuite extends CatsSuite {
   }
 
   {
-    implicit val optionMonoid: Monoid[Option[Int]] = Applicative.monoid[Option, Int]
+    given optionMonoid: Monoid[Option[Int]] = Applicative.monoid[Option, Int]
     checkAll("Applicative[Option].monoid", MonoidTests[Option[Int]](optionMonoid).monoid)
   }
 
@@ -99,23 +99,23 @@ class ApplicativeSuite extends CatsSuite {
   }
 
   {
-    implicit val listwrapperApplicative: Applicative[ListWrapper] = ListWrapper.applicative
-    implicit val listwrapperCoflatMap: CoflatMap[ListWrapper] = Applicative.coflatMap[ListWrapper]
+    given listwrapperApplicative: Applicative[ListWrapper] = ListWrapper.applicative
+    given listwrapperCoflatMap: CoflatMap[ListWrapper] = Applicative.coflatMap[ListWrapper]
     checkAll("Applicative[ListWrapper].coflatMap", CoflatMapTests[ListWrapper].coflatMap[String, String, String])
 
-    implicit val validatedCoflatMap: CoflatMap[Validated[String, *]] = Applicative.coflatMap[Validated[String, *]]
+    given validatedCoflatMap: CoflatMap[Validated[String, *]] = Applicative.coflatMap[Validated[String, *]]
     checkAll("Applicative[Validated].coflatMap", CoflatMapTests[Validated[String, *]].coflatMap[String, String, String])
 
-    implicit val constCoflatMap: CoflatMap[Const[String, *]] = Applicative.coflatMap[Const[String, *]]
+    given constCoflatMap: CoflatMap[Const[String, *]] = Applicative.coflatMap[Const[String, *]]
     checkAll("Applicative[Const].coflatMap", CoflatMapTests[Const[String, *]].coflatMap[String, String, String])
 
-    implicit val listwrapperAlign: Align[ListWrapper] = Apply.align[ListWrapper]
+    given listwrapperAlign: Align[ListWrapper] = Apply.align[ListWrapper]
     checkAll("Apply[ListWrapper].align", AlignTests[ListWrapper].align[Int, Int, Int, Int])
 
-    implicit val validatedAlign: Align[Validated[String, *]] = Apply.align[Validated[String, *]]
+    given validatedAlign: Align[Validated[String, *]] = Apply.align[Validated[String, *]]
     checkAll("Apply[Validated].align", AlignTests[Validated[String, *]].align[Int, Int, Int, Int])
 
-    implicit val constAlign: Align[Const[String, *]] = Apply.align[Const[String, *]]
+    given constAlign: Align[Const[String, *]] = Apply.align[Const[String, *]]
     checkAll("Apply[Const].align", AlignTests[Const[String, *]].align[Int, Int, Int, Int])
   }
 

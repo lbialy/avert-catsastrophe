@@ -29,7 +29,7 @@ import algebra.ring.CommutativeRig
 package object boolean extends BooleanInstances
 
 trait BooleanInstances extends cats.kernel.instances.BooleanInstances {
-  implicit val booleanAlgebra: BooleanAlgebra =
+  given booleanAlgebra: BooleanAlgebra =
     new BooleanAlgebra
 
   val booleanRing = new BoolRing[Boolean] {

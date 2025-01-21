@@ -36,19 +36,19 @@ class BifunctorSuite extends CatsSuite {
 
   {
     type LeftFunctor[A] = (Either[A, Int], Either[A, Int])
-    implicit val leftFunctor: Functor[LeftFunctor] = tuple2ComposeEither.leftFunctor
+    given leftFunctor: Functor[LeftFunctor] = tuple2ComposeEither.leftFunctor
     checkAll("Bifunctor[Tuple2 compose Either].leftFunctor", FunctorTests[LeftFunctor].functor[Int, Int, Int])
   }
 
   {
     type RightFunctor[A] = (Either[Int, A], Either[Int, A])
-    implicit val leftFunctor: Functor[RightFunctor] = tuple2ComposeEither.rightFunctor
+    given leftFunctor: Functor[RightFunctor] = tuple2ComposeEither.rightFunctor
     checkAll("Bifunctor[Tuple2 compose Either].rightFunctor", FunctorTests[RightFunctor].functor[Int, Int, Int])
   }
 
   {
     type Tuple2InsideOption[A, B] = Option[(A, B)]
-    implicit val composedBifunctor: Bifunctor[Tuple2InsideOption] = Functor[Option].composeBifunctor[(*, *)]
+    given composedBifunctor: Bifunctor[Tuple2InsideOption] = Functor[Option].composeBifunctor[(*, *)]
     checkAll(
       "Bifunctor[Option[(A, B)]",
       BifunctorTests[Tuple2InsideOption].bifunctor[String, String, String, Int, Int, Int]

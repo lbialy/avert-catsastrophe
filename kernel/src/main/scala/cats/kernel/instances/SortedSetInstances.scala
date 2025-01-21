@@ -49,15 +49,17 @@ trait SortedSetInstances extends SortedSetInstances1 {
   def catsKernelStdHashForSortedSet[A: Order: Hash]: Hash[SortedSet[A]] =
     new SortedSetHash[A]
 
+  // must be implicit def, Scala 3 given can't be overridden :O
   implicit def catsKernelStdHashForSortedSet[A: Hash]: Hash[SortedSet[A]] =
     new SortedSetHash[A]
 }
 
 private[instances] trait SortedSetInstances1 {
+  // must be implicit def, Scala 3 given can't be overridden :O
   implicit def catsKernelStdOrderForSortedSet[A: Order]: Order[SortedSet[A]] =
     new SortedSetOrder[A]
 
-  implicit def catsKernelStdBoundedSemilatticeForSortedSet[A: Order]: BoundedSemilattice[SortedSet[A]] =
+  given catsKernelStdBoundedSemilatticeForSortedSet[A: Order]: BoundedSemilattice[SortedSet[A]] =
     new SortedSetSemilattice[A]
 }
 

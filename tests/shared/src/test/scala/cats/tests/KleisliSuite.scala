@@ -36,19 +36,19 @@ import cats.tests.Helpers.CSemi
 import org.scalacheck.Prop._
 
 class KleisliSuite extends CatsSuite {
-  implicit def kleisliEq[F[_], A, B](implicit ev: Eq[A => F[B]]): Eq[Kleisli[F, A, B]] =
+  given kleisliEq[F[_], A, B](using ev: Eq[A => F[B]]): Eq[Kleisli[F, A, B]] =
     Eq.by[Kleisli[F, A, B], A => F[B]](_.run)
 
-  implicit val eitherTEq: Eq[EitherT[Kleisli[Option, MiniInt, *], Unit, Int]] =
+  given eitherTEq: Eq[EitherT[Kleisli[Option, MiniInt, *], Unit, Int]] =
     EitherT.catsDataEqForEitherT[Kleisli[Option, MiniInt, *], Unit, Int]
-  implicit val eitherTEq2: Eq[EitherT[Reader[MiniInt, *], Unit, Int]] =
+  given eitherTEq2: Eq[EitherT[Reader[MiniInt, *], Unit, Int]] =
     EitherT.catsDataEqForEitherT[Reader[MiniInt, *], Unit, Int]
 
-  implicit val iso: Isomorphisms[Kleisli[Option, Int, *]] = Isomorphisms.invariant[Kleisli[Option, Int, *]]
-  implicit val iso2: Isomorphisms[Reader[Int, *]] = Isomorphisms.invariant[Reader[Int, *]]
+  given iso: Isomorphisms[Kleisli[Option, Int, *]] = Isomorphisms.invariant[Kleisli[Option, Int, *]]
+  given iso2: Isomorphisms[Reader[Int, *]] = Isomorphisms.invariant[Reader[Int, *]]
 
   {
-    implicit val instance: ApplicativeError[Kleisli[Option, MiniInt, *], Unit] =
+    given instance: ApplicativeError[Kleisli[Option, MiniInt, *], Unit] =
       Kleisli.catsDataApplicativeErrorForKleisli[Option, Unit, MiniInt](
         using cats.instances.option.catsStdInstancesForOption
       )
@@ -89,7 +89,7 @@ class KleisliSuite extends CatsSuite {
   )
 
   {
-    implicit val K: Align[Kleisli[Id, MiniInt, *]] = Kleisli.catsDataAlignForKleisli[Id, MiniInt]
+    given K: Align[Kleisli[Id, MiniInt, *]] = Kleisli.catsDataAlignForKleisli[Id, MiniInt]
     checkAll("Kleisli[Id, MiniInt, *]", AlignTests[Kleisli[Id, MiniInt, *]].align[Int, Int, Int, Int])
   }
   checkAll("Kleisli[Option, MiniInt, *]", AlignTests[Kleisli[Option, MiniInt, *]].align[Int, Int, Int, Int])
@@ -149,7 +149,7 @@ class KleisliSuite extends CatsSuite {
   checkAll("Functor[Kleisli[Option, Int, *]]", SerializableTests.serializable(Functor[Kleisli[Option, Int, *]]))
 
   {
-    implicit val FF: FunctorFilter[ListWrapper] = ListWrapper.functorFilter
+    given FF: FunctorFilter[ListWrapper] = ListWrapper.functorFilter
 
     checkAll("Kleisli[ListWrapper, MiniInt, *]",
              FunctorFilterTests[Kleisli[ListWrapper, MiniInt, *]].functorFilter[Int, Int, Int]
@@ -177,13 +177,13 @@ class KleisliSuite extends CatsSuite {
   )
 
   {
-    implicit val catsDataMonoidKForKleisli: MonoidK[λ[α => Kleisli[Option, α, α]]] = Kleisli.endoMonoidK[Option]
+    given catsDataMonoidKForKleisli: MonoidK[λ[α => Kleisli[Option, α, α]]] = Kleisli.endoMonoidK[Option]
     checkAll("Kleisli[Option, MiniInt, MiniInt]", MonoidKTests[λ[α => Kleisli[Option, α, α]]].monoidK[MiniInt])
     checkAll("MonoidK[λ[α => Kleisli[Option, α, α]]]", SerializableTests.serializable(catsDataMonoidKForKleisli))
   }
 
   {
-    implicit val catsDataSemigroupKForKleisli: SemigroupK[λ[α => Kleisli[Option, α, α]]] =
+    given catsDataSemigroupKForKleisli: SemigroupK[λ[α => Kleisli[Option, α, α]]] =
       Kleisli.endoSemigroupK[Option]
     checkAll("Kleisli[Option, MiniInt, MiniInt]", SemigroupKTests[λ[α => Kleisli[Option, α, α]]].semigroupK[MiniInt])
     checkAll("SemigroupK[λ[α => Kleisli[Option, α, α]]]",

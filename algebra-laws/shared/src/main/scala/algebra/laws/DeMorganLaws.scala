@@ -39,8 +39,8 @@ object DeMorganLaws {
 @deprecated("Laws moved to LogicLaws", since = "2.7.0")
 trait DeMorganLaws[A] extends Laws {
 
-  implicit def Equ: Eq[A]
-  implicit def Arb: Arbitrary[A]
+  given Equ: Eq[A]
+  given Arb: Arbitrary[A]
   def LL: LatticeLaws[A]
 
   def logic(implicit A: Logic[A]) = new DeMorganProperties(

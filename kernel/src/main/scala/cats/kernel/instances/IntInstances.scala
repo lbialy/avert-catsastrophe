@@ -23,9 +23,9 @@ package cats.kernel
 package instances
 
 trait IntInstances {
-  implicit val catsKernelStdOrderForInt: Order[Int] & Hash[Int] & BoundedEnumerable[Int] =
+  given catsKernelStdOrderForInt: (Order[Int] & Hash[Int] & BoundedEnumerable[Int]) =
     new IntOrder
-  implicit val catsKernelStdGroupForInt: CommutativeGroup[Int] = new IntGroup
+  given catsKernelStdGroupForInt: CommutativeGroup[Int] = new IntGroup
 }
 
 class IntGroup extends CommutativeGroup[Int] {

@@ -25,9 +25,9 @@ package instances
 import scala.concurrent.duration.Duration
 
 trait DurationInstances {
-  implicit val catsKernelStdOrderForDuration
-    : Order[Duration] & Hash[Duration] & LowerBounded[Duration] & UpperBounded[Duration] = new DurationOrder
-  implicit val catsKernelStdGroupForDuration: CommutativeGroup[Duration] = new DurationGroup
+  given catsKernelStdOrderForDuration
+    : (Order[Duration] & Hash[Duration] & LowerBounded[Duration] & UpperBounded[Duration]) = new DurationOrder
+  given catsKernelStdGroupForDuration: CommutativeGroup[Duration] = new DurationGroup
 }
 
 // Duration.Undefined, Duration.Inf, Duration.MinusInf

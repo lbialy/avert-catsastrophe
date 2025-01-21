@@ -29,22 +29,22 @@ import compat.scalaVersionSpecific._
 
 @suppressUnusedImportWarningForScalaVersionSpecific
 trait SeqInstances extends SeqInstances1 {
-  implicit def catsKernelStdOrderForSeq[A: Order]: Order[Seq[A]] =
+  given catsKernelStdOrderForSeq[A: Order]: Order[Seq[A]] =
     new SeqOrder[A]
-  implicit def catsKernelStdMonoidForSeq[A]: Monoid[Seq[A]] =
+  given catsKernelStdMonoidForSeq[A]: Monoid[Seq[A]] =
     SeqMonoid[A]
 }
 
 private[instances] trait SeqInstances1 extends SeqInstances2 {
-  implicit def catsKernelStdPartialOrderForSeq[A: PartialOrder]: PartialOrder[Seq[A]] =
+  given catsKernelStdPartialOrderForSeq[A: PartialOrder]: PartialOrder[Seq[A]] =
     new SeqPartialOrder[A]
 
-  implicit def catsKernelStdHashForSeq[A: Hash]: Hash[Seq[A]] =
+  given catsKernelStdHashForSeq[A: Hash]: Hash[Seq[A]] =
     new SeqHash[A]
 }
 
 private[instances] trait SeqInstances2 {
-  implicit def catsKernelStdEqForSeq[A: Eq]: Eq[Seq[A]] =
+  given catsKernelStdEqForSeq[A: Eq]: Eq[Seq[A]] =
     new SeqEq[A]
 }
 

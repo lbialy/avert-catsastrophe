@@ -36,15 +36,15 @@ class RepresentableStoreSuite extends CatsSuite {
   // checkAll("Comonad[Store[String, *]]", ComonadTests[Store[String, *]].comonad[Int, Int, Int])
 
   {
-    implicit val pairComonad: Comonad[RepresentableStore[λ[P => (P, P)], Boolean, *]] =
+    given pairComonad: Comonad[RepresentableStore[λ[P => (P, P)], Boolean, *]] =
       RepresentableStore.catsDataRepresentableStoreComonad[λ[P => (P, P)], Boolean]
-    implicit val eqStore: Eq[RepresentableStore[λ[P => (P, P)], Boolean, Int]] =
+    given eqStore: Eq[RepresentableStore[λ[P => (P, P)], Boolean, Int]] =
       cats.laws.discipline.eq.catsLawsEqForRepresentableStore[λ[P => (P, P)], Boolean, Int]
-    implicit val eqStoreStore
+    given eqStoreStore
       : Eq[RepresentableStore[λ[P => (P, P)], Boolean, RepresentableStore[λ[P => (P, P)], Boolean, Int]]] =
       cats.laws.discipline.eq
         .catsLawsEqForRepresentableStore[λ[P => (P, P)], Boolean, RepresentableStore[λ[P => (P, P)], Boolean, Int]]
-    implicit val eqStoreStoreStore: Eq[RepresentableStore[
+    given eqStoreStoreStore: Eq[RepresentableStore[
       λ[P => (P, P)],
       Boolean,
       RepresentableStore[λ[P => (P, P)], Boolean, RepresentableStore[λ[P => (P, P)], Boolean, Int]]

@@ -30,7 +30,7 @@ import org.scalacheck.Prop._
 import org.scalacheck.{Arbitrary, Gen}
 
 class MonadSuite extends CatsSuite {
-  implicit val testInstance: Monad[StateT[Id, Int, *]] = IndexedStateT.catsDataMonadForIndexedStateT[Id, Int]
+  given testInstance: Monad[StateT[Id, Int, *]] = IndexedStateT.catsDataMonadForIndexedStateT[Id, Int]
 
   val smallPosInt = Gen.choose(1, 5000)
 

@@ -330,16 +330,16 @@ class Interacts[F[_]](implicit I: InjectK[Interact, F]) {
 }
 
 object Interacts {
-  implicit def interacts[F[_]](implicit I: InjectK[Interact, F]): Interacts[F] = new Interacts[F]
+  given interacts[F[_]](using I: InjectK[Interact, F]): Interacts[F] = new Interacts[F]
 }
 
-class DataSource[F[_]](implicit I: InjectK[DataOp, F]) {
+class DataSource[F[_]](using I: InjectK[DataOp, F]) {
   def addCat(a: String): Free[F, Unit] = Free.liftInject[F](AddCat(a))
   def getAllCats: Free[F, List[String]] = Free.liftInject[F](GetAllCats())
 }
 
 object DataSource {
-  implicit def dataSource[F[_]](implicit I: InjectK[DataOp, F]): DataSource[F] = new DataSource[F]
+  given dataSource[F[_]](using I: InjectK[DataOp, F]): DataSource[F] = new DataSource[F]
 }
 ```
 

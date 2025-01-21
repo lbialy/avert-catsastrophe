@@ -23,26 +23,26 @@ package cats.kernel
 package instances
 
 trait OptionInstances extends OptionInstances0 {
-  implicit def catsKernelStdOrderForOption[A: Order]: Order[Option[A]] =
+  given catsKernelStdOrderForOption[A: Order]: Order[Option[A]] =
     new OptionOrder[A]
-  implicit def catsKernelStdCommutativeMonoidForOption[A: CommutativeSemigroup]: CommutativeMonoid[Option[A]] =
+  given catsKernelStdCommutativeMonoidForOption[A: CommutativeSemigroup]: CommutativeMonoid[Option[A]] =
     new OptionCommutativeMonoid[A]
-  implicit def catsKernelStdMonoidForOption[A: Semigroup]: Monoid[Option[A]] =
+  given catsKernelStdMonoidForOption[A: Semigroup]: Monoid[Option[A]] =
     new OptionMonoid[A]
 }
 
 private[instances] trait OptionInstances0 extends OptionInstances1 {
-  implicit def catsKernelStdPartialOrderForOption[A: PartialOrder]: PartialOrder[Option[A]] =
+  given catsKernelStdPartialOrderForOption[A: PartialOrder]: PartialOrder[Option[A]] =
     new OptionPartialOrder[A]
 }
 
 private[instances] trait OptionInstances1 extends OptionInstances2 {
-  implicit def catsKernelStdHashForOption[A: Hash]: Hash[Option[A]] =
+  given catsKernelStdHashForOption[A: Hash]: Hash[Option[A]] =
     new OptionHash[A]
 }
 
 private[instances] trait OptionInstances2 {
-  implicit def catsKernelStdEqForOption[A: Eq]: Eq[Option[A]] =
+  given catsKernelStdEqForOption[A: Eq]: Eq[Option[A]] =
     new OptionEq[A]
 }
 

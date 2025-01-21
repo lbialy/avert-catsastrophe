@@ -29,8 +29,8 @@ package object set extends SetInstances
 
 trait SetInstances extends cats.kernel.instances.SetInstances {
 
-  implicit def setLattice[A]: GenBool[Set[A]] = new SetLattice[A]
-  implicit def setSemiring[A]: Semiring[Set[A]] = new SetSemiring[A]
+  given setLattice[A]: GenBool[Set[A]] = new SetLattice[A]
+  given setSemiring[A]: Semiring[Set[A]] = new SetSemiring[A]
 
   // this instance is not compatible with setSemiring, so it is not
   // marked as implicit to avoid an ambiguity.

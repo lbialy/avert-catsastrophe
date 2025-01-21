@@ -150,28 +150,28 @@ object Cofree extends CofreeInstances {
 }
 
 sealed abstract private[free] class CofreeInstances2 {
-  implicit def catsReducibleForCofree[F[_]: Foldable]: Reducible[Cofree[F, *]] =
+  given catsReducibleForCofree[F[_]: Foldable]: Reducible[Cofree[F, *]] =
     new CofreeReducible[F] {
       def F = implicitly
     }
 }
 
 sealed abstract private[free] class CofreeInstances1 extends CofreeInstances2 {
-  implicit def catsTraverseForCofree[F[_]: Traverse]: Traverse[Cofree[F, *]] =
+  given catsTraverseForCofree[F[_]: Traverse]: Traverse[Cofree[F, *]] =
     new CofreeTraverse[F] {
       def F = implicitly
     }
 }
 
 sealed abstract private[free] class CofreeInstances extends CofreeInstances1 {
-  implicit def catsFreeComonadForCofree[S[_]: Functor]: Comonad[Cofree[S, *]] =
+  given catsFreeComonadForCofree[S[_]: Functor]: Comonad[Cofree[S, *]] =
     new CofreeComonad[S] {
       def F = implicitly
     }
 }
 
 private trait CofreeComonad[S[_]] extends Comonad[Cofree[S, *]] {
-  implicit def F: Functor[S]
+  given F: Functor[S]
 
   final override def extract[A](p: Cofree[S, A]): A = p.extract
 
@@ -183,7 +183,7 @@ private trait CofreeComonad[S[_]] extends Comonad[Cofree[S, *]] {
 }
 
 private trait CofreeReducible[F[_]] extends Reducible[Cofree[F, *]] {
-  implicit def F: Foldable[F]
+  given F: Foldable[F]
 
   final override def foldMap[A, B](fa: Cofree[F, A])(f: A => B)(implicit M: Monoid[B]): B =
     M.combine(f(fa.head), F.foldMap(fa.tailForced)(foldMap(_)(f)))
@@ -208,7 +208,7 @@ private trait CofreeReducible[F[_]] extends Reducible[Cofree[F, *]] {
 }
 
 private trait CofreeTraverse[F[_]] extends Traverse[Cofree[F, *]] with CofreeReducible[F] with CofreeComonad[F] {
-  implicit def F: Traverse[F]
+  given F: Traverse[F]
 
   final override def traverse[G[_], A, B](fa: Cofree[F, A])(f: A => G[B])(implicit G: Applicative[G]): G[Cofree[F, B]] =
     G.map2(f(fa.head), F.traverse(fa.tailForced)(traverse(_)(f)))((h, t) => Cofree[F, B](h, Eval.now(t)))

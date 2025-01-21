@@ -30,7 +30,7 @@ import org.scalacheck.Arbitrary.arbitrary
 
 class TailRecSuite extends CatsSuite {
 
-  implicit def tailRecArb[A: Arbitrary: Cogen]: Arbitrary[TailRec[A]] =
+  given tailRecArb[A: Arbitrary: Cogen]: Arbitrary[TailRec[A]] =
     Arbitrary(
       Gen.frequency(
         (3, arbitrary[A].map(done(_))),
@@ -39,7 +39,7 @@ class TailRecSuite extends CatsSuite {
       )
     )
 
-  implicit def eqTailRec[A: Eq]: Eq[TailRec[A]] =
+  given eqTailRec[A: Eq]: Eq[TailRec[A]] =
     Eq.by[TailRec[A], A](_.result)
 
   checkAll("TailRec[Int]", MonadTests[TailRec].monad[Int, Int, Int])

@@ -69,9 +69,9 @@ object BinCodecInvariantMonoidalSuite {
 
     def one[A](a: A): MiniList[A] = MiniList(a :: Nil)
 
-    implicit def eqForMiniList[A: Eq]: Eq[MiniList[A]] = Eq.by(_.toList)
+    given eqForMiniList[A: Eq]: Eq[MiniList[A]] = Eq.by(_.toList)
 
-    implicit val exhaustiveCheckForMiniListBoolean: ExhaustiveCheck[MiniList[Boolean]] =
+    given exhaustiveCheckForMiniListBoolean: ExhaustiveCheck[MiniList[Boolean]] =
       ExhaustiveCheck.instance(
         for {
           length <- (0 to maxLength).toList
@@ -143,7 +143,7 @@ object BinCodecInvariantMonoidalSuite {
         }
     }
 
-    implicit val binCodecIsInvariantMonoidal: InvariantMonoidal[BinCodec] =
+    given binCodecIsInvariantMonoidal: InvariantMonoidal[BinCodec] =
       new InvariantMonoidal[BinCodec] with CCPure with CCProduct with CCImap
   }
 
@@ -168,13 +168,13 @@ object BinCodecInvariantMonoidalSuite {
       }
     }
 
-  implicit val arbMiniIntCodec: Arbitrary[BinCodec[MiniInt]] =
+  given arbMiniIntCodec: Arbitrary[BinCodec[MiniInt]] =
     Arbitrary(genBinCodecForExhaustive[MiniInt])
 
-  implicit val arbBooleanCodec: Arbitrary[BinCodec[Boolean]] =
+  given arbBooleanCodec: Arbitrary[BinCodec[Boolean]] =
     Arbitrary(genBinCodecForExhaustive[Boolean])
 
-  implicit def binCodecsEq[A: Eq: ExhaustiveCheck]: Eq[BinCodec[A]] = {
+  given binCodecsEq[A: Eq: ExhaustiveCheck]: Eq[BinCodec[A]] = {
     val writeEq: Eq[BinCodec[A]] = Eq.by[BinCodec[A], A => Bin](_.write)
 
     val readEq: Eq[BinCodec[A]] = Eq.by[BinCodec[A], Bin => (Option[A], Bin)](_.read)
@@ -190,14 +190,14 @@ class BinCodecInvariantMonoidalSuite extends CatsSuite {
   checkAll("InvariantMonoidal[BinCodec]", SerializableTests.serializable(InvariantMonoidal[BinCodec]))
 
   {
-    implicit val miniIntMonoid: Monoid[MiniInt] = MiniInt.miniIntAddition
-    implicit val binMonoid: Monoid[BinCodec[MiniInt]] = InvariantMonoidal.monoid[BinCodec, MiniInt]
+    given miniIntMonoid: Monoid[MiniInt] = MiniInt.miniIntAddition
+    given binMonoid: Monoid[BinCodec[MiniInt]] = InvariantMonoidal.monoid[BinCodec, MiniInt]
     checkAll("InvariantMonoidal[BinCodec].monoid", MonoidTests[BinCodec[MiniInt]].monoid)
   }
 
   {
-    implicit val miniIntSemigroup: Semigroup[MiniInt] = MiniInt.miniIntAddition
-    implicit val binSemigroup: Semigroup[BinCodec[MiniInt]] = InvariantSemigroupal.semigroup[BinCodec, MiniInt]
+    given miniIntSemigroup: Semigroup[MiniInt] = MiniInt.miniIntAddition
+    given binSemigroup: Semigroup[BinCodec[MiniInt]] = InvariantSemigroupal.semigroup[BinCodec, MiniInt]
     checkAll("InvariantSemigroupal[BinCodec].semigroup", SemigroupTests[BinCodec[MiniInt]].semigroup)
   }
 }

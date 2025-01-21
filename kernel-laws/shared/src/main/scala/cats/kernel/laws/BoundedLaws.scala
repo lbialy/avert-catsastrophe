@@ -24,7 +24,7 @@ package cats.kernel.laws
 import cats.kernel.{LowerBounded, PartialOrder, UpperBounded}
 
 trait LowerBoundedLaws[A] extends PartialOrderLaws[A] {
-  implicit def B: LowerBounded[A]
+  given B: LowerBounded[A]
 
   def boundLteqv(x: A): IsEq[Boolean] =
     E.lteqv(B.minBound, x) <-> true
@@ -39,7 +39,7 @@ object LowerBoundedLaws {
 }
 
 trait UpperBoundedLaws[A] extends PartialOrderLaws[A] {
-  implicit def B: UpperBounded[A]
+  given B: UpperBounded[A]
 
   def boundGteqv(x: A): IsEq[Boolean] =
     E.gteqv(B.maxBound, x) <-> true

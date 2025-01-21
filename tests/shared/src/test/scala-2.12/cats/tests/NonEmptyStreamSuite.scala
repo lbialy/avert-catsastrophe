@@ -65,7 +65,7 @@ class NonEmptyStreamSuite extends CatsSuite {
     implicitly[Comonad[NonEmptyStream]]
   }
 
-  implicit val iso2: Isomorphisms[NonEmptyStream] = Isomorphisms.invariant[NonEmptyStream]
+  given iso2: Isomorphisms[NonEmptyStream] = Isomorphisms.invariant[NonEmptyStream]
 
   checkAll("NonEmptyStream[Int]", MonadTests[NonEmptyStream].monad[Int, Int, Int])
   checkAll("Monad[NonEmptyStream[A]]", SerializableTests.serializable(Monad[NonEmptyStream]))

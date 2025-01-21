@@ -23,9 +23,9 @@ package cats.kernel
 package instances
 
 trait BigIntInstances {
-  implicit val catsKernelStdOrderForBigInt: Order[BigInt] & Hash[BigInt] & UnboundedEnumerable[BigInt] =
+  given catsKernelStdOrderForBigInt: (Order[BigInt] & Hash[BigInt] & UnboundedEnumerable[BigInt]) =
     new BigIntOrder
-  implicit val catsKernelStdGroupForBigInt: CommutativeGroup[BigInt] =
+  given catsKernelStdGroupForBigInt: CommutativeGroup[BigInt] =
     new BigIntGroup
 }
 

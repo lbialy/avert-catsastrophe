@@ -25,23 +25,23 @@ package instances
 import scala.annotation.nowarn
 
 trait LazyListInstances extends LazyListInstances1 {
-  implicit def catsKernelStdOrderForLazyList[A: Order]: Order[LazyList[A]] =
+  given catsKernelStdOrderForLazyList[A: Order]: Order[LazyList[A]] =
     new LazyListOrder[A]
 
-  implicit def catsKernelStdMonoidForLazyList[A]: Monoid[LazyList[A]] =
+  given catsKernelStdMonoidForLazyList[A]: Monoid[LazyList[A]] =
     LazyListMonoid[A]
 }
 
 private[instances] trait LazyListInstances1 extends LazyListInstances2 {
-  implicit def catsKernelStdPartialOrderForLazyList[A: PartialOrder]: PartialOrder[LazyList[A]] =
+  given catsKernelStdPartialOrderForLazyList[A: PartialOrder]: PartialOrder[LazyList[A]] =
     new LazyListPartialOrder[A]
 
-  implicit def catsKernelStdHashForLazyList[A: Hash]: Hash[LazyList[A]] =
+  given catsKernelStdHashForLazyList[A: Hash]: Hash[LazyList[A]] =
     new LazyListHash[A]
 }
 
 private[instances] trait LazyListInstances2 {
-  implicit def catsKernelStdEqForLazyList[A: Eq]: Eq[LazyList[A]] =
+  given catsKernelStdEqForLazyList[A: Eq]: Eq[LazyList[A]] =
     new LazyListEq[A]
 }
 

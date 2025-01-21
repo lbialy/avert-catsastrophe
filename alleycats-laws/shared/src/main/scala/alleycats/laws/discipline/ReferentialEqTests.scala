@@ -32,7 +32,7 @@ trait ReferentialEqTests[A] extends Laws {
   def laws: EqLaws[A]
 
   def eqv(implicit arbA: Arbitrary[A]): RuleSet = {
-    implicit val eqA: Eq[A] = laws.E
+    given eqA: Eq[A] = laws.E
     new DefaultRuleSet(
       "referentialEq",
       None,

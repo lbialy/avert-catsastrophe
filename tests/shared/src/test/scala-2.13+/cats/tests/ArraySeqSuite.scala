@@ -67,19 +67,19 @@ class ArraySeqSuite extends CatsSuite {
   checkAll("Align[ArraySeq]", SerializableTests.serializable(Align[ArraySeq]))
 
   {
-    implicit val eqv: Eq[ListWrapper[Int]] = ListWrapper.eqv[Int]
+    given eqv: Eq[ListWrapper[Int]] = ListWrapper.eqv[Int]
     checkAll("ArraySeq[Int]", EqTests[ArraySeq[ListWrapper[Int]]].eqv)
     checkAll("Eq[ArraySeq]", SerializableTests.serializable(Eq[ArraySeq[ListWrapper[Int]]]))
   }
 
   {
-    implicit val partialOrder: PartialOrder[ListWrapper[Int]] = ListWrapper.partialOrder[Int]
+    given partialOrder: PartialOrder[ListWrapper[Int]] = ListWrapper.partialOrder[Int]
     checkAll("ArraySeq[Int]", PartialOrderTests[ArraySeq[ListWrapper[Int]]].partialOrder)
     checkAll("PartialOrder[ArraySeq]", SerializableTests.serializable(PartialOrder[ArraySeq[ListWrapper[Int]]]))
   }
 
   {
-    implicit val hash: Hash[ListWrapper[Int]] = ListWrapper.hash[Int]
+    given hash: Hash[ListWrapper[Int]] = ListWrapper.hash[Int]
     checkAll("ArraySeq[Int]", HashTests[ArraySeq[ListWrapper[Int]]].hash)
     checkAll("Hash[ArraySeq]", SerializableTests.serializable(Hash[ArraySeq[ListWrapper[Int]]]))
   }

@@ -26,8 +26,8 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.{Deadline, FiniteDuration}
 
 trait DeadlineInstances {
-  implicit val catsKernelStdOrderForDeadline
-    : Order[Deadline] & Hash[Deadline] & LowerBounded[Deadline] & UpperBounded[Deadline] = new DeadlineOrder
+  given catsKernelStdOrderForDeadline
+    : (Order[Deadline] & Hash[Deadline] & LowerBounded[Deadline] & UpperBounded[Deadline]) = new DeadlineOrder
 }
 
 trait DeadlineBounded extends LowerBounded[Deadline] with UpperBounded[Deadline] {

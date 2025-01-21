@@ -29,13 +29,13 @@ trait Pure[F[_]] extends Serializable {
 
 object Pure {
   // Ideally this would be an exported subclass instance provided by Applicative
-  implicit def applicativeIsPure[F[_]](implicit ev: Applicative[F]): Pure[F] =
+  given applicativeIsPure[F[_]](using ev: Applicative[F]): Pure[F] =
     new Pure[F] {
       def pure[A](a: A): F[A] = ev.pure(a)
     }
 
   // Ideally this would be an instance exported to Monad
-  implicit def pureFlatMapIsMonad[F[_]](implicit p: Pure[F], fm: FlatMap[F]): Monad[F] =
+  given pureFlatMapIsMonad[F[_]](using p: Pure[F], fm: FlatMap[F]): Monad[F] =
     new Monad[F] {
       def pure[A](a: A): F[A] = p.pure(a)
       override def map[A, B](fa: F[A])(f: A => B): F[B] = fm.map(fa)(f)

@@ -116,7 +116,7 @@ object Demo {
   final case class Pair[A, B](first: A, second: B)
 
   object Pair {
-    implicit def tuple2Instance[A, B](implicit A: Monoid[A], B: Monoid[B]): Monoid[Pair[A, B]] =
+    given tuple2Instance[A, B](using A: Monoid[A], B: Monoid[B]): Monoid[Pair[A, B]] =
       new Monoid[Pair[A, B]] {
         def empty: Pair[A, B] = Pair(A.empty, B.empty)
 
@@ -236,20 +236,20 @@ From [cats-infographic by @tpolecat](https://github.com/tpolecat/cats-infographi
 Originally from [@hobwekiva](https://gist.github.com/hobwekiva/d63508ddb6a728015ace53cb70a1fd5d)
 
 
-| Type            | Functor | Apply             | Applicative | Monad | MonoidK | ApplicativeError  | MonadError | CoflatMap | Comonad | Bimonad |
-| --------------- |:-------:|:-----------------:|:-----------:|:-----:|:-------:|:-----------------:|:----------:|:---------:|:-------:|:-------:|
-| `Id[A]`           | ✔       | ✔                 | ✔           | ✔     | ✗       | ✗                 | ✗          | ✔         | ✔       |✔       |
-| `Eval[A]`         | ✔       | ✔                 | ✔           | ✔     | ✗       | ✗                 | ✗          | ✔         | ✔       |✔       |
-| `Option[A]`       | ✔       | ✔                 | ✔           | ✔     | ✔       | ✔                 | ✔          | ✔         | ✗       |✗       |
-| `Const[K, A]`     | ✔       | ✔ (`K:Monoid`)    | ✔           | ✗     | ✗       | ✗                 | ✗          | ✗         | ✗       |✗       |
-| `Either[E, A]`    | ✔       | ✔                 | ✔           | ✔     | ✔       | ✔                 | ✔          | ✗         | ✗       |✗       |
-| `List[A]`         | ✔       | ✔                 | ✔           | ✔     | ✔       | ✗                 | ✗          | ✔         | ✗       |✗       |
-| `NonEmptyList[A]` | ✔       | ✔                 | ✔           | ✔     | ✗       | ✗                 | ✗          | ✔         | ✔       |✔       |
-| `Stream[A]`       | ✔       | ✔                 | ✔           | ✔     | ✔       | ✗                 | ✗          | ✔         | ✗       |✗       |
-| `Map[K, A]`       | ✔       | ✔                 | ✗           | ✗     | ✔       | ✗                 | ✗          | ✗         | ✗       |✗       |
-| `Validated[E, A]` | ✔       | ✔ (`E: Semigroup`)| ✔           | ✗     | ✗       | ✔ (`E: Semigroup`)| ✗          | ✗         | ✗       |✗       |
-| `Reader[E, A]`    | ✔       | ✔                 | ✔           | ✔     | ✗       | ✗                 | ✗          | ✗         | ✗       |✗       |
-| `Writer[E, A]`    | ✔       | ✔ (`E:Monoid`)    | ✔           | ✔     | ✗       | ✗                 | ✗          | ✔         | ✗       |✗       |
+| Type              | Functor |       Apply        | Applicative | Monad | MonoidK |  ApplicativeError  | MonadError | CoflatMap | Comonad | Bimonad |
+| ----------------- | :-----: | :----------------: | :---------: | :---: | :-----: | :----------------: | :--------: | :-------: | :-----: | :-----: |
+| `Id[A]`           |    ✔    |         ✔          |      ✔      |   ✔   |    ✗    |         ✗          |     ✗      |     ✔     |    ✔    |    ✔    |
+| `Eval[A]`         |    ✔    |         ✔          |      ✔      |   ✔   |    ✗    |         ✗          |     ✗      |     ✔     |    ✔    |    ✔    |
+| `Option[A]`       |    ✔    |         ✔          |      ✔      |   ✔   |    ✔    |         ✔          |     ✔      |     ✔     |    ✗    |    ✗    |
+| `Const[K, A]`     |    ✔    |   ✔ (`K:Monoid`)   |      ✔      |   ✗   |    ✗    |         ✗          |     ✗      |     ✗     |    ✗    |    ✗    |
+| `Either[E, A]`    |    ✔    |         ✔          |      ✔      |   ✔   |    ✔    |         ✔          |     ✔      |     ✗     |    ✗    |    ✗    |
+| `List[A]`         |    ✔    |         ✔          |      ✔      |   ✔   |    ✔    |         ✗          |     ✗      |     ✔     |    ✗    |    ✗    |
+| `NonEmptyList[A]` |    ✔    |         ✔          |      ✔      |   ✔   |    ✗    |         ✗          |     ✗      |     ✔     |    ✔    |    ✔    |
+| `Stream[A]`       |    ✔    |         ✔          |      ✔      |   ✔   |    ✔    |         ✗          |     ✗      |     ✔     |    ✗    |    ✗    |
+| `Map[K, A]`       |    ✔    |         ✔          |      ✗      |   ✗   |    ✔    |         ✗          |     ✗      |     ✗     |    ✗    |    ✗    |
+| `Validated[E, A]` |    ✔    | ✔ (`E: Semigroup`) |      ✔      |   ✗   |    ✗    | ✔ (`E: Semigroup`) |     ✗      |     ✗     |    ✗    |    ✗    |
+| `Reader[E, A]`    |    ✔    |         ✔          |      ✔      |   ✔   |    ✗    |         ✗          |     ✗      |     ✗     |    ✗    |    ✗    |
+| `Writer[E, A]`    |    ✔    |   ✔ (`E:Monoid`)   |      ✔      |   ✔   |    ✗    |         ✗          |     ✗      |     ✔     |    ✗    |    ✗    |
 
 
 

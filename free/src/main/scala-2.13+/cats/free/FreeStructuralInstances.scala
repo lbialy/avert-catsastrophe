@@ -50,7 +50,7 @@ private trait FreeStructuralInstances extends FreeStructuralInstances0
 
 private trait FreeStructuralInstances0 extends FreeStructuralInstances1 {
 
-  implicit def catsFreeShowForFree[S[_], A](implicit
+  given catsFreeShowForFree[S[_], A](using
     SF: Functor[S],
     S: => Show[S[Free[S, A]]],
     A: Show[A]
@@ -59,7 +59,7 @@ private trait FreeStructuralInstances0 extends FreeStructuralInstances1 {
     case Left(sfa) => S.show(sfa)
   }
 
-  implicit def catsFreeHashForFree[S[_], A](implicit
+  given catsFreeHashForFree[S[_], A](using
     SF: Functor[S],
     S0: => Hash[S[Free[S, A]]],
     A0: Hash[A]
@@ -84,7 +84,7 @@ private trait FreeStructuralInstances0 extends FreeStructuralInstances1 {
 
 private trait FreeStructuralInstances1 extends FreeStructuralInstances2 {
 
-  implicit def catsFreePartialOrderForFree[S[_], A](implicit
+  given catsFreePartialOrderForFree[S[_], A](using
     SF: Functor[S],
     S0: => PartialOrder[S[Free[S, A]]],
     A0: PartialOrder[A]
@@ -96,9 +96,9 @@ private trait FreeStructuralInstances1 extends FreeStructuralInstances2 {
     }
 
   trait FreeStructuralPartialOrder[S[_], A] extends PartialOrder[Free[S, A]] {
-    implicit def functor: Functor[S]
-    implicit def S: PartialOrder[S[Free[S, A]]]
-    implicit def A: PartialOrder[A]
+    given functor: Functor[S]
+    given S: PartialOrder[S[Free[S, A]]]
+    given A: PartialOrder[A]
 
     def partialCompare(left: Free[S, A], right: Free[S, A]): Double =
       (left.resume, right.resume) match {
@@ -116,7 +116,7 @@ private trait FreeStructuralInstances1 extends FreeStructuralInstances2 {
 
 private trait FreeStructuralInstances2 {
 
-  implicit def catsFreeEqForFree[S[_], A](implicit
+  given catsFreeEqForFree[S[_], A](using
     SF: Functor[S],
     S0: => Eq[S[Free[S, A]]],
     A0: Eq[A]
@@ -128,9 +128,9 @@ private trait FreeStructuralInstances2 {
     }
 
   trait FreeStructuralEq[S[_], A] extends Eq[Free[S, A]] {
-    implicit def functor: Functor[S]
-    implicit def S: Eq[S[Free[S, A]]]
-    implicit def A: Eq[A]
+    given functor: Functor[S]
+    given S: Eq[S[Free[S, A]]]
+    given A: Eq[A]
 
     def eqv(left: Free[S, A], right: Free[S, A]): Boolean =
       (left.resume, right.resume) match {

@@ -87,7 +87,7 @@ trait ScalaVersionSpecificFoldableSuite { self: FoldableSuiteAdditional =>
     }
 
   test("Foldable[LazyList].foldLeftM short-circuiting") {
-    implicit val F: Foldable[LazyList] = foldableLazyListWithDefaultImpl
+    given F: Foldable[LazyList] = foldableLazyListWithDefaultImpl
     val ns = LazyList.continually(1)
     val res = F.foldLeftM[Either[Int, *], Int, Int](ns, 0) { (sum, n) =>
       if (sum >= 100000) Left(sum) else Right(sum + n)
@@ -96,7 +96,7 @@ trait ScalaVersionSpecificFoldableSuite { self: FoldableSuiteAdditional =>
   }
 
   test("Foldable[LazyList].foldLeftM short-circuiting optimality") {
-    implicit val F: Foldable[LazyList] = foldableLazyListWithDefaultImpl
+    given F: Foldable[LazyList] = foldableLazyListWithDefaultImpl
 
     // test that no more elements are evaluated than absolutely necessary
 
@@ -111,13 +111,13 @@ trait ScalaVersionSpecificFoldableSuite { self: FoldableSuiteAdditional =>
   }
 
   test("Foldable[LazyList].existsM/.forallM short-circuiting") {
-    implicit val F: Foldable[LazyList] = foldableLazyListWithDefaultImpl
+    given F: Foldable[LazyList] = foldableLazyListWithDefaultImpl
     assert(F.existsM[Id, Boolean](true #:: boomLazyList[Boolean])(identity) == true)
     assert(F.forallM[Id, Boolean](false #:: boomLazyList[Boolean])(identity) == false)
   }
 
   test("Foldable[LazyList].findM/.collectFirstSomeM short-circuiting") {
-    implicit val F: Foldable[LazyList] = foldableLazyListWithDefaultImpl
+    given F: Foldable[LazyList] = foldableLazyListWithDefaultImpl
     assert((1 #:: boomLazyList[Int]).findM[Id](_ > 0) == Some(1))
     assert((1 #:: boomLazyList[Int]).collectFirstSomeM[Id, Int](Option.apply) == Some(1))
   }

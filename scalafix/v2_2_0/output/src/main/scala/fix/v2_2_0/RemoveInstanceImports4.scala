@@ -27,7 +27,7 @@ object Resolver {
   val mavenCentral: MavenRepository =
     MavenRepository("public", "https://repo1.maven.org/maven2/", None)
 
-  implicit val resolverOrder: Order[Resolver] =
+  given resolverOrder: Order[Resolver] =
     Order.by {
       case MavenRepository(name, location, _) => (1, name, location)
       case IvyRepository(name, pattern, _)    => (2, name, pattern)
@@ -43,6 +43,6 @@ object Scope {
       case (resolvers, group) => Scope(group.reduceMap(_.value).distinct.sorted, resolvers)
     }
 
-  implicit def scopeOrder[A: Order]: Order[Scope[A]] =
+  given scopeOrder[A: Order]: Order[Scope[A]] =
     Order.by((scope: Scope[A]) => (scope.value, scope.resolvers))
 }

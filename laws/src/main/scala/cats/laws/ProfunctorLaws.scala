@@ -29,7 +29,7 @@ import cats.syntax.profunctor._
  * Laws that must be obeyed by any `cats.functor.Profunctor`.
  */
 trait ProfunctorLaws[F[_, _]] {
-  implicit def F: Profunctor[F]
+  given F: Profunctor[F]
 
   def profunctorIdentity[A, B](fab: F[A, B]): IsEq[F[A, B]] =
     fab.dimap(identity[A])(identity[B]) <-> fab

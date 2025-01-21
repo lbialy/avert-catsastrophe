@@ -44,7 +44,7 @@ import org.scalacheck.Prop._
 
 class ConstSuite extends CatsSuite {
 
-  implicit val iso: Isomorphisms[Const[String, *]] =
+  given iso: Isomorphisms[Const[String, *]] =
     Isomorphisms.invariant[Const[String, *]](Const.catsDataTraverseForConst)
 
   checkAll("Const[String, Int]", SemigroupalTests[Const[String, *]].semigroupal[Int, Int, Int])
@@ -66,8 +66,8 @@ class ConstSuite extends CatsSuite {
 
   // Get Apply[Const[C : Semigroup, *]], not Applicative[Const[C : Monoid, *]]
   {
-    implicit def nonEmptyListSemigroup[A]: Semigroup[NonEmptyList[A]] = SemigroupK[NonEmptyList].algebra
-    implicit val iso: Isomorphisms[Const[NonEmptyList[String], *]] =
+    given nonEmptyListSemigroup[A]: Semigroup[NonEmptyList[A]] = SemigroupK[NonEmptyList].algebra
+    given iso: Isomorphisms[Const[NonEmptyList[String], *]] =
       Isomorphisms.invariant[Const[NonEmptyList[String], *]](Const.catsDataContravariantForConst)
     checkAll("Apply[Const[NonEmptyList[String], Int]]", ApplyTests[Const[NonEmptyList[String], *]].apply[Int, Int, Int])
     checkAll("Apply[Const[NonEmptyList[String], *]]",
@@ -137,7 +137,7 @@ class ConstSuite extends CatsSuite {
   checkAll("Functor[Const[String, *]]", SerializableTests.serializable(Functor[Const[String, *]]))
 
   {
-    implicit val iso: Isomorphisms[Const[CMono, *]] =
+    given iso: Isomorphisms[Const[CMono, *]] =
       Isomorphisms.invariant[Const[CMono, *]](Const.catsDataTraverseForConst)
     checkAll("Const[CMono, Int]", CommutativeApplicativeTests[Const[CMono, *]].commutativeApplicative[Int, Int, Int])
     checkAll("CommutativeApplicative[Const[CMono, *]]",

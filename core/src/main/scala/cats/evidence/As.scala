@@ -67,7 +67,7 @@ sealed abstract class As[-A, +B] extends Serializable {
 }
 
 sealed abstract class AsInstances {
-  import As._
+  import As.given
 
   /*
    * Subtyping forms a category
@@ -92,7 +92,7 @@ object As extends AsInstances with AsSupport {
   /**
    * Subtyping is reflexive
    */
-  implicit def refl[A]: A As A =
+  given refl[A]: (A As A) =
     reflAny.asInstanceOf[A As A]
 
   /**

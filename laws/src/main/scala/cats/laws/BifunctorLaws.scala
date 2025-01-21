@@ -28,7 +28,7 @@ import cats.syntax.bifunctor._
  * Laws that must be obeyed by any `Bifunctor`.
  */
 trait BifunctorLaws[F[_, _]] {
-  implicit def F: Bifunctor[F]
+  given F: Bifunctor[F]
 
   def bifunctorIdentity[A, B](fa: F[A, B]): IsEq[F[A, B]] =
     fa.bimap(identity, identity) <-> fa

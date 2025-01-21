@@ -23,9 +23,9 @@ package cats.kernel
 package instances
 
 trait BigDecimalInstances {
-  implicit val catsKernelStdOrderForBigDecimal: Order[BigDecimal] & Hash[BigDecimal] =
+  given catsKernelStdOrderForBigDecimal: (Order[BigDecimal] & Hash[BigDecimal]) =
     new BigDecimalOrder
-  implicit val catsKernelStdGroupForBigDecimal: CommutativeGroup[BigDecimal] =
+  given catsKernelStdGroupForBigDecimal: CommutativeGroup[BigDecimal] =
     new BigDecimalGroup
 }
 

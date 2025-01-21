@@ -29,7 +29,7 @@ import cats.syntax.eq._
 
 class MonadErrorSuite extends CatsSuite {
 
-  implicit val eqThrow: Eq[Throwable] = Eq.fromUniversalEquals
+  given eqThrow: Eq[Throwable] = Eq.fromUniversalEquals
 
   val successful: Try[Int] = Success(42)
   val failedValue: Throwable = new IllegalArgumentException("default failure")

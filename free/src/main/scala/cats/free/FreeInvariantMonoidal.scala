@@ -99,7 +99,7 @@ object FreeInvariantMonoidal {
   /**
    * `FreeInvariantMonoidal[S, *]` has a FreeInvariantMonoidal for any type constructor `S[_]`.
    */
-  implicit def catsFreeInvariantMonoidal[S[_]]: InvariantMonoidal[FA[S, *]] =
+  given catsFreeInvariantMonoidal[S[_]]: InvariantMonoidal[FA[S, *]] =
     new InvariantMonoidal[FA[S, *]] {
       def unit: FA[S, Unit] = FreeInvariantMonoidal.pure(())
       def imap[A, B](fa: FA[S, A])(f: A => B)(g: B => A): FA[S, B] = fa.imap(f)(g)

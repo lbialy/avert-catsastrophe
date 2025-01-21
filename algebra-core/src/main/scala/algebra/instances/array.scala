@@ -27,11 +27,11 @@ import scala.{specialized => sp}
 package object array extends ArrayInstances
 
 trait ArrayInstances {
-  implicit def arrayEq[@sp A: Eq]: Eq[Array[A]] =
+  given arrayEq[@sp A: Eq]: Eq[Array[A]] =
     new ArrayEq[A]
-  implicit def arrayOrder[@sp A: Order]: Order[Array[A]] =
+  given arrayOrder[@sp A: Order]: Order[Array[A]] =
     new ArrayOrder[A]
-  implicit def arrayPartialOrder[@sp A: PartialOrder]: PartialOrder[Array[A]] =
+  given arrayPartialOrder[@sp A: PartialOrder]: PartialOrder[Array[A]] =
     new ArrayPartialOrder[A]
 }
 

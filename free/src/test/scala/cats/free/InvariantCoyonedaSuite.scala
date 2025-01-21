@@ -36,27 +36,27 @@ import org.scalacheck.Prop._
 class InvariantCoyonedaSuite extends CatsSuite {
 
   type Magma[A] = (A, A) => A
-  implicit def semigroupIsMagma[A: Semigroup]: Magma[A] = Semigroup[A].combine
-  implicit object invariantForMagma extends Invariant[Magma] {
-    override def imap[A, B](fa: Magma[A])(f: A => B)(g: B => A): Magma[B] =
+  given semigroupIsMagma[A: Semigroup]: Magma[A] = Semigroup[A].combine
+  given invariantForMagma: Invariant[Magma] with {
+    def imap[A, B](fa: Magma[A])(f: A => B)(g: B => A): Magma[B] =
       (x, y) => f(fa(g(x), g(y)))
   }
 
   // If we can generate functions we can generate an interesting InvariantCoyoneda.
-  implicit def invariantCoyonedaArbitrary[F[_], A: Magma, T](implicit
+  given invariantCoyonedaArbitrary[F[_], A: Magma, T](using
     F: Arbitrary[(A, A) => A]
   ): Arbitrary[InvariantCoyoneda[Magma, A]] =
     Arbitrary(F.arbitrary.map(InvariantCoyoneda.lift[Magma, A]))
 
   // We can't really test that magmas are equal but we can try it with a bunch of test data.
-  implicit def invariantCoyonedaEq[A: Arbitrary: Eq]: Eq[InvariantCoyoneda[Magma, A]] =
+  given invariantCoyonedaEq[A: Arbitrary: Eq]: Eq[InvariantCoyoneda[Magma, A]] =
     (cca, ccb) =>
       Arbitrary.arbitrary[List[(A, A)]].sample.get.forall { case (x, y) =>
         cca.run.apply(x, y) == ccb.run.apply(x, y)
       }
 
   // Needed to help implicit resolution?
-  implicit val invariantCoyonedaMagma: Invariant[InvariantCoyoneda[Magma, *]] =
+  given invariantCoyonedaMagma: Invariant[InvariantCoyoneda[Magma, *]] =
     InvariantCoyoneda.catsFreeInvariantFunctorForInvariantCoyoneda[Magma]
 
   checkAll("InvariantCoyoneda[Magma, Int]",

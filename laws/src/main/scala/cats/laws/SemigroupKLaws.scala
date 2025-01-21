@@ -26,7 +26,7 @@ package laws
  * Laws that must be obeyed by any `cats.SemigroupK`.
  */
 trait SemigroupKLaws[F[_]] {
-  implicit def F: SemigroupK[F]
+  given F: SemigroupK[F]
 
   def semigroupKAssociative[A](a: F[A], b: F[A], c: F[A]): IsEq[F[A]] =
     F.combineK(F.combineK(a, b), c) <-> F.combineK(a, F.combineK(b, c))

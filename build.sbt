@@ -56,6 +56,7 @@ ThisBuild / tlVersionIntroduced := Map("3" -> "2.6.1")
 lazy val commonJvmSettings = Seq(
   Test / fork := true,
   Test / javaOptions := Seq("-Xmx3G"),
+  scalacOptions += "-language:implicitConversions",
   doctestGenTests := { if (tlIsScala3.value) Nil else doctestGenTests.value }
 )
 

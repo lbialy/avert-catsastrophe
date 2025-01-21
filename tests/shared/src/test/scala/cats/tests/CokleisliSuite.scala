@@ -35,13 +35,13 @@ import org.scalacheck.Test.Parameters
 
 class CokleisliSuite extends SlowCatsSuite {
 
-  implicit override val scalaCheckTestParameters: Parameters =
+  given scalaCheckTestParameters: Parameters =
     slowCheckConfiguration.withMinSuccessfulTests(20)
 
-  implicit def cokleisliEq[F[_], A, B](implicit ev: Eq[F[A] => B]): Eq[Cokleisli[F, A, B]] =
+  given cokleisliEq[F[_], A, B](using ev: Eq[F[A] => B]): Eq[Cokleisli[F, A, B]] =
     Eq.by[Cokleisli[F, A, B], F[A] => B](_.run)
 
-  implicit val iso: Isomorphisms[Cokleisli[Option, Int, *]] = Isomorphisms.invariant[Cokleisli[Option, Int, *]]
+  given iso: Isomorphisms[Cokleisli[Option, Int, *]] = Isomorphisms.invariant[Cokleisli[Option, Int, *]]
 
   checkAll("Cokleisli[Option, MiniInt, Int]",
            SemigroupalTests[Cokleisli[Option, MiniInt, *]].semigroupal[Int, Int, Int]
